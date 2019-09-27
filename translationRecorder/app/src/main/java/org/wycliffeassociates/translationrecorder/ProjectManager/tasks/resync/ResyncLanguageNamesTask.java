@@ -44,7 +44,7 @@ public class ResyncLanguageNamesTask extends Task {
 
     @Override
     public void run() {
-        String json = isLocal ? loadJsonFromFile() : loadJsonFromUri();
+        String json = isLocal ? loadJsonFromFile() : loadJsonFromUrl();
         try {
             JSONArray jsonObject = new JSONArray(json);
             ParseJSON parseJSON = new ParseJSON(mCtx);
@@ -71,7 +71,7 @@ public class ResyncLanguageNamesTask extends Task {
         }
     }
 
-    private String loadJsonFromUri() {
+    private String loadJsonFromUrl() {
         try {
             URL url = new URL("http://td.unfoldingword.org/exports/langnames.json");
             HttpURLConnection urlConnection = null;
