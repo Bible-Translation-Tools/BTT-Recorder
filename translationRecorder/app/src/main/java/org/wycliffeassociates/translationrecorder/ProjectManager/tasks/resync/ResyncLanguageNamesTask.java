@@ -9,7 +9,6 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
 import org.wycliffeassociates.translationrecorder.project.ParseJSON;
