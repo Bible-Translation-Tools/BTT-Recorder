@@ -58,8 +58,16 @@ public class ResyncLanguageNamesTask extends Task {
                     Toast.makeText(mCtx, "Languages successfully updated!", Toast.LENGTH_SHORT).show();
                 }
             });
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             e.printStackTrace();
+            onTaskErrorDelegator();
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(mCtx, "Invalid json", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -72,16 +80,15 @@ public class ResyncLanguageNamesTask extends Task {
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                StringBuilder sb = new StringBuilder();
+                StringBuilder json = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    sb.append(line);
+                    json.append(line);
                 }
                 reader.close();
-                return sb.toString();
+                return json.toString();
             } catch (final IOException e) {
                 e.printStackTrace();
-                onTaskErrorDelegator();
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
@@ -108,16 +115,15 @@ public class ResyncLanguageNamesTask extends Task {
         try {
             FileInputStream fis = new FileInputStream(f);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-            StringBuilder sb = new StringBuilder();
+            StringBuilder json = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                sb.append(line);
+                json.append(line);
             }
             reader.close();
-            return sb.toString();
+            return json.toString();
         } catch (final FileNotFoundException e) {
             e.printStackTrace();
-            onTaskErrorDelegator();
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
