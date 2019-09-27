@@ -78,7 +78,21 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db),
+                        new ResyncLanguageNamesTask(1, getActivity(), db, false),
+                        "Updating Languages",
+                        "Please wait...",
+                        true
+                );
+                return true;
+            }
+        });
+
+        Preference updateLanguagesFromFileButton = (Preference) findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
+        updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                mTaskFragment.executeRunnable(
+                        new ResyncLanguageNamesTask(1, getActivity(), db, true),
                         "Updating Languages",
                         "Please wait...",
                         true

@@ -39,6 +39,13 @@
             android:title="Update Languages From translationDatabase">
         </PreferenceScreen>
 
+        <PreferenceScreen
+                android:key="pref_update_languages_from_file"
+                android:layout="@layout/custom_pref"
+                android:title="Update Languages From file"
+                android:summary="BTTRecorder/langnames.json">
+        </PreferenceScreen>
+
     </PreferenceCategory>
 
     <PreferenceCategory
