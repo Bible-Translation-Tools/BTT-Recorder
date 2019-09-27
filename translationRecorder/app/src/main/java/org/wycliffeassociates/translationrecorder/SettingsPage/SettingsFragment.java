@@ -53,7 +53,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             fm.executePendingTransactions();
         }
 
-        Preference sourceLanguageButton = (Preference)findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
+        Preference sourceLanguageButton = findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
         sourceLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -62,7 +62,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         });
 
-        Preference addTemporaryLanguageButton = (Preference)findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
+        Preference addTemporaryLanguageButton = findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
         addTemporaryLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -73,7 +73,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         );
 
-        Preference updateLanguagesButton = (Preference) findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
+        Preference updateLanguagesButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
         updateLanguagesButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -87,7 +87,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         });
 
-        Preference updateLanguagesFromFileButton = (Preference) findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
+        Preference updateLanguagesFromFileButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
         updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
