@@ -1,14 +1,13 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync;
 
 import android.content.Context;
-import android.os.Environment;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
 import org.wycliffeassociates.translationrecorder.project.ParseJSON;
@@ -19,8 +18,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -33,13 +30,21 @@ import java.net.URL;
 public class ResyncLanguageNamesTask extends Task {
     Context mCtx;
     ProjectDatabaseHelper db;
-    boolean isLocal;
+    boolean isLocal = false;
+    Uri localFile;
+    Handler handler;
 
-    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, boolean isLocal) {
+    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db) {
         super(taskTag);
         mCtx = ctx;
         this.db = db;
-        this.isLocal = isLocal;
+        this.handler = new Handler(Looper.getMainLooper());
+    }
+
+    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, Uri uri) {
+        this(taskTag, ctx, db);
+        this.isLocal = true;
+        this.localFile = uri;
     }
 
     @Override
@@ -51,7 +56,6 @@ public class ResyncLanguageNamesTask extends Task {
             Language[] languages = parseJSON.pullLangNames(jsonObject);
             db.addLanguages(languages);
             onTaskCompleteDelegator();
-            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -61,11 +65,10 @@ public class ResyncLanguageNamesTask extends Task {
         } catch (final JSONException e) {
             e.printStackTrace();
             onTaskErrorDelegator();
-            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(mCtx, "Invalid json", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mCtx, "Invalid json file", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -89,7 +92,6 @@ public class ResyncLanguageNamesTask extends Task {
                 return json.toString();
             } catch (final IOException e) {
                 e.printStackTrace();
-                Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -107,14 +109,8 @@ public class ResyncLanguageNamesTask extends Task {
     }
 
     private String loadJsonFromFile() {
-        File f = new File(
-                Environment.getExternalStorageDirectory(),
-                mCtx.getResources().getString(R.string.folder_name) + "/langnames.json"
-        );
-
-        try {
-            FileInputStream fis = new FileInputStream(f);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+        try (InputStream is = mCtx.getContentResolver().openInputStream(localFile)) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder json = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -124,7 +120,6 @@ public class ResyncLanguageNamesTask extends Task {
             return json.toString();
         } catch (final FileNotFoundException e) {
             e.printStackTrace();
-            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -132,7 +127,7 @@ public class ResyncLanguageNamesTask extends Task {
                 }
             });
             return "";
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             onTaskErrorDelegator();
             return "";

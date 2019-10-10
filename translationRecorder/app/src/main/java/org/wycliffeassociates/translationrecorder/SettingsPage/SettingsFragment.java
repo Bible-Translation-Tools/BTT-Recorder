@@ -1,6 +1,8 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +24,8 @@ import org.wycliffeassociates.translationrecorder.R;
  * Created by leongv on 12/17/2015.
  */
 public class SettingsFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private int FILE_GET_REQUEST_CODE = 45;
 
     LanguageSelector mParent;
     SharedPreferences mSharedPreferences;
@@ -78,7 +82,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db, false),
+                        new ResyncLanguageNamesTask(1, getActivity(), db),
                         "Updating Languages",
                         "Please wait...",
                         true
@@ -91,15 +95,27 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
         updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.setType("application/octet-stream");
+                startActivityForResult(intent, FILE_GET_REQUEST_CODE);
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == FILE_GET_REQUEST_CODE) {
+                Uri uri = resultData.getData();
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db, true),
+                        new ResyncLanguageNamesTask(1, getActivity(), db, uri),
                         "Updating Languages",
                         "Please wait...",
                         true
                 );
-                return true;
             }
-        });
+        }
     }
 
     @Override
