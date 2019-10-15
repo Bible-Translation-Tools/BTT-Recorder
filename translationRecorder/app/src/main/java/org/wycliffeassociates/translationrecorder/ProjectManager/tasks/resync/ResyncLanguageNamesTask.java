@@ -32,13 +32,12 @@ public class ResyncLanguageNamesTask extends Task {
     ProjectDatabaseHelper db;
     boolean isLocal = false;
     Uri localFile;
-    Handler handler;
+    Handler handler = new Handler(Looper.getMainLooper());
 
     public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db) {
         super(taskTag);
         mCtx = ctx;
         this.db = db;
-        this.handler = new Handler(Looper.getMainLooper());
     }
 
     public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, Uri uri) {
