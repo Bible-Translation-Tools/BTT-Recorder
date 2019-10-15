@@ -1,6 +1,8 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +24,8 @@ import org.wycliffeassociates.translationrecorder.R;
  * Created by leongv on 12/17/2015.
  */
 public class SettingsFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private int FILE_GET_REQUEST_CODE = 45;
 
     LanguageSelector mParent;
     SharedPreferences mSharedPreferences;
@@ -53,7 +57,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             fm.executePendingTransactions();
         }
 
-        Preference sourceLanguageButton = (Preference)findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
+        Preference sourceLanguageButton = findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
         sourceLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -62,7 +66,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         });
 
-        Preference addTemporaryLanguageButton = (Preference)findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
+        Preference addTemporaryLanguageButton = findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
         addTemporaryLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -73,7 +77,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         );
 
-        Preference updateLanguagesButton = (Preference) findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
+        Preference updateLanguagesButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
         updateLanguagesButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -86,6 +90,32 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
                 return true;
             }
         });
+
+        Preference updateLanguagesFromFileButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
+        updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.setType("application/octet-stream");
+                startActivityForResult(intent, FILE_GET_REQUEST_CODE);
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == FILE_GET_REQUEST_CODE) {
+                Uri uri = resultData.getData();
+                mTaskFragment.executeRunnable(
+                        new ResyncLanguageNamesTask(1, getActivity(), db, uri),
+                        "Updating Languages",
+                        "Please wait...",
+                        true
+                );
+            }
+        }
     }
 
     @Override
