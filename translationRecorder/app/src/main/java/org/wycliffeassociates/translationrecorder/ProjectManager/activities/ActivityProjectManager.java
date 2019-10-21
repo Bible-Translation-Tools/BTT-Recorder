@@ -529,8 +529,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
     @Override
     public void setProgressTitle(String title) {
+        mProgressTitle = title;
         if (mPd != null) {
-            mProgressTitle = title;
             mPd.setTitle(mProgressTitle);
         }
     }
