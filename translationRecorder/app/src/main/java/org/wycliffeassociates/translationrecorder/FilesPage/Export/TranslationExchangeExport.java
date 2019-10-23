@@ -54,12 +54,13 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
                 if (id == TranslationExchangeDiff.DIFF_ID) {
                     mProgressCallback.setProgressTitle("Step 1/3: Generating manifest file");
                 } else if(id == ZipProject.ZIP_PROJECT_ID) {
-                    mZipDone = false;
-                    mProgressCallback.setZipping(true);
                     mProgressCallback.setProgressTitle("Step 2/3: Packaging files to export");
                 } else if(id == TranslationExchangeExport.EXPORT_UPLOAD_ID) {
                     mProgressCallback.setProgressTitle("Step 3/3: Uploading");
                 }
+
+                mZipDone = false;
+                mProgressCallback.setZipping(true);
                 mProgressCallback.showProgress(ProgressUpdateCallback.ZIP);
             }
         });
@@ -73,6 +74,7 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
             super.initialize();
         } else if(id == EXPORT_UPLOAD_ID) {
             mProgressCallback.setProgressTitle(null);
+            mProgressCallback.setZipping(false);
         }
     }
 
