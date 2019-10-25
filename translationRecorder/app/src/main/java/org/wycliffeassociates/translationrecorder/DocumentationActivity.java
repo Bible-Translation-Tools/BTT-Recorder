@@ -41,7 +41,7 @@ public class DocumentationActivity extends AppCompatActivity {
             mNetworkStatus = "Offline";
         }
         if(mIsOnline) {
-            webView.loadUrl("http://tr-info.readthedocs.io/en/latest/");
+            webView.loadUrl("https://tr-info.readthedocs.io/en/latest/");
         } else {
             webView.loadUrl("file:///android_asset/tr-info.readthedocs.io/index.html");
         }
