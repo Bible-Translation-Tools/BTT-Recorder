@@ -142,12 +142,6 @@ public abstract class Export implements SimpleProgressCallback {
                 mZipDone = false;
                 mProgressCallback.setZipping(true);
                 mProgressCallback.showProgress(ProgressUpdateCallback.ZIP);
-
-                if (id == TranslationExchangeDiff.DIFF_ID) {
-                    mProgressCallback.setProgressTitle("Step 1/2: Generating manifest file");
-                } else if(id == ZipProject.ZIP_PROJECT_ID) {
-                    mProgressCallback.setProgressTitle("Step 2/2: Packaging files to export");
-                }
             }
         });
     }

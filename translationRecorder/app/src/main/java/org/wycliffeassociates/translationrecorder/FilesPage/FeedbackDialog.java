@@ -65,6 +65,5 @@ public class FeedbackDialog extends DialogFragment implements View.OnClickListen
                 break;
             }
         }
-        dismiss();
     }
 }
