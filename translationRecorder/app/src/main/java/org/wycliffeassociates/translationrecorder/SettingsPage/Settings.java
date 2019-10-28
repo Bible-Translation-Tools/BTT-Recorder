@@ -27,7 +27,9 @@ import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
  * The settings page -- for all persistent options/information.
  *
  */
-public class Settings extends AppCompatActivity implements TaskFragment.OnTaskComplete, ScrollableListFragment.OnItemClickListener, SettingsFragment.LanguageSelector {
+public class Settings extends AppCompatActivity implements TaskFragment.OnTaskComplete,
+        ScrollableListFragment.OnItemClickListener,
+        SettingsFragment.LanguageSelector {
 
     public static final String KEY_RECENT_PROJECT_ID = "pref_recent_project_id";
 
@@ -47,6 +49,8 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
     public static final String KEY_PREF_ADD_LANGUAGE = "pref_add_temp_language";
     public static final String KEY_PREF_UPDATE_LANGUAGES = "pref_update_languages";
     public static final String KEY_PREF_UPDATE_LANGUAGES_FROM_FILE = "pref_update_languages_from_file";
+
+    public static final String KEY_PREF_UPLOAD_SERVER = "pref_upload_server";
 
 
     private String mSearchText;
