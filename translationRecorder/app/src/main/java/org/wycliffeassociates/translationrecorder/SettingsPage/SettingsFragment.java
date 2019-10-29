@@ -101,6 +101,16 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
                 return true;
             }
         });
+
+        Preference uploadServerButton = findPreference(Settings.KEY_PREF_UPLOAD_SERVER);
+        uploadServerButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                UploadServerDialog add = new UploadServerDialog();
+                add.show(getFragmentManager(), "save");
+                return false;
+            }
+        });
     }
 
     @Override

@@ -48,6 +48,7 @@
     <string name="pref_ftp_directory_value">/BTTRecorder</string>
     <string name="pref_ftp_username_value">unfoldingWord-1</string>
     <string name="pref_ftp_password_value">trisawesome</string>
+    <string name="pref_upload_server">opentranslationtools.org</string>
     <string name="action_search">Search</string>
     <string name="menu_update">Update</string>
 

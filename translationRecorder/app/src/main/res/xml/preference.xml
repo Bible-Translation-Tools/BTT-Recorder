@@ -45,6 +45,14 @@
                 android:title="Update Languages From file">
         </PreferenceScreen>
 
+        <PreferenceScreen
+                android:key="pref_upload_server"
+                android:layout="@layout/custom_pref"
+                android:title="Change Upload Server"
+                android:summary="@string/pref_upload_server"
+                android:defaultValue="@string/pref_upload_server">
+        </PreferenceScreen>
+
     </PreferenceCategory>
 
     <PreferenceCategory

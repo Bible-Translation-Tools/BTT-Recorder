@@ -94,6 +94,9 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
         try {
             this.onStart(EXPORT_UPLOAD_ID);
 
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            String uploadServer = sp.getString(Settings.KEY_PREF_UPLOAD_SERVER, "opentranslationtools.org");
+
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
             String filePath = file.getAbsolutePath();
             SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -105,7 +108,7 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
             uploadReceiver.setUploadID(uploadId);
             uploadReceiver.register(context);
 
-            new BinaryUploadRequest(context, uploadId, "http://opentranslationtools.org/api/upload/zip")
+            new BinaryUploadRequest(context, uploadId, "http://" + uploadServer + "/api/upload/zip")
                             .addHeader("tr-user-hash", hash)
                             .addHeader("tr-file-name", file.getName())
                             .setFileToUpload(filePath)
