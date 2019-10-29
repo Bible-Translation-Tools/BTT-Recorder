@@ -110,8 +110,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
                 add.show(getFragmentManager(), "save");
                 return false;
             }
-        }
-        );
+        });
     }
 
     @Override
