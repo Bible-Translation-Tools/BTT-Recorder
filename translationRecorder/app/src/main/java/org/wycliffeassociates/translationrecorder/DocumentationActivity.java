@@ -41,9 +41,9 @@ public class DocumentationActivity extends AppCompatActivity {
             mNetworkStatus = "Offline";
         }
         if(mIsOnline) {
-            webView.loadUrl("https://tr-info.readthedocs.io/en/latest/");
+            webView.loadUrl("https://btt-recorder.readthedocs.io/en/latest/");
         } else {
-            webView.loadUrl("file:///android_asset/tr-info.readthedocs.io/index.html");
+            webView.loadUrl("file:///android_asset/btt-recorder.readthedocs.io/index.html");
         }
         Toolbar mToolbar = (Toolbar) findViewById(R.id.documentation_toolbar);
         setSupportActionBar(mToolbar);
@@ -112,7 +112,7 @@ public class DocumentationActivity extends AppCompatActivity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             String urlHost = Uri.parse(url).getHost();
-            if (urlHost.equals("tr-info.readthedocs.io") || (!mIsOnline && url.contains("file:///android_asset/tr-info.readthedocs.io/"))) {
+            if (urlHost.equals("btt-recorder.readthedocs.io") || (!mIsOnline && url.contains("file:///android_asset/tr-info.readthedocs.io/"))) {
                 // This is my web site, so do not override; let my WebView load the page
                 return false;
             }
