@@ -41,9 +41,9 @@ public class DocumentationActivity extends AppCompatActivity {
             mNetworkStatus = "Offline";
         }
         if(mIsOnline) {
-            webView.loadUrl("https://tr-info.readthedocs.io/en/latest/");
+            webView.loadUrl("https://btt-recorder.readthedocs.io/en/latest/");
         } else {
-            webView.loadUrl("file:///android_asset/tr-info.readthedocs.io/index.html");
+            webView.loadUrl("file:///android_asset/btt-recorder.readthedocs.io/index.html");
         }
         Toolbar mToolbar = (Toolbar) findViewById(R.id.documentation_toolbar);
         setSupportActionBar(mToolbar);
