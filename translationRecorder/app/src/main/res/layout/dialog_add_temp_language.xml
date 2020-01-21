@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Add a Temporary Language Code"
+            android:text="@string/add_temp_language"
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/abc_text_size_large_material"
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Language code already exists!"
+            android:text="@string/language_code_exists"
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/red"
             android:textSize="@dimen/abc_text_size_medium_material"
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Language code must contain exactly 6 characters!"
+            android:text="@string/language_code_length_tip"
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/red"
             android:textSize="@dimen/abc_text_size_medium_material"
@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body"
-                    android:text="Language Name:"
+                    android:text="@string/language_name"
                     android:paddingRight="10dp"/>
                 <EditText
                     android:id="@+id/language_name"
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body"
-                    android:text="Language Code: "
+                    android:text="@string/language_code"
                     android:paddingRight="10dp"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -119,7 +119,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add"
+                android:text="@string/add"
                 android:id="@+id/ok_button"
                 android:layout_marginLeft="@dimen/default_padding_m"
                 style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"

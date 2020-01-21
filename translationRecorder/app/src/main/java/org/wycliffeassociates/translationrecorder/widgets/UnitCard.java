@@ -14,6 +14,7 @@ import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCa
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog;
 import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
@@ -270,12 +271,21 @@ public class UnitCard {
         }
 
         final String text;
+
         if (takes.size() > 0) {
-            text = "Take " + (mTakeIndex + 1) + " of " + takes.size();
+            text = TranslationRecorderApp.getContext().getResources().getString(
+                    R.string.label_take_detailed,
+                    String.valueOf((mTakeIndex + 1)),
+                    String.valueOf(takes.size())
+            );
             long created = takes.get(mTakeIndex).lastModified();
             mViewHolder.currentTakeTimeStamp.setText(convertTime(created));
         } else {
-            text = "Take 0 of " + takes.size();
+            text = TranslationRecorderApp.getContext().getResources().getString(
+                    R.string.label_take_detailed,
+                    "0",
+                    String.valueOf(takes.size())
+            );
             mViewHolder.currentTakeTimeStamp.setText("");
         }
         mViewHolder.currentTake.setText(text);
@@ -475,9 +485,9 @@ public class UnitCard {
                 final List<File> takes = getTakeList();
                 if (takes.size() > 0) {
                     AlertDialog dialog = new AlertDialog.Builder(ctx)
-                            .setTitle("Delete take?")
+                            .setTitle(ctx.getString(R.string.delete_take))
                             .setIcon(R.drawable.ic_delete_black_36dp)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            .setPositiveButton(ctx.getString(R.string.yes), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     File selectedFile = takes.get(mTakeIndex);
@@ -507,7 +517,7 @@ public class UnitCard {
                                     onTakeDeleteListener.onTakeDeleted();
                                 }
                             })
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(ctx.getString(R.string.no), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();

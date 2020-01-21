@@ -177,7 +177,7 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
         Settings.displayingList = true;
         mFragment = new ScrollableListFragment
                 .Builder(new TargetLanguageAdapter(Language.getLanguages(db), this))
-                .setSearchHint("Choose Source Language:")
+                .setSearchHint(getString(R.string.choose_source_language) + ":")
                 .build();
         mFragmentManager.beginTransaction().add(R.id.fragment_scroll_list, mFragment).commit();
     }

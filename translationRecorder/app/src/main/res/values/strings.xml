@@ -1,10 +1,8 @@
-<resources>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="choose_language">Choose Language</string>
     <string name="choose_target_book">Choose Target Book</string>
 
-
     <string name="app_name">BTT Recorder</string>
-    <string name="hello_world">Hello world!</string>
     <string name="folder_name">BTTRecorder</string>
     <string name="action_settings">Settings</string>
 	
@@ -53,8 +51,8 @@
     <string name="menu_update">Update</string>
 
     <!-- SETTINGS (Summaries) -->
-    <string name="pref_default_folder_summary">@string/pref_default_folder_summary</string>
-    <string name="pref_ftp_server_summary">@string/pref_ftp_server_summary</string>
+    <string name="pref_default_folder_summary"></string>
+    <string name="pref_ftp_server_summary"></string>
     <string name="pref_ftp_directory_summary">@string/pref_ftp_directory_value</string>
     <string name="pref_ftp_username_summary">@string/pref_ftp_username_value</string>
     <string name="pref_ftp_password_summary">@string/pref_ftp_password_value</string>
@@ -70,14 +68,73 @@
     <string name="txt_record"><u>Record</u></string>
     <string name="txt_btn_redo">Redo</string>
     <string name="txt_btn_yes">Yes</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="new_user"><u>New User</u></string>
     <string name="available_users">Available Users</string>
 
     <string name="is_this_ok_txt">Is this ok?</string>
-    <string name="privacy_txt">If you are concerned for your privacy or safety, please use a nickname or psuedonym.</string>
     <string name="permissions_denied_title">Permissions Needed</string>
     <string name="permissions_denied_message">Please enable permissions to use BTT Recorder</string>
     <string name="open_permissions">Open Permission Settings</string>
+
+    <string name="chapter_title">Chapter</string>
+    <string name="chunk_title">Chunk</string>
+    <string name="new_project">New Project</string>
+    <string name="project_management">Project Management</string>
+    <string name="settings_menu">Settings</string>
+    <string name="logout_menu">Logout</string>
+    <string name="help_menu">Help</string>
+    <string name="set_chapter_level">Set Chapters Level</string>
+    <string name="compile_chapters">Compile Chapters</string>
+    <string name="set_checking_level">Set Checking Level</string>
+    <string name="source_audio_location">Source Audio Location</string>
+    <string name="source_audio_language">Source Audio Language</string>
+    <string name="translator">translator</string>
+    <string name="app_settings">BTT Recorder Settings</string>
+    <string name="source_language">Source Language</string>
+    <string name="add_temp_language">Add Temporary Language</string>
+    <string name="update_languege_from_td">Update Languages From translationDatabase</string>
+    <string name="update_languege_from_file">Update Languages From file</string>
+    <string name="change_upload_server">Change Upload Server</string>
+    <string name="app_version">BTT Recorder Version</string>
+    <string name="project_exists">Project Already Exists!</string>
+    <string name="choose_project">Choose a Project</string>
+    <string name="choose_book">Choose a Book</string>
+    <string name="choose_translation_type">Choose Translation Type</string>
+    <string name="choose_mode">Choose a Mode</string>
+    <string name="source_audio">Source Audio</string>
+    <string name="select_source_language">Select Source Language</string>
+    <string name="select_source_location">Select Source Location</string>
+    <string name="source_audio_not_found">Source audio could not be found in the default location. If you would like Source Audio to use with your project, please select a source language and then find the corresponding Source Audio folder on your device or SD card using the buttons below.</string>
+    <string name="project_exists_message">A project already exists for that language, book, and version.\nIf you would like to switch recording modes, please delete the project before creating it again.</string>
+    <string name="no_source_audio">No source audio</string>
+    <string name="left_title">Left</string>
+    <string name="label_take_detailed">Take <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="delete_take">Delete take?</string>
+    <string name="rate_take">Rate this take</string>
+    <string name="warning">Warning</string>
+    <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
+    <string name="recompile_chapters_message">Re-compiling a chapter will over-write the current audio and reset the checking level.</string>
+    <string name="compiling_chapter">Compiling Chapter</string>
+    <string name="upload_step_one">Step 1/3: Generating manifest file</string>
+    <string name="upload_step_two">Step 2/3: Packaging files to export</string>
+    <string name="upload_step_three">Step 3/3: Uploading</string>
+    <string name="packaging_files">Packaging files to export</string>
+    <string name="project_upload">Project upload</string>
+    <string name="project_upload_failed">Project upload failed: <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="resyncing_database">Resyncing Database</string>
+    <string name="exporting_source_audio">Exporting Source Audio</string>
+    <string name="delete_project">Delete Project</string>
+    <string name="confirm_delete_project_alt">Deleting this project will remove all associated verse and chunk recordings.\n\nAre you sure?</string>
+    <string name="source_generation_complete">Source Audio generation complete.</string>
+    <string name="source_generation_failed">Source Audio generation failed.</string>
+    <string name="language_code_exists">Language code already exists!</string>
+    <string name="language_code_length_tip">Language code must contain exactly 6 characters!</string>
+    <string name="language_name">Language name: </string>
+    <string name="language_code">Language code: </string>
+    <string name="add">Add</string>
+    <string name="languages_updated">Languages successfully updated!</string>
+    <string name="invalid_json">Invalid json file</string>
+    <string name="server_name">Server Name: </string>
+    <string name="restore_defaults">Restore defaults</string>
+    <string name="save">Save</string>
 </resources>

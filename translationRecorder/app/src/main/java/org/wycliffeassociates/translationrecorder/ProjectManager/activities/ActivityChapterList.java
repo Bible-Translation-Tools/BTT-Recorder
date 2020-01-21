@@ -210,7 +210,12 @@ public class ActivityChapterList extends AppCompatActivity implements
         }
 
         CompileChapterTask task = new CompileChapterTask(COMPILE_CHAPTER_TASK, chaptersToCompile, mProject);
-        mTaskFragment.executeRunnable(task, "Compiling Chapter", "Please wait...", false);
+        mTaskFragment.executeRunnable(
+                task,
+                getString(R.string.compiling_chapter),
+                getString(R.string.please_wait),
+                false
+        );
     }
 
     @Override
@@ -236,13 +241,15 @@ public class ActivityChapterList extends AppCompatActivity implements
 
     private void prepareChapterCardData() {
         List<Chapter> chapters = mChunks.getChapters();
+        String chapterLabel = mChunks.getChapterLabel().equals("chapter") ?
+                getString(R.string.chapter_title) : "Chapter";
         for (Chapter chapter : chapters) {
             int unitCount = chapter.getChunks().size();
             int chapterNumber = chapter.getNumber();
             mChapterCardList.add(
                     new ChapterCard(
                             mProject,
-                            Utils.capitalizeFirstLetter(mChunks.getChapterLabel()) + " " + mChunks.getChapterName(chapterNumber),
+                            chapterLabel + " " + mChunks.getChapterName(chapterNumber),
                             chapterNumber,
                             unitCount,
                             db

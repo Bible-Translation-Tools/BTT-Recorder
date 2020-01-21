@@ -39,7 +39,7 @@
             android:id="@+id/new_project_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Project"
+            android:text="@string/new_project"
             android:textColor="@color/text_light"
             android:layout_centerInParent="true"
             android:background="@color/primary"

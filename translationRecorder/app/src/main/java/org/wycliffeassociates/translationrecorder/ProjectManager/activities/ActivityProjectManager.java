@@ -159,8 +159,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
             );
             mTaskFragment.executeRunnable(
                     task,
-                    "Resyncing Database",
-                    "Please wait...",
+                    getString(R.string.resyncing_database),
+                    getString(R.string.please_wait),
                     true
             );
         }
@@ -364,8 +364,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                         );
                         mTaskFragment.executeRunnable(
                                 task,
-                                "Exporting Source Audio",
-                                "Please wait...",
+                                getString(R.string.exporting_source_audio),
+                                getString(R.string.please_wait),
                                 false
                         );
                     } catch (FileNotFoundException e) {
@@ -433,10 +433,9 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     public void onDelete(final Project project) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder
-                .setTitle("Delete Project")
-                .setMessage("Deleting this project will remove all associated verse and chunk " +
-                        "recordings.\n\nAre you sure?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setTitle(getString(R.string.delete_project))
+                .setMessage(getString(R.string.confirm_delete_project_alt))
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == dialog.BUTTON_POSITIVE) {
@@ -454,7 +453,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                         }
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -467,7 +466,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
     public void exportProgress(int progress, String title) {
         mPd = new ProgressDialog(this);
-        mPd.setTitle(title != null ? title : "Uploading...");
+        mPd.setTitle(title != null ? title : getString(R.string.uploading));
         mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mPd.setProgress(progress);
         mPd.setCancelable(false);
@@ -476,8 +475,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
     public void zipProgress(int progress, String title) {
         mPd = new ProgressDialog(this);
-        mPd.setTitle(title != null ? title : "Packaging files to export.");
-        mPd.setMessage("Please wait...");
+        mPd.setTitle(title != null ? title : getString(R.string.packaging_files));
+        mPd.setMessage(getString(R.string.please_wait));
         mPd.setProgress(progress);
         mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mPd.setCancelable(false);
@@ -579,16 +578,16 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                 initializeViews();
             } else if(taskTag == SOURCE_AUDIO_TASK) {
                 FeedbackDialog fd = FeedbackDialog.newInstance(
-                        "Source Audio",
-                        "Source Audio generation complete."
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_complete)
                 );
                 fd.show(getFragmentManager(), "SOURCE_AUDIO");
             }
         } else if(resultCode == TaskFragment.STATUS_ERROR) {
             if(taskTag == SOURCE_AUDIO_TASK) {
                 FeedbackDialog fd = FeedbackDialog.newInstance(
-                        "Source Audio",
-                        "Source Audio generation failed."
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_failed)
 
                 );
                 fd.show(getFragmentManager(), "SOURCE_AUDIO");

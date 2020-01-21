@@ -250,13 +250,20 @@ public class PlaybackActivity extends Activity implements
                 mFragmentTabbedWidget
         );
 
+        String chapterLabel = plugin.getChapterLabel().equals("chapter") ?
+                getString(R.string.chapter_title) : "Chapter";
+
+        String modeLabel = mProject.getModeName().equals("chunk") ?
+                getString(R.string.chunk_title) : (mProject.getModeName().equals("verse") ?
+                getString(R.string.title_verse) : "Chunk");
+
         mFragmentFileBar = FragmentFileBar.newInstance(
                 mProject.getTargetLanguageSlug(),
                 mProject.getVersionSlug(),
                 mProject.getBookSlug(),
-                Utils.capitalizeFirstLetter(plugin.getChapterLabel()),
+                chapterLabel,
                 plugin.getChapterName(mChapter),
-                mProject.getModeName(),
+                modeLabel,
                 //getUnitLabel(),
                 plugin.getChunkName(),
                 mProject.getModeType()

@@ -74,7 +74,7 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
 //        actionBar.hide();
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Source Audio");
+            getSupportActionBar().setTitle(getString(R.string.source_audio));
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -189,7 +189,9 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         if (mFragment != null) {
             mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
         }
-        mFragment = new ScrollableListFragment.Builder(new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)).setSearchHint("Choose Source Language:").build();
+        mFragment = new ScrollableListFragment.Builder(
+                new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)
+        ).setSearchHint(getString(R.string.choose_source_language) + ":").build();
         mFragmentManager.beginTransaction().add(R.id.fragment_container, (Fragment) mFragment).commit();
         findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
     }

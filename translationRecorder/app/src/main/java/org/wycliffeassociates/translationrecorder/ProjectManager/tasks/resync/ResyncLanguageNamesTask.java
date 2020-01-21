@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
 import org.wycliffeassociates.translationrecorder.project.ParseJSON;
@@ -58,7 +59,7 @@ public class ResyncLanguageNamesTask extends Task {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(mCtx, "Languages successfully updated!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mCtx, mCtx.getString(R.string.languages_updated), Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (final JSONException e) {
@@ -67,7 +68,7 @@ public class ResyncLanguageNamesTask extends Task {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(mCtx, "Invalid json file", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mCtx, mCtx.getString(R.string.invalid_json), Toast.LENGTH_SHORT).show();
                 }
             });
         }

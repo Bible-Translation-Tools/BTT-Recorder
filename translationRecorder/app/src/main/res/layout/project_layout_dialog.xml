@@ -121,7 +121,7 @@
                     android:id="@+id/unit_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Verse"
+                    android:text="@string/title_verse"
                     android:textColor="@color/dark_primary_text"
                     android:textSize="@dimen/body" />
             </LinearLayout>
@@ -137,7 +137,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingRight="10dp"
-                    android:text="Source Audio Language"
+                    android:text="@string/source_audio_language"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
 
@@ -171,7 +171,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingRight="10dp"
-                    android:text="Source Audio Location"
+                    android:text="@string/source_audio_location"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
 
@@ -249,7 +249,7 @@
                     android:id="@+id/translators"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="translator"
+                    android:text="@string/translator"
                     android:textColor="@color/accent_dark"
                     android:textSize="@dimen/body" />
             </LinearLayout>

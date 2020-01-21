@@ -34,7 +34,7 @@ public class Mode extends ProjectComponent {
 
     @Override
     public String getLabel() {
-        return Utils.capitalizeFirstLetter(mName);
+        return mName;
     }
 
     @Override

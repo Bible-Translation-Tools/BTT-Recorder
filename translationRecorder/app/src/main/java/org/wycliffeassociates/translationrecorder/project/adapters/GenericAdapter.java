@@ -68,7 +68,12 @@ public class GenericAdapter extends ArrayAdapter {
         }
 
         // render view
-        holder.mProjectComponentView.setText(getItem(position).getLabel());
+        // Not sure how and where to do this for Mode component specifically
+        String label = getItem(position).getLabel().equals("chunk") ?
+                getContext().getString(R.string.chunk_title) : (getItem(position).getLabel().equals("verse") ?
+                getContext().getString(R.string.title_verse) : getItem(position).getLabel());
+
+        holder.mProjectComponentView.setText(label);
         holder.mCodeView.setText(getItem(position).getSlug());
 
 
