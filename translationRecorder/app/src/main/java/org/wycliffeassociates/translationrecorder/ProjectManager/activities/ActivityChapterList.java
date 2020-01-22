@@ -241,8 +241,7 @@ public class ActivityChapterList extends AppCompatActivity implements
 
     private void prepareChapterCardData() {
         List<Chapter> chapters = mChunks.getChapters();
-        String chapterLabel = mChunks.getChapterLabel().equals("chapter") ?
-                getString(R.string.chapter_title) : "Chapter";
+        String chapterLabel = mChunks.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
         for (Chapter chapter : chapters) {
             int unitCount = chapter.getChunks().size();
             int chapterNumber = chapter.getNumber();

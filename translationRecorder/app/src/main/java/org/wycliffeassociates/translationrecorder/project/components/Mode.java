@@ -12,6 +12,9 @@ import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.TYPE;
 
 public class Mode extends ProjectComponent {
 
+    public static final String CHUNK = "chunk";
+    public static final String VERSE = "verse";
+
     public String getTypeString() {
         return (mType == TYPE.SINGLE)? "single" : "multi";
     }

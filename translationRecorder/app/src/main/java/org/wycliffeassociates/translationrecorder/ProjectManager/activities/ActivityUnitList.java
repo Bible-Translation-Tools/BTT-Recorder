@@ -97,8 +97,7 @@ public class ActivityUnitList extends AppCompatActivity implements CheckingDialo
             Toolbar mToolbar = (Toolbar) findViewById(R.id.unit_list_toolbar);
             setSupportActionBar(mToolbar);
             if (getSupportActionBar() != null) {
-                String chapterLabel = chunkPlugin.getChapterLabel().equals("chapter") ?
-                        getString(R.string.chapter_title) : "Chapter";
+                String chapterLabel = chunkPlugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
                 String chapterName = chunkPlugin.getChapterName(mChapterNum);
                 getSupportActionBar().setTitle(language + " - " + book + " - " + chapterLabel + " " + chapterName);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -200,9 +199,7 @@ public class ActivityUnitList extends AppCompatActivity implements CheckingDialo
         if(chunkPlugin != null) {
             List<Chunk> chunks = chunkPlugin.getChapter(mChapterNum).getChunks();
             for (Chunk unit : chunks) {
-                String modeLabel = mProject.getModeName().equals("chunk") ?
-                        getString(R.string.chunk_title) : (mProject.getModeName().equals("verse") ?
-                        getString(R.string.title_verse) : "Chunk");
+                String modeLabel = mProject.getLocalizedModeName(this);
                 String title = modeLabel + " " + unit.getLabel();
                 mUnitCardList.add(
                         new UnitCard(

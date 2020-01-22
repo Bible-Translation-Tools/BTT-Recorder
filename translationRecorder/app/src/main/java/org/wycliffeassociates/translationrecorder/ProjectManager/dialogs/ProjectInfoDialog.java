@@ -107,10 +107,7 @@ public class ProjectInfoDialog extends DialogFragment {
 
         setSourceAudioTextInfo();
 
-        String modeLabel = mProject.getModeName().equals("chunk") ?
-                getString(R.string.chunk_title) : (mProject.getModeName().equals("verse") ?
-                getString(R.string.title_verse) : "Chunk");
-        mUnitType.setText(modeLabel);
+        mUnitType.setText(mProject.getLocalizedModeName(getActivity()));
 
         ImageButton deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
         ImageButton sourceButton = (ImageButton) view.findViewById(R.id.export_as_source_btn);
