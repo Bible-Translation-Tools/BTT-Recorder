@@ -155,14 +155,16 @@ public class FragmentRecordingFileBar extends Fragment {
         String bookName = db.getBookName(bookCode);
         mBookView.setText(bookName);
         mBookView.postInvalidate();
-        mModeView.setText(Utils.capitalizeFirstLetter(mProject.getModeName()));
+
+        mModeView.setText(mProject.getLocalizedModeName(getActivity()));
         mSourceView.setText(mProject.getVersionSlug().toUpperCase());
     }
 
     private void initializePickers() throws IOException {
         mChunks = mProject.getChunkPlugin(new ChunkPluginLoader(getActivity()));
         mChunks.initialize(mChapter, mUnit);
-        mChapterView.setText(Utils.capitalizeFirstLetter(mChunks.getChapterLabel()));
+        String chapterLabel = mChunks.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
+        mChapterView.setText(chapterLabel);
         initializeUnitPicker();
         initializeChapterPicker();
     }

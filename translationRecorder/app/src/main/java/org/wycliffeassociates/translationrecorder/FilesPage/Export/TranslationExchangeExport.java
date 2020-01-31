@@ -52,11 +52,11 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
             @Override
             public void run() {
                 if (id == TranslationExchangeDiff.DIFF_ID) {
-                    mProgressCallback.setProgressTitle("Step 1/3: Generating manifest file");
+                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_one));
                 } else if(id == ZipProject.ZIP_PROJECT_ID) {
-                    mProgressCallback.setProgressTitle("Step 2/3: Packaging files to export");
+                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_two));
                 } else if(id == TranslationExchangeExport.EXPORT_UPLOAD_ID) {
-                    mProgressCallback.setProgressTitle("Step 3/3: Uploading");
+                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_three));
                 }
 
                 mZipDone = false;
@@ -149,8 +149,8 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
     @Override
     public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
         FeedbackDialog fd = FeedbackDialog.newInstance(
-                "Project upload",
-                "Project has been successfully uploaded."
+                mCtx.getString(R.string.project_upload),
+                mCtx.getString(R.string.project_uploaded)
         );
         fd.show(mCtx.getFragmentManager(), "title");
 
@@ -182,8 +182,8 @@ public class TranslationExchangeExport extends Export implements UploadStatusDel
         }
 
         FeedbackDialog fd = FeedbackDialog.newInstance(
-                "Project upload",
-                "Project upload failed: " + message
+                mCtx.getString(R.string.project_upload),
+                mCtx.getString(R.string.project_upload_failed, message)
         );
         fd.show(mCtx.getFragmentManager(), "UPLOAD_FEEDBACK");
         this.onComplete(EXPORT_UPLOAD_ID);

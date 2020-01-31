@@ -7,6 +7,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.project.Project;
 
 /**
@@ -69,19 +70,19 @@ public class CompileDialog extends DialogFragment {
         // }
         String message;
         if (mAlreadyCompiled) {
-            message = "Re-compiling a chapter will over-write the current audio and reset the checking level.";
+            message = getString(R.string.recompile_chapters_message);
         } else {
-            message = "Compile all units into one chapter audio?";
+            message = getString(R.string.compile_chapters_message);
         }
         return new AlertDialog.Builder(getActivity())
-            .setTitle("Warning")
+            .setTitle(getString(R.string.warning))
             .setMessage(message)
-            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     mListener.onPositiveClick(CompileDialog.this);
                 }
             })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     mListener.onNegativeClick(CompileDialog.this);
                 }

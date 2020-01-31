@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/default_padding_l"
-        android:text="Chapter"
+        android:text="@string/chapter_title"
         android:textColor="@color/text_light"
         android:textSize="@dimen/text_size_m" />
 
@@ -63,7 +63,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/default_padding_l"
-        android:text="Chunk"
+        android:text="@string/chunk_title"
         android:textColor="@color/text_light"
         android:textSize="@dimen/text_size_m" />
 

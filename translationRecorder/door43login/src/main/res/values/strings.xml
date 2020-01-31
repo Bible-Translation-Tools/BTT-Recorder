@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <!-- The app name -->
-    <string name="app_name" translatable="false">translationStudio</string>
     <string name="title_projects">Project</string>
-    <string name="title_frames">Frame</string>
     <!-- Acknowlogment or an affirmative statement -->
     <string name="label_ok">OK</string>
     <!-- Close a message/notification/dialog, but without implying an affirmative statement -->
@@ -116,8 +113,8 @@
     <string name="submitting_security_keys">Transferring security keys</string>
     <string name="error_missing_ssh_keys" translatable="false">The ssh keys have not been generated</string>
     <string name="choose_file">Choose file</string>
-    <string name="choose_source_language">Choose Source</string>
-    <string name="choose_target_language">Choose Target</string>
+    <string name="choose_source_language">Choose Source Language</string>
+    <string name="choose_target_language">Choose Target Language</string>
     <string name="project_archive_missing" translatable="false">Project archive not found</string>
     <string name="search_language">Search languages</string>
     <string name="loading">Loading</string>
@@ -322,6 +319,7 @@
     <string name="duplicate_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g></string>
     <string name="Project">Project</string>
     <string name="language">Language</string>
+    <string name="book">Book</string>
     <string name="progress">Progress</string>
     <string name="choose_first_source_translation">Choose source translation(s) to begin reading and translating</string>
     <string name="choose_source_translations">Choose source translations</string>
@@ -356,7 +354,6 @@
 ]]>
     </string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="next_step">Next step</string>
     <string name="your_name">Your Name or Pseudonym</string>
     <string name="your_email">Your Email Address</string>

@@ -7,7 +7,7 @@
     <item
         android:id="@+id/set_units_checking_level"
         android:icon="@drawable/box_0_white"
-        android:title="Set Checking Level"
+        android:title="@string/set_checking_level"
         app:showAsAction="ifRoom"
         />
 

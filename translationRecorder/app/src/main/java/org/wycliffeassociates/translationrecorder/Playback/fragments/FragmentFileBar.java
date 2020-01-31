@@ -72,7 +72,7 @@ public class FragmentFileBar extends Fragment {
         args.putString(KEY_BOOK, book.toUpperCase());
         args.putString(KEY_CHAPTER_LABEL, chapterLabel);
         args.putString(KEY_CHAPTER_NUMBER, chapterNumber);
-        args.putString(KEY_UNIT_LABEL, Utils.capitalizeFirstLetter(unitLabel));
+        args.putString(KEY_UNIT_LABEL, unitLabel);
         args.putString(KEY_UNIT_NUMBER, unitNumber);
         args.putSerializable(KEY_UNIT_TYPE, unitType);
         f.setArguments(args);

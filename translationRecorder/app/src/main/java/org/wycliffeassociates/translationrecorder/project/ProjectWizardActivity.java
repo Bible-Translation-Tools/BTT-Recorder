@@ -71,7 +71,7 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         setContentView(R.layout.activity_scrollable_list);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("New Project");
+            getSupportActionBar().setTitle(R.string.new_project);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -213,31 +213,31 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
             case TARGET_LANGUAGE:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(Language.getLanguages(db), this))
-                        .setSearchHint("Choose Target Language:")
+                        .setSearchHint(getString(R.string.choose_target_language) + ":")
                         .build();
                 break;
             case PROJECT:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getAnthologiesList(), this))
-                        .setSearchHint("Choose a Project")
+                        .setSearchHint(getString(R.string.choose_project))
                         .build();
                 break;
             case BOOK:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getBooksList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose a Book")
+                        .setSearchHint(getString(R.string.choose_book))
                         .build();
                 break;
             case SOURCE_TEXT:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getVersionsList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose Translation Type")
+                        .setSearchHint(getString(R.string.choose_translation_type))
                         .build();
                 break;
             case MODE:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getModeList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose a Mode")
+                        .setSearchHint(getString(R.string.choose_mode))
                         .build();
                 break;
             default:
@@ -271,16 +271,17 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     }
 
     private Mode[] getModeList(String anthologySlug){
-        Mode[] mode = db.getModes(anthologySlug);
-        return mode;
+        Mode[] modes = db.getModes(anthologySlug);
+        return modes;
     }
 
     public static void displayProjectExists(Context context){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Project Already Exists!");
-        builder.setMessage("A project already exists for that language, book, and version.\n" +
-                "If you would like to switch recording modes, please delete the project before creating it again.");
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.project_exists);
+        builder.setMessage(
+                TranslationRecorderApp.getContext().getResources().getString(R.string.project_exists_message)
+        );
+        builder.setPositiveButton(context.getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();

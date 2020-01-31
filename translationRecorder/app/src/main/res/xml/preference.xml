@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     >
     <PreferenceCategory
-        android:title="BTT Recorder Settings"
+        android:title="@string/app_settings"
         android:key="pref_key_app_settings"
         android:layout="@layout/custom_pref_category">
 
@@ -11,7 +11,7 @@
         <PreferenceScreen
             android:key="pref_global_src_loc"
             android:layout="@layout/custom_pref"
-            android:title="Source Audio Location"
+            android:title="@string/source_audio_location"
             android:summary="/storage/emulated/0/BTTRecorder"
             android:defaultValue="/storage/emulated/0/BTTRecorder">
             <intent
@@ -22,7 +22,7 @@
         <PreferenceScreen
             android:key="pref_global_lang_src"
             android:layout="@layout/custom_pref"
-            android:title="Source Language"
+            android:title="@string/source_language"
             android:summary="@string/pref_default_lang"
             android:defaultValue="@string/pref_default_lang">
         </PreferenceScreen>
@@ -30,25 +30,25 @@
         <PreferenceScreen
             android:key="pref_add_temp_language"
             android:layout="@layout/custom_pref"
-            android:title="Add Temporary Language">
+            android:title="@string/add_temp_language">
         </PreferenceScreen>
 
         <PreferenceScreen
             android:key="pref_update_languages"
             android:layout="@layout/custom_pref"
-            android:title="Update Languages From translationDatabase">
+            android:title="@string/update_languege_from_td">
         </PreferenceScreen>
 
         <PreferenceScreen
                 android:key="pref_update_languages_from_file"
                 android:layout="@layout/custom_pref"
-                android:title="Update Languages From file">
+                android:title="@string/update_languege_from_file">
         </PreferenceScreen>
 
         <PreferenceScreen
                 android:key="pref_upload_server"
                 android:layout="@layout/custom_pref"
-                android:title="Change Upload Server"
+                android:title="@string/change_upload_server"
                 android:summary="@string/pref_upload_server"
                 android:defaultValue="@string/pref_upload_server">
         </PreferenceScreen>
@@ -56,12 +56,12 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="BTT Recorder Version"
+        android:title="@string/app_version"
         android:key="pref_key_app_version"
         android:layout="@layout/custom_pref_category">
         <EditTextPreference
             android:key="version"
-            android:title="Version"
+            android:title="@string/version"
             android:enabled="false"
             android:selectable="false"
             android:persistent="false"

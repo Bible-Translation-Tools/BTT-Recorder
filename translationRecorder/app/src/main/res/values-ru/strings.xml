@@ -1,0 +1,141 @@
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <string name="choose_language">Выберите язык</string>
+    <string name="choose_target_book">Выберите целевую книгу</string>
+
+
+    <string name="app_name">BTT Recorder</string>
+    <string name="folder_name">BTTRecorder</string>
+    <string name="action_settings">Настройки</string>
+	
+    <!-- Record.java -->
+    <string name="resume_recording">Возобновить Запись</string>
+    <string name="start_recording">Начать Запись</string>
+    <string name="stop_recording">Остановить Запись</string>
+    <string name="playing_audio">Воспроизведение Записи</string>
+    <string name="pause_recording">Пауза</string>
+
+    <!-- DIALOGUE -->
+    <string name="diag_export">Экспортировать Аудио</string>
+    <string name="exit">Вы уверены, что хотите выйти без сохранения?</string>
+    <string name="record_over">Вы уверены, что хотите перезаписать без сохранения?</string>
+    <string name="dialog_confirm_delete">Удалить записи?</string>
+    <string name="dialog_confirm_delete_yes">ДА</string>
+    <string name="dialog_confirm_delete_no">НЕТ</string>
+
+    <!-- DESCRIPTIONS -->
+    <string name="files_content_desc">Кнопка Файлы</string>
+    <string name="settings_content_desc">Кнопка Настройки</string>
+    <string name="record_content_desc">Кнопка Запись</string>
+    <string name="img_button_desc">Кнопка Изображение</string>
+
+    <!-- EXPORT/SHARE OPTIONS -->
+    <string name="export_sd_card">Карта SD</string>
+    <string name="export_dir">Папка</string>
+    <string name="export_bluetooth">Bluetooth</string>
+    <string name="export_wifi">Wi-Fi Direct</string>
+    <string name="export_upload">Выгрузить</string>
+    <string name="export_other">Приложение</string>
+
+    <!-- SETTINGS (Values) -->
+    <string name="pref_default_lang">en</string>
+    <string name="pref_default_book">gen</string>
+    <string name="pref_default_chapter">1</string>
+    <string name="pref_default_chunk">1</string>
+    <string name="pref_default_take">1</string>
+    <string name="pref_default_filename">"en_udb_gen_1_1-1"</string>
+    <string name="pref_ftp_server_value">ts.door43.org</string>
+    <string name="pref_ftp_directory_value">/BTTRecorder</string>
+    <string name="pref_ftp_username_value">unfoldingWord-1</string>
+    <string name="pref_ftp_password_value">trisawesome</string>
+    <string name="pref_upload_server">opentranslationtools.org</string>
+    <string name="action_search">Поиск</string>
+    <string name="menu_update">Обновить</string>
+
+    <!-- SETTINGS (Summaries) -->
+    <string name="pref_default_folder_summary"></string>
+    <string name="pref_ftp_server_summary"></string>
+    <string name="pref_ftp_directory_summary">@string/pref_ftp_directory_value</string>
+    <string name="pref_ftp_username_summary">@string/pref_ftp_username_value</string>
+    <string name="pref_ftp_password_summary">@string/pref_ftp_password_value</string>
+    <string name="pref_sync_summary">Синхронизировать данные с сервером</string>
+    <string name="pref_restore_default_summary">Восстановить настройки к первоначальным значениям</string>
+    <string name="unit">Режим</string>
+    <string name="translation_type">Тип перевода</string>
+
+    <!-- LOGIN -->
+    <string name="record">Запись</string>
+    <string name="record_name">Как вас зовут?</string>
+    <string name="privacy">Если вас заботит приватность и безопастность, пожалуйста используйте псевдоним</string>
+    <string name="txt_record"><u>Запись</u></string>
+    <string name="txt_btn_redo">Снова</string>
+    <string name="txt_btn_yes">Да</string>
+    <string name="new_user"><u>Новый пользователь</u></string>
+    <string name="available_users">Доступные пользователи</string>
+
+    <string name="is_this_ok_txt">Продолжить?</string>
+    <string name="permissions_denied_title">Требуются разрешения</string>
+    <string name="permissions_denied_message">Пожалуйста предоставьте разрешения для работы с BTT Recorder</string>
+    <string name="open_permissions">Открыть настройки разрешений</string>
+
+    <string name="chapter_title">Глава</string>
+    <string name="chunk_title">Отрывок</string>
+    <string name="new_project">Новый Проект</string>
+    <string name="project_management">Управление Проектами</string>
+    <string name="settings_menu">Настройки</string>
+    <string name="logout_menu">Выход</string>
+    <string name="help_menu">Помощь</string>
+    <string name="set_chapter_level">Установить уровень глав</string>
+    <string name="compile_chapters">Соединить главы</string>
+    <string name="set_checking_level">Установить уровень проверки</string>
+    <string name="source_audio_location">Местоположение исходного аудио</string>
+    <string name="source_audio_language">Язык исходного аудио</string>
+    <string name="translator">переводчик</string>
+    <string name="app_settings">BTT Recorder Настройки</string>
+    <string name="source_language">Исходный язык</string>
+    <string name="add_temp_language">Добавить временный язык</string>
+    <string name="update_languege_from_td">Обновить языки из translationDatabase</string>
+    <string name="update_languege_from_file">Обновить языки из файла</string>
+    <string name="change_upload_server">Изменить сервер загрузки</string>
+    <string name="app_version">BTT Recorder Версия</string>
+    <string name="project_exists">Такой проект уже существует!</string>
+    <string name="choose_project">Выберите проект</string>
+    <string name="choose_book">Выберите книгу</string>
+    <string name="choose_translation_type">Выберите тип перевода</string>
+    <string name="choose_mode">Выберите режим</string>
+    <string name="source_audio">Исходное аудио</string>
+    <string name="select_source_language">Выберите исходный язык</string>
+    <string name="select_source_location">Выберите исходное аудио</string>
+    <string name="source_audio_not_found">Исходное аудио не найдено в месте по умолчанию. Если вы хотите, чтобы исходное аудио использовалось в вашем проекте, выберите исходный язык, а затем найдите соответствующую папку исходного аудио на вашем устройстве или SD-карте с помощью кнопок ниже.</string>
+    <string name="project_exists_message">Проект для этого языка, книги и версии уже существует.\nЕсли вы хотите переключить режим, удалите проект и создайте снова.</string>
+    <string name="no_source_audio">Исходное аудио отстутствует</string>
+    <string name="left_title">Осталось</string>
+    <string name="label_take_detailed">Дубль <xliff:g example="1" id="take">%1$s</xliff:g> из <xliff:g example="1" id="take">%2$s</xliff:g></string>
+    <string name="delete_take">Удалить дубль?</string>
+    <string name="rate_take">Оцените этот дубль</string>
+    <string name="warning">Внимание</string>
+    <string name="compile_chapters_message">Объединить все элементы в аудио файл целой главы?</string>
+    <string name="recompile_chapters_message">Повторное объединение главы перезапишет существующее аудио и сбросит уровень проверки.</string>
+    <string name="compiling_chapter">Объединение главы</string>
+    <string name="upload_step_one">Стадия 1/3: Создание манифеста</string>
+    <string name="upload_step_two">Стадия 2/3: Упаковка файлов для отправки</string>
+    <string name="upload_step_three">Стадия 3/3: Отправка</string>
+    <string name="packaging_files">Упаковка файлов для отправки</string>
+    <string name="project_upload">Отправка проекта</string>
+    <string name="project_upload_failed">Отправка проекта не удалась: <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="resyncing_database">Синхронизация базы данных</string>
+    <string name="exporting_source_audio">Экспортирование исходного аудио</string>
+    <string name="delete_project">Удаление проекта</string>
+    <string name="confirm_delete_project_alt">Удаление этого проекта также удалит его отрывки и стихи.\n\nВы уверены?</string>
+    <string name="source_generation_complete">Создание исходного аудио завершено.</string>
+    <string name="source_generation_failed">Создание исходного аудио не удалось.</string>
+    <string name="language_code_exists">Такой код языка уже существует!</string>
+    <string name="language_code_length_tip">Код языка должен состоять из 6 символов!</string>
+    <string name="language_name">Название языка: </string>
+    <string name="language_code">Код языка: </string>
+    <string name="add">Добавить</string>
+    <string name="languages_updated">Языки были успешно обновлены!</string>
+    <string name="invalid_json">Неверный файл json</string>
+    <string name="server_name">Имя сервера: </string>
+    <string name="restore_defaults">Восстановить</string>
+    <string name="save">Сохранить</string>
+</resources>

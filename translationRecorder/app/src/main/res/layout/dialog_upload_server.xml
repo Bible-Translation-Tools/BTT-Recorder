@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Change Upload Server"
+            android:text="@string/change_upload_server"
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/abc_text_size_large_material"
@@ -39,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body"
-                    android:text="Server Name:"
+                    android:text="@string/server_name"
                     android:paddingRight="10dp"/>
                 <EditText
                     android:id="@+id/server_name"
@@ -68,14 +68,14 @@
                     android:id="@+id/restore_default"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Restore defaults"
+                    android:text="@string/restore_defaults"
                     android:layout_marginLeft="@dimen/default_padding_m"
                     style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
                     android:textColor="@color/secondary"/>
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Save"
+                android:text="@string/save"
                 android:id="@+id/save_button"
                 android:layout_marginLeft="@dimen/default_padding_m"
                 style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"

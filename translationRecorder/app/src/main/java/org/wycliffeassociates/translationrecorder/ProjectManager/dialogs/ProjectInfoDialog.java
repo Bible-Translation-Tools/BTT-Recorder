@@ -107,7 +107,7 @@ public class ProjectInfoDialog extends DialogFragment {
 
         setSourceAudioTextInfo();
 
-        mUnitType.setText(mProject.getModeName());
+        mUnitType.setText(mProject.getLocalizedModeName(getActivity()));
 
         ImageButton deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
         ImageButton sourceButton = (ImageButton) view.findViewById(R.id.export_as_source_btn);

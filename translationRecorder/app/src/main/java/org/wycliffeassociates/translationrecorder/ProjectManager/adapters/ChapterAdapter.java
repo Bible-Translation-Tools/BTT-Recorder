@@ -88,7 +88,9 @@ public class ChapterAdapter extends ArrayAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.mChapterView.setText("Chapter " + (position + 1));
+        holder.mChapterView.setText(
+                mCtx.getString(R.string.label_chapter_title_detailed, String.valueOf((position + 1)))
+        );
         holder.mBook.setVisibility(View.INVISIBLE);
         holder.mInfo.setVisibility(View.INVISIBLE);
 

@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 
+import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
@@ -153,6 +154,21 @@ public class Project implements Parcelable {
 
     public String getModeName() {
         return (mMode == null) ? "" : mMode.getName();
+    }
+
+    public String getLocalizedModeName(Context ctx) {
+        String chunk = ctx.getString(R.string.chunk_title);
+        String verse = ctx.getString(R.string.title_verse);
+        String modeName = getModeName();
+
+        switch (modeName) {
+            case Mode.CHUNK:
+                return chunk;
+            case Mode.VERSE:
+                return verse;
+            default:
+                return modeName;
+        }
     }
 
     public String getContributors() {
