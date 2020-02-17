@@ -214,30 +214,4 @@ public class ProjectFileUtils {
     public static String getNameWithoutTake(String file){
         return file.split("(_t([\\d]{2}))?(.wav)?$")[0];
     }
-
-    //Extracts the identifiable section of a filename for source audio
-    public static String getChapterAndVerseSection(String name) {
-        String CHAPTER = "c([\\d]{2,3})";
-        String VERSE = "v([\\d]{2,3})(-([\\d]{2,3}))?";
-        Pattern chapterAndVerseSection = Pattern.compile("(" + CHAPTER + "_" + VERSE + ")");
-        Matcher matcher = chapterAndVerseSection.matcher(name);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return null;
-        }
-    }
-
-    //Extracts the identifiable section of a filename for source audio
-    // For OBS project
-    public static String getVerseSection(String name) {
-        String VERSE = "(v([\\d]{2,3})(-([\\d]{2,3}))?)";
-        Pattern verseSection = Pattern.compile(VERSE);
-        Matcher matcher = verseSection.matcher(name);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return null;
-        }
-    }
 }
