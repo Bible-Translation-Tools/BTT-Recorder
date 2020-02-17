@@ -21,8 +21,8 @@ android {
         applicationId "bible.translationtools.recorder"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 24
-        versionName "1.4.4-rc"
+        versionCode 25
+        versionName "1.4.5-rc"
         versionNameSuffix
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -68,6 +68,7 @@ android {
 
 repositories {
     maven { url 'http://guardian.github.com/maven/repo-releases' }
+    maven { url "https://jitpack.io" }
     mavenCentral()
 
     dependencies {
@@ -113,7 +114,7 @@ repositories {
             exclude module: 'recyclerview-v7'
         }
 
-        implementation files('src/main/lib/archive_of_holding_0.9.1.jar')
+        implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.2'
         implementation files('src/main/lib/jdenticon-kotlin.jar')
 
         implementation project(':widgets')

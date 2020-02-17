@@ -1,7 +1,7 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.tasks;
 
 import com.door43.tools.reporting.Logger;
-import com.wycliffeassociates.io.ArchiveOfHolding;
+import org.wycliffeassociates.io.ArchiveOfHolding;
 
 import org.apache.commons.io.FileUtils;
 import org.wycliffeassociates.translationrecorder.Utils;

@@ -14,9 +14,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
-import com.wycliffeassociates.io.ArchiveOfHolding;
-import com.wycliffeassociates.io.ArchiveOfHoldingEntry;
-import com.wycliffeassociates.io.LanguageLevel;
+import org.wycliffeassociates.io.ArchiveOfHolding;
+import org.wycliffeassociates.io.ArchiveOfHoldingEntry;
+import org.wycliffeassociates.io.ImportantSection;
+import org.wycliffeassociates.io.LanguageLevel;
 
 import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
@@ -131,13 +132,8 @@ public class SourceAudio extends LinearLayout {
         ArchiveOfHolding aoh = new ArchiveOfHolding(is, ll);
         //The archive of holding entry requires the path to look for the file, so that part of the name can be ignored
         //chapter and verse information is all that is necessary to be identifiable at this point.
-        String importantSection = mProject.getAnthologySlug().equals("obs")
-                ? ProjectFileUtils.getVerseSection(mFileName)
-                : ProjectFileUtils.getChapterAndVerseSection(mFileName);
+        ImportantSection importantSection = new ImportantSection(mFileName);
 
-        if(importantSection == null) {
-            return false;
-        }
         ArchiveOfHoldingEntry entry = aoh.getEntry(importantSection, sourceLanguage,
                 ll.getVersionSlug(sourceLanguage), mProject.getBookSlug(), ProjectFileUtils.chapterIntToString(mProject, mChapter));
         if(entry == null){
