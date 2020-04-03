@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">Настройки</string>
@@ -5,16 +6,17 @@
     <string name="help_menu">Помощь</string>
     <string name="project_management">Управление Проектами</string>
     <string name="new_project">Новый Проект</string>
-    <string name="choose_project">Выберите проект</string>
     <string name="choose_target_language">Выберите целевой язык</string>
+    <string name="choose_project">Выберите проект</string>
     <string name="choose_book">Выберите книгу</string>
     <string name="choose_translation_type">Выберите тип перевода</string>
     <string name="choose_mode">Выберите режим</string>
-
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
     <string name="delete_take">Удалить запись?</string>
     <string name="rate_take">Оцените эту запись</string>
     <string name="label_take_detailed">Запись <xliff:g example="1" id="take">%1$s</xliff:g> из <xliff:g example="1" id="take">%2$s</xliff:g></string>
-
+    <string name="label_chapter_title_detailed">Глава <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">Проект</string>
     <string name="project_upload">Отправка проекта</string>
     <string name="project_uploaded">Проект успешно загружен</string>
@@ -26,15 +28,11 @@
     <string name="delete_project">Удаление проекта</string>
     <string name="confirm_delete_project_alt">Удаление этого проекта также удалит его отрывки и стихи.\n\nВы уверены?</string>
     <string name="target_language">Целевой язык</string>
-
-    <string name="set_chapter_level">Установить уровень главы</string>
-    <string name="compile_chapters">Соединить главы</string>
     <string name="set_checking_level">Установить уровень проверки</string>
     <string name="warning">Внимание</string>
     <string name="compile_chapters_message">Объединить все элементы в аудио файл целой главы?</string>
     <string name="recompile_chapters_message">Повторное объединение главы перезапишет существующее аудио и сбросит уровень проверки.</string>
     <string name="compiling_chapter">Объединение главы</string>
-
     <string name="source_audio">Исходное аудио</string>
     <string name="select_source_language">Выберите исходный язык</string>
     <string name="select_source_location">Выберите исходное аудио</string>
@@ -42,7 +40,6 @@
     <string name="source_audio_location">Местоположение исходного аудио</string>
     <string name="source_audio_language">Язык исходного аудио</string>
     <string name="choose_source_language">Выберите исходный язык</string>
-
     <string name="app_settings">BTT Recorder Настройки</string>
     <string name="source_language">Исходный язык</string>
     <string name="add_temp_language">Добавить временный язык</string>
@@ -61,26 +58,15 @@
     <string name="restore_defaults">Восстановить</string>
     <string name="save">Сохранить</string>
     <string name="version">Версия</string>
-
+    <string name="label_skip">Пропустить</string>
     <string name="chapter_title">Глава</string>
     <string name="chunk_title">Отрывок</string>
     <string name="title_verse">Стих</string>
-
     <!-- DESCRIPTIONS -->
-    <string name="files_content_desc">Кнопка Файлы</string>
-    <string name="record_content_desc">Кнопка Запись</string>
-
     <!-- SETTINGS (Values) -->
-    <string name="folder_name" translatable="false">BTTRecorder</string>
-    <string name="pref_default_lang" translatable="false">en</string>
-    <string name="pref_upload_server">opentranslationtools.org</string>
-    <string name="action_search">Поиск</string>
-    <string name="menu_update">Обновить</string>
-
     <!-- SETTINGS (Summaries) -->
     <string name="unit">Режим</string>
     <string name="translation_type">Тип перевода</string>
-
     <!-- LOGIN -->
     <string name="record_name">Как вас зовут?</string>
     <string name="privacy">Если вас заботит приватность и безопастность, пожалуйста используйте псевдоним</string>
@@ -90,11 +76,9 @@
     <string name="new_user"><u>Новый пользователь</u></string>
     <string name="available_users">Доступные пользователи</string>
     <string name="is_this_ok_txt">Продолжить?</string>
-
     <string name="permissions_denied_title">Требуются разрешения</string>
     <string name="permissions_denied_message">Пожалуйста предоставьте разрешения для работы с BTT Recorder</string>
     <string name="open_permissions">Открыть настройки разрешений</string>
-
     <string name="project_exists">Такой проект уже существует!</string>
     <string name="project_exists_message">Проект для этого языка, книги и версии уже существует.\nЕсли вы хотите переключить режим, удалите проект и создайте снова.</string>
     <string name="no_source_audio">Исходное аудио отстутствует</string>
@@ -103,8 +87,7 @@
     <string name="exporting_source_audio">Экспортирование исходного аудио</string>
     <string name="source_generation_complete">Создание исходного аудио завершено.</string>
     <string name="source_generation_failed">Создание исходного аудио не удалось.</string>
-
-    <string name="label_ok">OK</string>
+    <string name="label_ok">ОК</string>
     <string name="label_close">Закрыть</string>
     <string name="title_cancel">Отмена</string>
     <string name="please_wait">Пожалуйста, подождите</string>

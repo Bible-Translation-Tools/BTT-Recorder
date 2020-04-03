@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <!-- Local changes are being uploaded to the server -->
-    <string name="uploading">Отправка</string>
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Условия использования</string>
     <string name="terms">Используя это приложение вы согласны с утверждением веры и руководством по переводу, а также распространять свою работу по условиям международной лицензии Creative Commons Attribution-ShareAlike 4.0.</string>
-    <string name="label_chapter_title_detailed">Глава <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="view_license_agreement">Лицензионное соглашение</string>
     <string name="license_deny">Нет, спасибо</string>
     <string name="license_accept">Я согласен</string>
     <string name="view_statement_of_faith">Утверждение веры</string>
     <string name="view_translation_guidelines">Руководство для перевода</string>
-    <string name="label_skip">Пропустить</string>
-
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license">
-<![CDATA[<h2>You are free to:</h2>
+    <string name="license"><![CDATA[<h2>You are free to:</h2>
 <p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
 <h2>Under the following terms:</h2>
 <p>
@@ -24,14 +18,9 @@
     <br/><b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
 </p>
 <h2>Notices:</h2>
-<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]>
-    </string>
-    <string name="yes">Да</string>
-    <string name="no">Нет</string>
+<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines" translatable="false">
-<![CDATA[
-<h1>Translation Guidelines</h1>
+    <string name="translation_guidlines"><![CDATA[<h1>Translation Guidelines</h1>
 <p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the <xliff:g id="organization_name">Wycliffe Associates</xliff:g> project. All translation activities are carried out according to these common guidelines.</em></p>
 <p>
   <strong>Accurate</strong> - Translate accurately, without detracting from, changing, or adding to the meaning of the original text. Translated content should faithfully communicate as precisely as possible the meaning of the original text as it would have been understood by the original audience.
@@ -56,13 +45,9 @@
 <p>
   <strong>Natural</strong> - Using current forms of the language, and
   <br/><br/><strong>Clear</strong> - Strives for the highest level of comprehension by hearers.
-</p>
-]]>
-    </string>
+</p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith" translatable="false">
-<![CDATA[
-<h1>Statement of Faith</h1>
+    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
 <p>
   The divine inspiration and consequent authority of the whole canonical Scriptures.
   <br/><br/>The doctrine of the Trinity—God is one, existing in three persons, the Father, the Son and the Holy Spirit.
@@ -71,7 +56,5 @@
   <br/><br/>The doctrine of justification by faith.
   <br/><br/>The resurrection of the body, in the case of the just and the unjust.
   <br/><br/>The eternal life of the saved and the eternal punishment of the lost.
-</p>
-]]>
-    </string>
+</p>]]></string>
 </resources>
