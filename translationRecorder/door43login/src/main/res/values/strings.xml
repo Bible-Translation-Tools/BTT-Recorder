@@ -23,7 +23,7 @@
 <p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]>
     </string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines" translatable="false">
+    <string name="translation_guidlines">
 <![CDATA[
 <h1>Translation Guidelines</h1>
 <p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the <xliff:g id="organization_name">Wycliffe Associates</xliff:g> project. All translation activities are carried out according to these common guidelines.</em></p>
@@ -54,7 +54,7 @@
 ]]>
     </string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith" translatable="false">
+    <string name="statement_of_faith">
 <![CDATA[
 <h1>Statement of Faith</h1>
 <p>
