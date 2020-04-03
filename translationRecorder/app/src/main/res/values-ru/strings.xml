@@ -11,12 +11,12 @@
     <string name="choose_book">Выберите книгу</string>
     <string name="choose_translation_type">Выберите тип перевода</string>
     <string name="choose_mode">Выберите режим</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
     <string name="delete_take">Удалить запись?</string>
     <string name="rate_take">Оцените эту запись</string>
     <string name="label_take_detailed">Запись <xliff:g example="1" id="take">%1$s</xliff:g> из <xliff:g example="1" id="take">%2$s</xliff:g></string>
-    <string name="label_chapter_title_detailed">Chapter <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Глава <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">Проект</string>
     <string name="project_upload">Отправка проекта</string>
     <string name="project_uploaded">Проект успешно загружен</string>
@@ -58,7 +58,7 @@
     <string name="restore_defaults">Восстановить</string>
     <string name="save">Сохранить</string>
     <string name="version">Версия</string>
-    <string name="label_skip">Skip</string>
+    <string name="label_skip">Пропустить</string>
     <string name="chapter_title">Глава</string>
     <string name="chunk_title">Отрывок</string>
     <string name="title_verse">Стих</string>
@@ -87,7 +87,7 @@
     <string name="exporting_source_audio">Экспортирование исходного аудио</string>
     <string name="source_generation_complete">Создание исходного аудио завершено.</string>
     <string name="source_generation_failed">Создание исходного аудио не удалось.</string>
-    <string name="label_ok">OK</string>
+    <string name="label_ok">ОК</string>
     <string name="label_close">Закрыть</string>
     <string name="title_cancel">Отмена</string>
     <string name="please_wait">Пожалуйста, подождите</string>
