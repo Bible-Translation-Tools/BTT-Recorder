@@ -259,7 +259,6 @@ public class PlaybackActivity extends Activity implements
                 chapterLabel,
                 plugin.getChapterName(mChapter),
                 mProject.getLocalizedModeName(this),
-                //getUnitLabel(),
                 plugin.getChunkName(),
                 mProject.getModeType()
         );

@@ -80,7 +80,6 @@ public class ProjectInfoDialog extends DialogFragment {
         mTitle = (TextView) view.findViewById(R.id.title);
         mProjectTitle = (TextView) view.findViewById(R.id.project_title);
         mLanguageTitle = (TextView) view.findViewById(R.id.language_title);
-        mTranslator = (TextView) view.findViewById(R.id.translators);
         mTranslationType = (TextView) view.findViewById(R.id.translation_type_title);
         mUnitType = (TextView) view.findViewById(R.id.unit_title);
         mSourceLanguage = (TextView) view.findViewById(R.id.source_audio_language);
@@ -91,12 +90,10 @@ public class ProjectInfoDialog extends DialogFragment {
         String bookCode = mProject.getBookSlug();
         String book = db.getBookName(bookCode);
         String translation = mProject.getVersionSlug();
-        String translators = mProject.getContributors();
 
         mTitle.setText(book + " - " + language);
         mProjectTitle.setText(book + " (" + bookCode + ")");
         mLanguageTitle.setText(language + " (" + languageCode + ")");
-        mTranslator.setText(translators);
         if (translation.equals("ulb")) {
             mTranslationType.setText("Unlocked Literal Bible (" + translation + ")");
         } else if (translation.equals("udb")) {
