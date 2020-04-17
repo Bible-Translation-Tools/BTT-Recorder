@@ -213,7 +213,7 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
             case TARGET_LANGUAGE:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(Language.getLanguages(db), this))
-                        .setSearchHint(getString(R.string.choose_target_language) + ":")
+                        .setSearchHint(getString(R.string.choose_target_language))
                         .build();
                 break;
             case PROJECT:

@@ -36,13 +36,13 @@
         <PreferenceScreen
             android:key="pref_update_languages"
             android:layout="@layout/custom_pref"
-            android:title="@string/update_languege_from_td">
+            android:title="@string/update_language_from_td">
         </PreferenceScreen>
 
         <PreferenceScreen
                 android:key="pref_update_languages_from_file"
                 android:layout="@layout/custom_pref"
-                android:title="@string/update_languege_from_file">
+                android:title="@string/update_language_from_file">
         </PreferenceScreen>
 
         <PreferenceScreen
