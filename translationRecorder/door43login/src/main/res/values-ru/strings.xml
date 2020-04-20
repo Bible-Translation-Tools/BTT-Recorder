@@ -2,7 +2,7 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Условия использования</string>
-    <string name="terms">Используя это приложение вы согласны с утверждением веры и руководством по переводу, а также распространять свою работу по условиям международной лицензии Creative Commons Attribution-ShareAlike 4.0.</string>
+    <string name="terms">Используя это приложение, вы согласны с утверждением веры и руководством по переводу, а также распространять свою работу по условиям международной лицензии Creative Commons Attribution-ShareAlike 4.0.</string>
     <string name="view_license_agreement">Лицензионное соглашение</string>
     <string name="license_deny">Нет, спасибо</string>
     <string name="license_accept">Я согласен</string>
