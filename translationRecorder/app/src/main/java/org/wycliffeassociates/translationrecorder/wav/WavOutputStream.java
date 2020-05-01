@@ -99,7 +99,6 @@ public class WavOutputStream extends OutputStream implements Closeable, AutoClos
         mOutputStream.flush();
         mOutputStream.close();
         mFile.finishWrite(mAudioDataLength);
-        updateHeader();
     }
 
     void updateHeader() throws IOException {
