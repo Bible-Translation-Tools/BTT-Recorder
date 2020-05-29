@@ -21,8 +21,8 @@ android {
         applicationId "bible.translationtools.recorder"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 25
-        versionName "1.4.5-rc"
+        versionCode 26
+        versionName "1.4.6"
         versionNameSuffix
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -34,7 +34,7 @@ android {
             release {
                 storeFile file(keystorePath)
                 storePassword storePass
-                keyAlias "translationRecorderAndroidKey"
+                keyAlias "key0"
                 keyPassword keyPass
             }
         } else {
