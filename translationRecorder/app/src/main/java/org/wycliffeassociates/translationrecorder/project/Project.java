@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 
+import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
@@ -25,13 +26,13 @@ public class Project implements Parcelable {
 
     public static final String PROJECT_EXTRA = "project_extra";
 
-    private Language mTargetLanguage;
-    private Language mSourceLanguage;
-    private Anthology mAnthology;
-    private Book mBook;
-    private Version mVersion;
-    private Mode mMode;
-    private FileName mFileName;
+    public Language mTargetLanguage;
+    public Language mSourceLanguage;
+    public Anthology mAnthology;
+    public Book mBook;
+    public Version mVersion;
+    public Mode mMode;
+    public FileName mFileName;
 
 
     String mContributors;
@@ -75,17 +76,15 @@ public class Project implements Parcelable {
         return pluginLoader.loadChunkPlugin(mAnthology, mBook, getModeType());
     }
 
-    public static Project getProjectFromPreferences(Context ctx) {
+    public static Project getProjectFromPreferences(Context ctx, ProjectDatabaseHelper db) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
         int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(ctx);
         Project project = db.getProject(projectId);
         return project;
     }
 
-    public void loadProjectIntoPreferences(Context ctx) {
+    public void loadProjectIntoPreferences(Context ctx, ProjectDatabaseHelper db) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(ctx);
         if(db.projectExists(this)) {
             int projectId = db.getProjectId(this);
             pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, projectId).commit();
@@ -98,6 +97,16 @@ public class Project implements Parcelable {
         } else {
             return false;
         }
+    }
+
+    public String getChapterFileName(int chapter) {
+        String chapterFileName = mTargetLanguage.getSlug() +
+                "_" + mAnthology.getSlug() +
+                "_" + mVersion.getSlug() +
+                "_" + mBook.getSlug() +
+                "_c" + String.format("%02d", chapter) +
+                ".wav";
+        return chapterFileName;
     }
 
     public String getFileName(int chapter, int ... verses){
@@ -145,6 +154,21 @@ public class Project implements Parcelable {
 
     public String getModeName() {
         return (mMode == null) ? "" : mMode.getName();
+    }
+
+    public String getLocalizedModeName(Context ctx) {
+        String chunk = ctx.getString(R.string.chunk_title);
+        String verse = ctx.getString(R.string.title_verse);
+        String modeName = getModeName();
+
+        switch (modeName) {
+            case Mode.CHUNK:
+                return chunk;
+            case Mode.VERSE:
+                return verse;
+            default:
+                return modeName;
+        }
     }
 
     public String getContributors() {

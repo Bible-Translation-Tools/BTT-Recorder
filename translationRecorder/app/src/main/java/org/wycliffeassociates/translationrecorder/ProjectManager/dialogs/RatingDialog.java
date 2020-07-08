@@ -54,14 +54,14 @@ public class RatingDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-            .setTitle("Rate this take")
+            .setTitle(getString(R.string.rate_take))
             .setView(inflater.inflate(R.layout.dialog_rating, null))
-            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     mListener.onPositiveClick(RatingDialog.this);
                 }
             })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     mListener.onNegativeClick(RatingDialog.this);
                 }

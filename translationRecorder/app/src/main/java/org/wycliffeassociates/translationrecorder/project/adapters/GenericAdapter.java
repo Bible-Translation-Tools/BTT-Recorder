@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.project.components.Mode;
 import org.wycliffeassociates.translationrecorder.project.components.ProjectComponent;
 
 import java.util.ArrayList;
@@ -68,9 +69,9 @@ public class GenericAdapter extends ArrayAdapter {
         }
 
         // render view
-        holder.mProjectComponentView.setText(getItem(position).getLabel());
+        String label = getLocalizedModeLabel(getContext(), getItem(position).getLabel());
+        holder.mProjectComponentView.setText(label);
         holder.mCodeView.setText(getItem(position).getSlug());
-
 
         LinearLayout ll = (LinearLayout)v.findViewById(R.id.scroll_list_item_layout);
         if(!mFilteredProjectComponents[position].displayItemIcon()) {
@@ -175,5 +176,19 @@ public class GenericAdapter extends ArrayAdapter {
                 return lhId.compareToIgnoreCase(rhId);
             }
         });
+    }
+
+    private String getLocalizedModeLabel(Context ctx, String label) {
+        String chunk = ctx.getString(R.string.chunk_title);
+        String verse = ctx.getString(R.string.title_verse);
+
+        switch (label) {
+            case Mode.CHUNK:
+                return chunk;
+            case Mode.VERSE:
+                return verse;
+            default:
+                return label;
+        }
     }
 }

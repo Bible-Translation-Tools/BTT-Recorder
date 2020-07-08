@@ -3,7 +3,7 @@ package org.wycliffeassociates.translationrecorder.Playback.fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,7 +72,7 @@ public class FragmentFileBar extends Fragment {
         args.putString(KEY_BOOK, book.toUpperCase());
         args.putString(KEY_CHAPTER_LABEL, chapterLabel);
         args.putString(KEY_CHAPTER_NUMBER, chapterNumber);
-        args.putString(KEY_UNIT_LABEL, Utils.capitalizeFirstLetter(unitLabel));
+        args.putString(KEY_UNIT_LABEL, unitLabel);
         args.putString(KEY_UNIT_NUMBER, unitNumber);
         args.putSerializable(KEY_UNIT_TYPE, unitType);
         f.setArguments(args);
@@ -92,9 +92,6 @@ public class FragmentFileBar extends Fragment {
         findViews();
         setText();
         setClickListeners();
-        if(mUnitType == ChunkPlugin.TYPE.SINGLE) {
-            mEnterVerseMarkerMode.setVisibility(View.GONE);
-        }
     }
 
     private void setText(){

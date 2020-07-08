@@ -5,7 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -13,10 +13,11 @@ import android.widget.TextView;
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport;
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export;
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.S3Export;
-import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity;
 
@@ -44,6 +45,7 @@ public class ProjectInfoDialog extends DialogFragment {
     Project mProject;
     ExportDelegator mExportDelegator;
     Export mExp;
+    ProjectDatabaseHelper db;
     public static final String PROJECT_FRAGMENT_TAG = "project_tag";
 
     TextView mTitle;
@@ -59,6 +61,7 @@ public class ProjectInfoDialog extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mExportDelegator = (ExportDelegator) activity;
+        db = ((TranslationRecorderApp)activity.getApplication()).getDatabase();
     }
 
     @Override
@@ -72,14 +75,11 @@ public class ProjectInfoDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         View view = getActivity().getLayoutInflater().inflate(R.layout.project_layout_dialog, null);
 
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(getActivity());
-
         mProject = getArguments().getParcelable(Project.PROJECT_EXTRA);
 
         mTitle = (TextView) view.findViewById(R.id.title);
         mProjectTitle = (TextView) view.findViewById(R.id.project_title);
         mLanguageTitle = (TextView) view.findViewById(R.id.language_title);
-        mTranslator = (TextView) view.findViewById(R.id.translators);
         mTranslationType = (TextView) view.findViewById(R.id.translation_type_title);
         mUnitType = (TextView) view.findViewById(R.id.unit_title);
         mSourceLanguage = (TextView) view.findViewById(R.id.source_audio_language);
@@ -90,12 +90,10 @@ public class ProjectInfoDialog extends DialogFragment {
         String bookCode = mProject.getBookSlug();
         String book = db.getBookName(bookCode);
         String translation = mProject.getVersionSlug();
-        String translators = mProject.getContributors();
 
         mTitle.setText(book + " - " + language);
         mProjectTitle.setText(book + " (" + bookCode + ")");
         mLanguageTitle.setText(language + " (" + languageCode + ")");
-        mTranslator.setText(translators);
         if (translation.equals("ulb")) {
             mTranslationType.setText("Unlocked Literal Bible (" + translation + ")");
         } else if (translation.equals("udb")) {
@@ -106,7 +104,7 @@ public class ProjectInfoDialog extends DialogFragment {
 
         setSourceAudioTextInfo();
 
-        mUnitType.setText(mProject.getModeName());
+        mUnitType.setText(mProject.getLocalizedModeName(getActivity()));
 
         ImageButton deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
         ImageButton sourceButton = (ImageButton) view.findViewById(R.id.export_as_source_btn);
@@ -135,13 +133,15 @@ public class ProjectInfoDialog extends DialogFragment {
         sdcard_button.setOnClickListener(localExport);
         folderButton.setOnClickListener(localExport);
 
-        publishButton.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener tEExport = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mExp = new S3Export(ProjectFileUtils.getProjectDirectory(mProject), mProject);
+                mExp = new TranslationExchangeExport(ProjectFileUtils.getProjectDirectory(mProject), mProject, db);
                 mExportDelegator.delegateExport(mExp);
             }
-        });
+        };
+        publishButton.setOnClickListener(tEExport);
+
 
         otherButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +179,6 @@ public class ProjectInfoDialog extends DialogFragment {
     }
 
     private void setSourceAudioTextInfo() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(getActivity());
         String sourceLanguageCode = mProject.getSourceLanguageSlug();
         String sourceLanguageName = (db.languageExists(sourceLanguageCode))? db.getLanguageName(sourceLanguageCode) : "";
         mSourceLanguage.setText(String.format("%s - (%s)", sourceLanguageName, sourceLanguageCode));
@@ -192,7 +191,6 @@ public class ProjectInfoDialog extends DialogFragment {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
             if(requestCode == SOURCE_AUDIO_REQUEST) {
-                ProjectDatabaseHelper db = new ProjectDatabaseHelper(getActivity());
                 int projectId = db.getProjectId(mProject);
                 Project updatedProject = data.getParcelableExtra(Project.PROJECT_EXTRA);
                 if(updatedProject.getSourceLanguageSlug() != null && !updatedProject.getSourceLanguageSlug().equals("")) {

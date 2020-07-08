@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/default_padding_m"
         android:layout_gravity="center_vertical"
-        android:text="No source audio"
+        android:text="@string/no_source_audio"
         android:textSize="@dimen/text_size_m"
         android:textColor="@color/text_light_disabled"
         android:textStyle="italic"
@@ -45,7 +45,9 @@
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/default_padding_m"
         android:layout_marginEnd="@dimen/default_padding_m"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:progressTint="@color/secondary"
+        android:thumbTint="@color/secondary" />
 
     <TextView
         android:id="@+id/timeDuration"

@@ -6,9 +6,9 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,7 +74,7 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
 //        actionBar.hide();
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Source Audio");
+            getSupportActionBar().setTitle(getString(R.string.source_audio));
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -189,7 +189,9 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         if (mFragment != null) {
             mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
         }
-        mFragment = new ScrollableListFragment.Builder(new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)).setSearchHint("Choose Source Language:").build();
+        mFragment = new ScrollableListFragment.Builder(
+                new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)
+        ).setSearchHint(getString(R.string.choose_source_language) + ":").build();
         mFragmentManager.beginTransaction().add(R.id.fragment_container, (Fragment) mFragment).commit();
         findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
     }

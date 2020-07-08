@@ -9,8 +9,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,9 +41,9 @@ public class DocumentationActivity extends AppCompatActivity {
             mNetworkStatus = "Offline";
         }
         if(mIsOnline) {
-            webView.loadUrl("http://tr-info.readthedocs.io/en/latest/");
+            webView.loadUrl("https://btt-recorder.readthedocs.io/en/latest/");
         } else {
-            webView.loadUrl("file:///android_asset/tr-info.readthedocs.io/index.html");
+            webView.loadUrl("file:///android_asset/btt-recorder.readthedocs.io/index.html");
         }
         Toolbar mToolbar = (Toolbar) findViewById(R.id.documentation_toolbar);
         setSupportActionBar(mToolbar);

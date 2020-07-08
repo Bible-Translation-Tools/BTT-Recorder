@@ -1,10 +1,11 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync;
 
 import android.app.FragmentManager;
-import android.content.Context;
 import android.os.Environment;
 
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog;
+import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.CorruptFileDialog;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.Project;
@@ -22,18 +23,22 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by sarabiaj on 9/27/2016.
  */
-public class DatabaseResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound, ProjectDatabaseHelper.OnCorruptFile {
-    Context mCtx;
+public class DatabaseResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound,
+        ProjectDatabaseHelper.OnCorruptFile {
     FragmentManager mFragmentManager;
+    ProjectDatabaseHelper db;
 
-    public DatabaseResyncTask(int taskId, Context ctx, FragmentManager fm){
+    public DatabaseResyncTask(int taskId, FragmentManager fm, ProjectDatabaseHelper db){
         super(taskId);
-        mCtx = ctx;
         mFragmentManager = fm;
+        this.db = db;
     }
 
     public List<File> getAllTakes(){
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
         File[] dirs = root.listFiles();
         List<File> files = new LinkedList<>();
         if(dirs != null && dirs.length > 0) {
@@ -57,9 +62,11 @@ public class DatabaseResyncTask extends Task implements ProjectDatabaseHelper.On
     }
 
     public Map<Project, File> getProjectDirectoriesOnFileSystem() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
         Map<Project, File> projectDirectories = new HashMap<>();
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
         File[] langs = root.listFiles();
         if (langs != null) {
             for(File lang : langs) {
@@ -102,7 +109,6 @@ public class DatabaseResyncTask extends Task implements ProjectDatabaseHelper.On
 
     @Override
     public void run() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
         List<Project> projects = db.getAllProjects();
         Map<Project, File> directoriesOnFs = getProjectDirectoriesOnFileSystem();
         Map<Project, File> directoriesFromDb = getProjectDirectories(projects);
@@ -127,7 +133,6 @@ public class DatabaseResyncTask extends Task implements ProjectDatabaseHelper.On
             }
         }
 
-        db.close();
         onTaskCompleteDelegator();
     }
 

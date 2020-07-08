@@ -7,9 +7,10 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.preference.PreferenceManager;
+import androidx.annotation.Nullable;
 import android.view.WindowManager;
 
 import com.door43.tools.reporting.Logger;
@@ -23,15 +24,18 @@ import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRe
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform;
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentSourceAudio;
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentVolumeBar;
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
+import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity;
+import org.wycliffeassociates.translationrecorder.project.*;
+import org.wycliffeassociates.translationrecorder.project.components.User;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
 import org.wycliffeassociates.translationrecorder.wav.WavMetadata;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +47,7 @@ import static org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
  * Created by sarabiaj on 2/20/2017.
  */
 
-public class RecordingActivity extends AppCompatActivity implements
+public class RecordingActivity extends PermissionActivity implements
         FragmentRecordingControls.RecordingControlCallback,
         InsertTaskFragment.Insert,
         FragmentRecordingFileBar.OnUnitChangedListener,
@@ -58,6 +62,7 @@ public class RecordingActivity extends AppCompatActivity implements
     private static final String STATE_INSERTING = "state_inserting";
 
     private Project mProject;
+    private User mUser;
     private int mInitialChapter;
     private int mInitialUnit;
     private WavFile mLoadedWav;
@@ -67,6 +72,9 @@ public class RecordingActivity extends AppCompatActivity implements
     private InsertTaskFragment mInsertTaskFragment;
     private boolean mInserting;
     private ProgressDialog mProgressDialog;
+    private ChunkPlugin chunkPlugin;
+    private ProjectProgress projectProgress;
+    private ProjectDatabaseHelper db;
 
     //Fragments
     private HashMap<Integer, Fragment> mFragmentHolder;
@@ -84,6 +92,8 @@ public class RecordingActivity extends AppCompatActivity implements
     private boolean isPausedRecording;
     private boolean isSaved;
     private boolean hasStartedRecording = false;
+
+    private String mContributor = "";
 
     public static Intent getInsertIntent(
             Context ctx,
@@ -132,13 +142,14 @@ public class RecordingActivity extends AppCompatActivity implements
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_recording_screen);
 
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+
         initialize(getIntent());
         initializeTaskFragment(savedInstanceState);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onPermissionsAccepted() {
         onlyVolumeTest = true;
         Intent volumeTestIntent = new Intent(this, WavRecorder.class);
         volumeTestIntent.putExtra(WavRecorder.KEY_VOLUME_TEST, onlyVolumeTest);
@@ -150,23 +161,26 @@ public class RecordingActivity extends AppCompatActivity implements
     public void onPause() {
         Logger.w(this.toString(), "Recording screen onPauseRecording");
         super.onPause();
-        if (isRecording) {
-            isRecording = false;
-            stopService(new Intent(this, WavRecorder.class));
-            RecordingQueues.stopQueues(this);
-        } else if (isPausedRecording) {
-            RecordingQueues.stopQueues(this);
-        } else if (!hasStartedRecording) {
-            stopService(new Intent(this, WavRecorder.class));
-            RecordingQueues.stopVolumeTest();
+        if(!getRequestingPermission().get()) {
+            if (isRecording) {
+                isRecording = false;
+                stopService(new Intent(this, WavRecorder.class));
+                RecordingQueues.stopQueues(this);
+            } else if (isPausedRecording) {
+                RecordingQueues.stopQueues(this);
+            } else if (!hasStartedRecording) {
+                stopService(new Intent(this, WavRecorder.class));
+                RecordingQueues.stopVolumeTest();
+            }
+            finish();
         }
-        finish();
     }
 
     @Override
     public void onBackPressed() {
         Logger.w(this.toString(), "User pressed back");
         if (!isSaved && hasStartedRecording) {
+            mFragmentRecordingControls.pauseRecording();
             ExitDialog exitDialog = ExitDialog.Build(
                     this,
                     DialogFragment.STYLE_NORMAL,
@@ -191,13 +205,10 @@ public class RecordingActivity extends AppCompatActivity implements
         super.onBackPressed();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private void initialize(Intent intent) {
+        initializeFromSettings();
         parseIntent(intent);
+        getCurrentUser();
         initializeFragments();
         attachFragments();
         mRecordingRenderer = new ActiveRecordingRenderer(
@@ -205,6 +216,19 @@ public class RecordingActivity extends AppCompatActivity implements
                 mFragmentVolumeBar,
                 mFragmentRecordingWaveform
         );
+    }
+
+    private void initializeFromSettings() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        mInitialChapter = pref.getInt(Settings.KEY_PREF_CHAPTER, DEFAULT_CHAPTER);
+        mInitialUnit = pref.getInt(Settings.KEY_PREF_CHUNK, DEFAULT_UNIT);
+        int userId = pref.getInt(Settings.KEY_USER, 1);
+        mUser = db.getUser(userId);
+    }
+
+    private void getCurrentUser() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        mContributor = String.valueOf(pref.getInt(Settings.KEY_PROFILE, 1));
     }
 
     private void initializeFragments() {
@@ -261,8 +285,9 @@ public class RecordingActivity extends AppCompatActivity implements
 
     private void parseIntent(Intent intent) {
         mProject = intent.getParcelableExtra(KEY_PROJECT);
-        mInitialChapter = intent.getIntExtra(KEY_CHAPTER, DEFAULT_CHAPTER);
-        mInitialUnit = intent.getIntExtra(KEY_UNIT, DEFAULT_UNIT);
+        //if a chapter and unit does not come from an intent, fallback to the ones from settings
+        mInitialChapter = intent.getIntExtra(KEY_CHAPTER, mInitialChapter);
+        mInitialUnit = intent.getIntExtra(KEY_UNIT, mInitialUnit);
         if (intent.hasExtra(KEY_WAV_FILE)) {
             mLoadedWav = intent.getParcelableExtra(KEY_WAV_FILE);
         }
@@ -271,7 +296,16 @@ public class RecordingActivity extends AppCompatActivity implements
             mInsertMode = true;
         }
         isChunkMode = mProject.getModeType() == ChunkPlugin.TYPE.MULTI;
+
+        try {
+            chunkPlugin = mProject.getChunkPlugin(new ChunkPluginLoader(this));
+            projectProgress = new ProjectProgress(mProject, db, chunkPlugin.getChapters());
+        } catch (IOException e) {
+            Logger.e(this.toString(), e.getMessage());
+        }
     }
+
+
 
     private void initializeTaskFragment(Bundle savedInstanceState) {
         FragmentManager fm = getFragmentManager();
@@ -323,6 +357,7 @@ public class RecordingActivity extends AppCompatActivity implements
                     file,
                     new WavMetadata(
                             mProject,
+                            mContributor,
                             String.valueOf(mFragmentRecordingFileBar.getChapter()),
                             startVerse,
                             endVerse
@@ -363,6 +398,7 @@ public class RecordingActivity extends AppCompatActivity implements
         isPausedRecording = false;
         addTakeToDb();
         mNewRecording.parseHeader();
+        saveLocationToPreferences();
         if (mInsertMode) {
             finalizeInsert(mLoadedWav, mNewRecording, mInsertLocation);
         } else {
@@ -378,8 +414,13 @@ public class RecordingActivity extends AppCompatActivity implements
         }
     }
 
+    private void saveLocationToPreferences() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref.edit().putInt(Settings.KEY_PREF_CHAPTER, mFragmentRecordingFileBar.getChapter()).commit();
+        pref.edit().putInt(Settings.KEY_PREF_CHUNK, mFragmentRecordingFileBar.getUnit()).commit();
+    }
+
     private void addTakeToDb() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         ProjectPatternMatcher ppm = mProject.getPatternMatcher();
         ppm.match(mNewRecording.getFile());
         db.addTake(
@@ -387,9 +428,13 @@ public class RecordingActivity extends AppCompatActivity implements
                 mNewRecording.getFile().getName(),
                 mNewRecording.getMetadata().getModeSlug(),
                 mNewRecording.getFile().lastModified(),
-                0
+                0,
+                mUser.getId()
         );
-        db.close();
+
+        if(projectProgress != null) {
+            projectProgress.updateProjectProgress();
+        }
     }
 
     private void finalizeInsert(WavFile base, WavFile insertClip, int insertFrame) {

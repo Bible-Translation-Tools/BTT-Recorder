@@ -68,14 +68,14 @@ public class CheckingDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                .setTitle("Set the checking level")
+                .setTitle(getString(R.string.set_checking_level))
                 .setView(inflater.inflate(R.layout.dialog_checking, null))
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         mListener.onPositiveClick(CheckingDialog.this);
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         mListener.onNegativeClick(CheckingDialog.this);
                     }

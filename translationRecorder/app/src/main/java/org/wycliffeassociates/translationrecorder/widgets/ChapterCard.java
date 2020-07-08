@@ -69,17 +69,15 @@ public class ChapterCard {
     private boolean mIsExpanded = false;
     private boolean mIconsClickable = true;
 
+    private ProjectDatabaseHelper db;
+
     // Constructor
-    public ChapterCard(Project proj, String title, int chapter, int unitCount) {
+    public ChapterCard(Project proj, String title, int chapter, int unitCount, ProjectDatabaseHelper db) {
         mProject = proj;
-//        try {
-//            mTitle = proj.getChunkPlugin(new ChunkPluginLoader(ctx)).getChapterName(chapter);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         mTitle = title;
         mChapter = chapter;
         mUnitCount = unitCount;
+        this.db = db;
     }
 
     public void refreshIsEmpty() {
@@ -94,7 +92,7 @@ public class ChapterCard {
         String chapterString = ProjectFileUtils.chapterIntToString(mProject, chapter);
         File chapterDir = new File(dir, chapterString);
         if (chapterDir.exists()) {
-            mChapterWav = new File(chapterDir, "chapter.wav");
+            mChapterWav = new File(chapterDir, mProject.getChapterFileName(chapter));
             if (mChapterWav.exists()) {
                 mIsCompiled = true;
                 return;
@@ -103,17 +101,17 @@ public class ChapterCard {
         mIsCompiled = false;
     }
 
-    public void refreshCheckingLevel(ChapterDB db, Project project, int chapter) {
+    public void refreshCheckingLevel(ChapterDB chapterDb, Project project, int chapter) {
         if (mIsCompiled) {
-            mCheckingLevel = db.checkingLevel(project, chapter);
+            mCheckingLevel = chapterDb.checkingLevel(project, chapter);
         }
     }
 
-    public void refreshProgress(Context context) {
+    public void refreshProgress() {
         int progress = calculateProgress();
         if (progress != mProgress) {
             setProgress(progress);
-            saveProgressToDB(context, progress);
+            saveProgressToDB(progress);
         }
     }
 
@@ -248,13 +246,11 @@ public class ChapterCard {
         return Math.round(((float) mUnitStarted / mUnitCount) * 100);
     }
 
-    private void saveProgressToDB(Context context, int progress) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(context);
+    private void saveProgressToDB(int progress) {
         if (db.chapterExists(mProject, mChapter)) {
             int chapterId = db.getChapterId(mProject, mChapter);
             db.setChapterProgress(chapterId, progress);
         }
-        db.close();
     }
 
 
@@ -342,11 +338,7 @@ public class ChapterCard {
         mCanCompile = mProgress == 100;
     }
 
-    public void compile(Context context) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(context);
-        List<String> files = db.getTakesForChapterCompilation(mProject, mChapter);
-
-
+    public void compile() {
         mIsCompiled = true;
         setCheckingLevel(0);
     }
@@ -408,7 +400,7 @@ public class ChapterCard {
         };
     }
 
-    public View.OnClickListener getExpandOnClick() {
+    public View.OnClickListener getExpandOnClick(final OnCardExpandedListener listener, final int position) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -420,6 +412,7 @@ public class ChapterCard {
                     collapse();
                 } else {
                     expand();
+                    listener.onCardExpanded(position);
                 }
             }
         };
@@ -440,7 +433,6 @@ public class ChapterCard {
                                 mChapterWav.delete();
                                 mIsCompiled = false;
                                 collapse();
-                                ProjectDatabaseHelper db = new ProjectDatabaseHelper(context);
                                 db.setCheckingLevel(mProject, mChapter, 0);
                                 adapter.notifyItemChanged(mViewHolder.getAdapterPosition());
                             }

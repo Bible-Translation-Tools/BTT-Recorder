@@ -7,14 +7,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
 import org.wycliffeassociates.translationrecorder.project.ScrollableListFragment;
 import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter;
@@ -25,7 +27,9 @@ import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
  * The settings page -- for all persistent options/information.
  *
  */
-public class Settings extends AppCompatActivity implements TaskFragment.OnTaskComplete, ScrollableListFragment.OnItemClickListener, SettingsFragment.LanguageSelector {
+public class Settings extends AppCompatActivity implements TaskFragment.OnTaskComplete,
+        ScrollableListFragment.OnItemClickListener,
+        SettingsFragment.LanguageSelector {
 
     public static final String KEY_RECENT_PROJECT_ID = "pref_recent_project_id";
 
@@ -38,11 +42,15 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
     public static final String KEY_PREF_SRC_LOC = "pref_src_loc";
     public static final String KEY_SDK_LEVEL = "pref_sdk_level";
     public static final String KEY_PROFILE = "pref_profile";
+    public static final String KEY_USER = "pref_profile";
 
     public static final String KEY_PREF_GLOBAL_SOURCE_LOC = "pref_global_src_loc";
     public static final String KEY_PREF_GLOBAL_LANG_SRC = "pref_global_lang_src";
     public static final String KEY_PREF_ADD_LANGUAGE = "pref_add_temp_language";
     public static final String KEY_PREF_UPDATE_LANGUAGES = "pref_update_languages";
+    public static final String KEY_PREF_UPDATE_LANGUAGES_FROM_FILE = "pref_update_languages_from_file";
+
+    public static final String KEY_PREF_UPLOAD_SERVER = "pref_upload_server";
 
 
     private String mSearchText;
@@ -50,6 +58,7 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
     private Fragment mFragment;
     public static boolean displayingList = false;
     private boolean mShowSearch = false;
+    private ProjectDatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +74,8 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
+
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
     }
 
     @Override
@@ -165,8 +176,8 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
         displaySearchMenu();
         Settings.displayingList = true;
         mFragment = new ScrollableListFragment
-                .Builder(new TargetLanguageAdapter(Language.getLanguages(this), this))
-                .setSearchHint("Choose Source Language:")
+                .Builder(new TargetLanguageAdapter(Language.getLanguages(db), this))
+                .setSearchHint(getString(R.string.choose_source_language) + ":")
                 .build();
         mFragmentManager.beginTransaction().add(R.id.fragment_scroll_list, mFragment).commit();
     }

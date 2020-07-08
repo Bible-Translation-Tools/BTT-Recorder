@@ -2,7 +2,7 @@ package org.wycliffeassociates.translationrecorder.ProjectManager.adapters;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.util.Pair;
+import androidx.core.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +15,7 @@ import org.wycliffeassociates.translationrecorder.ProjectManager.activities.Acti
 import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 
@@ -37,12 +38,14 @@ public class ChapterAdapter extends ArrayAdapter {
     LayoutInflater mLayoutInflater;
     Activity mCtx;
     Project mProject;
+    ProjectDatabaseHelper db;
 
-    public ChapterAdapter(Activity context, Project project, ChunkPlugin chunks) {
+    public ChapterAdapter(Activity context, Project project, ChunkPlugin chunks, ProjectDatabaseHelper db) {
         super(context, R.layout.project_list_item, createList(chunks.numChapters(), project));
         mCtx = context;
         mLayoutInflater = context.getLayoutInflater();
         mProject = project;
+        this.db = db;
     }
 
     private static List<Pair<Integer, Boolean>> createList(int numChapters, Project project) {
@@ -85,7 +88,9 @@ public class ChapterAdapter extends ArrayAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.mChapterView.setText("Chapter " + (position + 1));
+        holder.mChapterView.setText(
+                mCtx.getString(R.string.label_chapter_title_detailed, String.valueOf((position + 1)))
+        );
         holder.mBook.setVisibility(View.INVISIBLE);
         holder.mInfo.setVisibility(View.INVISIBLE);
 
@@ -109,7 +114,7 @@ public class ChapterAdapter extends ArrayAdapter {
         holder.mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mProject.loadProjectIntoPreferences(mCtx);
+                mProject.loadProjectIntoPreferences(mCtx, db);
                 v.getContext().startActivity(
                         RecordingActivity.getNewRecordingIntent(
                                 v.getContext(),

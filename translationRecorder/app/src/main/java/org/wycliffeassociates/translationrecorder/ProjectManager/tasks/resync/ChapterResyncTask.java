@@ -4,6 +4,7 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Environment;
 
+import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog;
 import com.door43.tools.reporting.Logger;
@@ -21,19 +22,35 @@ import java.util.concurrent.BlockingQueue;
  * Created by sarabiaj on 1/23/2017.
  */
 
-public class ChapterResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound, ProjectDatabaseHelper.OnCorruptFile {
+public class ChapterResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound,
+        ProjectDatabaseHelper.OnCorruptFile {
 
     Context mCtx;
     FragmentManager mFragmentManager;
     Project mProject;
     File mChapterDir;
+    ProjectDatabaseHelper db;
 
-    public ChapterResyncTask(int taskId, Context ctx, FragmentManager fm, Project project) {
+    public ChapterResyncTask(
+            int taskId,
+            Context ctx,
+            FragmentManager fm,
+            Project project,
+            ProjectDatabaseHelper db
+    ) {
         super(taskId);
         mCtx = ctx;
         mFragmentManager = fm;
         mProject = project;
-        mChapterDir = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder/" + mProject.getTargetLanguageSlug() + "/" + mProject.getVersionSlug() + "/" + mProject.getBookSlug() + "/");
+        this.db = db;
+        String path = String.format(
+                "%s/%s/%s/%s/",
+                mCtx.getResources().getString(R.string.folder_name),
+                mProject.getTargetLanguageSlug(),
+                mProject.getVersionSlug(),
+                mProject.getBookSlug()
+                );
+        mChapterDir = new File(Environment.getExternalStorageDirectory(), path);
     }
 
     public List<Integer> getAllChapters(File chapterDir) {
@@ -55,7 +72,6 @@ public class ChapterResyncTask extends Task implements ProjectDatabaseHelper.OnL
 
     @Override
     public void run() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
         List<Integer> chapters = getAllChapters(mChapterDir);
         for(Integer i : chapters) {
             if(!db.chapterExists(mProject, i)){
@@ -63,7 +79,6 @@ public class ChapterResyncTask extends Task implements ProjectDatabaseHelper.OnL
                 break;
             }
         }
-        db.close();
         onTaskCompleteDelegator();
     }
 

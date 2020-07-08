@@ -14,9 +14,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
-import com.wycliffeassociates.io.ArchiveOfHolding;
-import com.wycliffeassociates.io.ArchiveOfHoldingEntry;
-import com.wycliffeassociates.io.LanguageLevel;
+import org.wycliffeassociates.io.ArchiveOfHolding;
+import org.wycliffeassociates.io.ArchiveOfHoldingEntry;
+import org.wycliffeassociates.io.ChapterVerseSection;
+import org.wycliffeassociates.io.LanguageLevel;
 
 import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
@@ -50,7 +51,13 @@ public class SourceAudio extends LinearLayout {
     private String mFileName;
     private int mChapter;
     private File mTemp;
+    private OnAudioListener sourceAudioListener;
     private static final String[] filetypes = {"wav", "mp3", "mp4", "m4a", "aac", "flac", "3gp", "ogg"};
+
+    public interface OnAudioListener {
+        void onSourcePlay();
+        void onSourcePause();
+    }
 
     public SourceAudio(Context context) {
         this(context, null);
@@ -125,12 +132,10 @@ public class SourceAudio extends LinearLayout {
         ArchiveOfHolding aoh = new ArchiveOfHolding(is, ll);
         //The archive of holding entry requires the path to look for the file, so that part of the name can be ignored
         //chapter and verse information is all that is necessary to be identifiable at this point.
-        String importantSection = ProjectFileUtils.getChapterAndVerseSection(mFileName);
-        if(importantSection == null) {
-            return false;
-        }
-        ArchiveOfHoldingEntry entry = aoh.getEntry(importantSection, sourceLanguage,
-                mProject.getVersionSlug(), mProject.getBookSlug(), ProjectFileUtils.chapterIntToString(mProject, mChapter));
+        ChapterVerseSection chapterVerseSection = new ChapterVerseSection(mFileName);
+
+        ArchiveOfHoldingEntry entry = aoh.getEntry(chapterVerseSection, sourceLanguage,
+                ll.getVersionSlug(sourceLanguage), mProject.getBookSlug(), ProjectFileUtils.chapterIntToString(mProject, mChapter));
         if(entry == null){
             return false;
         }
@@ -202,10 +207,16 @@ public class SourceAudio extends LinearLayout {
 
     public void playSource() {
         mSrcPlayer.play();
+        if(sourceAudioListener != null) {
+            sourceAudioListener.onSourcePlay();
+        }
     }
 
     public void pauseSource(){
         mSrcPlayer.pause();
+        if(sourceAudioListener != null) {
+            sourceAudioListener.onSourcePause();
+        }
     }
 
     public void reset(Project project, String fileName, int chapter){
@@ -245,5 +256,9 @@ public class SourceAudio extends LinearLayout {
             mNoSourceMsg.setVisibility(View.GONE);
             setEnabled(true);
         }
+    }
+
+    public void setSourceAudioListener(OnAudioListener listener) {
+        sourceAudioListener = listener;
     }
 }

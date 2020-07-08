@@ -7,14 +7,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.annotation.Nullable;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.adapters.GenericAdapter;
@@ -39,6 +40,7 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     protected String mSearchText;
     protected FragmentManager mFragmentManager;
     private SearchView mSearchViewAction;
+    private ProjectDatabaseHelper db;
 
     interface ProjectContract {
         String PROJECT_KEY = mProjectKey;
@@ -60,14 +62,16 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFragmentManager = getFragmentManager();
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
 
         this.displayFragment();
+
         mProject = new Project();
 
         setContentView(R.layout.activity_scrollable_list);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("New Project");
+            getSupportActionBar().setTitle(R.string.new_project);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -208,32 +212,32 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         switch (mCurrentFragment) {
             case TARGET_LANGUAGE:
                 mFragment = new ScrollableListFragment
-                        .Builder(new GenericAdapter(Language.getLanguages(this), this))
-                        .setSearchHint("Choose Target Language:")
+                        .Builder(new GenericAdapter(Language.getLanguages(db), this))
+                        .setSearchHint(getString(R.string.choose_target_language))
                         .build();
                 break;
             case PROJECT:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getAnthologiesList(), this))
-                        .setSearchHint("Choose a Project")
+                        .setSearchHint(getString(R.string.choose_project))
                         .build();
                 break;
             case BOOK:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getBooksList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose a Book")
+                        .setSearchHint(getString(R.string.choose_book))
                         .build();
                 break;
             case SOURCE_TEXT:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getVersionsList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose Translation Type")
+                        .setSearchHint(getString(R.string.choose_translation_type))
                         .build();
                 break;
             case MODE:
                 mFragment = new ScrollableListFragment
                         .Builder(new GenericAdapter(getModeList(mProject.getAnthologySlug()), this))
-                        .setSearchHint("Choose a Mode")
+                        .setSearchHint(getString(R.string.choose_mode))
                         .build();
                 break;
             default:
@@ -252,39 +256,32 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     }
 
     private Anthology[] getAnthologiesList(){
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         Anthology[] anthologies = db.getAnthologies();
-        db.close();
         return anthologies;
     }
 
     private Book[] getBooksList(String anthologySlug){
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         Book[] books = db.getBooks(anthologySlug);
-        db.close();
         return books;
     }
 
     private Version[] getVersionsList(String anthologySlug){
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         Version[] versions = db.getVersions(anthologySlug);
-        db.close();
         return versions;
     }
 
     private Mode[] getModeList(String anthologySlug){
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
-        Mode[] mode = db.getModes(anthologySlug);
-        db.close();
-        return mode;
+        Mode[] modes = db.getModes(anthologySlug);
+        return modes;
     }
 
     public static void displayProjectExists(Context context){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Project Already Exists!");
-        builder.setMessage("A project already exists for that language, book, and version.\n" +
-                "If you would like to switch recording modes, please delete the project before creating it again.");
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.project_exists);
+        builder.setMessage(
+                TranslationRecorderApp.getContext().getResources().getString(R.string.project_exists_message)
+        );
+        builder.setPositiveButton(context.getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();

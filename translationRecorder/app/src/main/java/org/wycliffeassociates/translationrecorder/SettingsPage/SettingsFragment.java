@@ -1,6 +1,8 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncLanguageNamesTask;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 
 import org.wycliffeassociates.translationrecorder.R;
@@ -21,8 +25,11 @@ import org.wycliffeassociates.translationrecorder.R;
  */
 public class SettingsFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private int FILE_GET_REQUEST_CODE = 45;
+
     LanguageSelector mParent;
     SharedPreferences mSharedPreferences;
+    ProjectDatabaseHelper db;
     private TaskFragment mTaskFragment;
     private String TAG_TASK_FRAGMENT = "tag_task_fragment";
 
@@ -35,6 +42,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
         addPreferencesFromResource(R.xml.preference);
         mSharedPreferences = getPreferenceScreen().getSharedPreferences();
         mParent = (LanguageSelector) getActivity();
+        db = ((TranslationRecorderApp)getActivity().getApplication()).getDatabase();
         // Below is the code to clear the SharedPreferences. Use it wisely.
         // mSharedPreferences.edit().clear().commit();
 
@@ -49,7 +57,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             fm.executePendingTransactions();
         }
 
-        Preference sourceLanguageButton = (Preference)findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
+        Preference sourceLanguageButton = findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
         sourceLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -58,7 +66,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         });
 
-        Preference addTemporaryLanguageButton = (Preference)findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
+        Preference addTemporaryLanguageButton = findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
         addTemporaryLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -69,19 +77,55 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             }
         );
 
-        Preference updateLanguagesButton = (Preference) findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
+        Preference updateLanguagesButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
         updateLanguagesButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity()),
+                        new ResyncLanguageNamesTask(1, getActivity(), db),
                         "Updating Languages",
                         "Please wait...",
                         true
-                        );
+                );
                 return true;
             }
         });
+
+        Preference updateLanguagesFromFileButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
+        updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.setType("application/octet-stream");
+                startActivityForResult(intent, FILE_GET_REQUEST_CODE);
+                return true;
+            }
+        });
+
+        Preference uploadServerButton = findPreference(Settings.KEY_PREF_UPLOAD_SERVER);
+        uploadServerButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                UploadServerDialog add = new UploadServerDialog();
+                add.show(getFragmentManager(), "save");
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == FILE_GET_REQUEST_CODE) {
+                Uri uri = resultData.getData();
+                mTaskFragment.executeRunnable(
+                        new ResyncLanguageNamesTask(1, getActivity(), db, uri),
+                        "Updating Languages",
+                        "Please wait...",
+                        true
+                );
+            }
+        }
     }
 
     @Override
@@ -106,7 +150,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
 
     @Override
     public void onPause() {
-        super.onResume();
+        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 

@@ -40,6 +40,7 @@ public class MainMenu extends Activity {
     private RelativeLayout btnRecord;
     private ImageButton btnFiles;
     private SharedPreferences pref;
+    private ProjectDatabaseHelper db;
 
     private int mNumProjects = 0;
 
@@ -69,6 +70,8 @@ public class MainMenu extends Activity {
         System.out.println("internal files dir is " + this.getCacheDir());
         System.out.println("External files dir is " + Environment.getExternalStorageDirectory());
 
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+
         initApp();
     }
 
@@ -76,7 +79,6 @@ public class MainMenu extends Activity {
     protected void onResume() {
         super.onResume();
 
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         mNumProjects = db.getNumProjects();
 
         btnRecord = (RelativeLayout) findViewById(R.id.new_record);
@@ -142,18 +144,20 @@ public class MainMenu extends Activity {
     }
 
     private void startRecordingScreen() {
-        Project project = Project.getProjectFromPreferences(this);
+        Project project = Project.getProjectFromPreferences(this, db);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        int chapter = pref.getInt(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER);
+        int unit = pref.getInt(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT);
         Intent intent = RecordingActivity.getNewRecordingIntent(
                 this,
                 project,
-                ChunkPlugin.DEFAULT_CHAPTER,
-                ChunkPlugin.DEFAULT_UNIT
+                chapter,
+                unit
         );
         startActivity(intent);
     }
 
     private boolean addProjectToDatabase(Project project) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         if (db.projectExists(project)) {
             ProjectWizardActivity.displayProjectExists(this);
             return false;
@@ -167,18 +171,11 @@ public class MainMenu extends Activity {
     private void loadProject(Project project) {
         pref.edit().putString("resume", "resume").commit();
 
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         if (db.projectExists(project)) {
             pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, db.getProjectId(project)).commit();
         } else {
             Logger.e(this.toString(), "Project " + project + " doesn't exist in the database");
         }
-
-        //FIXME: find the last place worked on?
-        pref.edit().putString(Settings.KEY_PREF_CHAPTER, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_START_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_END_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_CHUNK, "1").commit();
     }
 
     public void report(final String message) {
@@ -235,7 +232,6 @@ public class MainMenu extends Activity {
     }
 
     private void initViews() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
         TextView languageView = (TextView) findViewById(R.id.language_view);
         TextView bookView = (TextView) findViewById(R.id.book_view);
@@ -268,10 +264,19 @@ public class MainMenu extends Activity {
 
         //if the current directory is already set, then don't overwrite it
         if (pref.getString("current_directory", null) == null) {
-            pref.edit().putString("current_directory",
-                    Environment.getExternalStoragePublicDirectory("TranslationRecorder").toString()).commit();
+            pref.edit().putString(
+                    "current_directory",
+                    Environment.getExternalStoragePublicDirectory(
+                            getResources().getString(R.string.folder_name)
+                    ).toString()
+            ).commit();
         }
-        pref.edit().putString("root_directory", Environment.getExternalStoragePublicDirectory("TranslationRecorder").toString()).commit();
+        pref.edit().putString(
+                "root_directory",
+                Environment.getExternalStoragePublicDirectory(
+                        getResources().getString(R.string.folder_name)
+                ).toString()
+        ).commit();
 
         //configure logger
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
@@ -299,8 +304,10 @@ public class MainMenu extends Activity {
         if (visFiles == null) {
             return;
         }
-        String rootPath = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder").getAbsolutePath();
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
+        String rootPath = new File(
+                Environment.getExternalStorageDirectory(),
+                getResources().getString(R.string.folder_name)
+            ).getAbsolutePath();
         List<ProjectPatternMatcher> patterns = db.getProjectPatternMatchers();
         for (File v : visFiles) {
             boolean matched = false;
@@ -319,7 +326,8 @@ public class MainMenu extends Activity {
             }
             boolean found = false;
             ProjectSlugs slugs = takeInfo.getProjectSlugs();
-            String path = rootPath + "/" + slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook() + "/" + String.format("%02d", takeInfo.getChapter());
+            String path = rootPath + "/" + slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook()
+                    + "/" + String.format("%02d", takeInfo.getChapter());
             String visFileWithoutExtension = v.getName().split(".vis$")[0];
             String name = visFileWithoutExtension + "_t" + String.format("%02d", takeInfo.getTake()) + ".wav";
             File searchName = new File(path, name);
@@ -341,7 +349,9 @@ public class MainMenu extends Activity {
             return "";
         }
         String nameWithExtention = a.getName();
-        if (nameWithExtention.lastIndexOf('.') < 0 || nameWithExtention.lastIndexOf('.') > nameWithExtention.length()) {
+        boolean hasNoExtension = nameWithExtention.lastIndexOf('.') < 0;
+        if (hasNoExtension || nameWithExtention.lastIndexOf('.') > nameWithExtention.length()
+        ) {
             return "";
         }
         String filename = nameWithExtention.substring(0, nameWithExtention.lastIndexOf('.'));

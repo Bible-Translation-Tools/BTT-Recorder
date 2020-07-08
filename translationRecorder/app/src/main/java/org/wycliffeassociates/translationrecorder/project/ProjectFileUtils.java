@@ -1,8 +1,9 @@
 package org.wycliffeassociates.translationrecorder.project;
 
-import android.content.Context;
 import android.os.Environment;
 
+import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
@@ -57,42 +58,27 @@ public class ProjectFileUtils {
         for (File f : files) {
             ppm.match(f);
             TakeInfo ti = ppm.getTakeInfo();
-            if (takeInfo.equals(ti)) {
+            if (takeInfo.equalBaseInfo(ti)) {
                 maxTake = (maxTake < ti.getTake()) ? ti.getTake() : maxTake;
             }
         }
         return maxTake;
     }
 
-    //public static String getFileNameFromProject(Project project, int chapter, int startVerse, int endVerse) {
-//
-//
-//        String anthology = project.getAnthologySlug();
-//        String language = project.getTargetLanguageSlug();
-//        String book = project.getBookSlug();
-//        int bookNumber = Integer.parseInt(project.getBookNumber());
-//        String version = project.getVersionSlug();
-//        if (anthology != null && anthology.compareTo("obs") == 0) {
-//            return language + "_obs_c" + String.format("%02d", chapter) + "_v" + String.format("%02d", startVerse);
-//        } else {
-//            String name;
-//            String end = (endVerse != -1 && startVerse != endVerse) ? String.format("-%02d", endVerse) : "";
-//            if (book.compareTo("psa") == 0 && chapter != 119) {
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + String.format("%03d", chapter) + "_v" + String.format("%02d", startVerse) + end;
-//            } else if (book.compareTo("psa") == 0) {
-//                end = (endVerse != -1) ? String.format("-%03d", endVerse) : "";
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + ProjectFileUtils.chapterIntToString(book, chapter) + "_v" + String.format("%03d", startVerse) + end;
-//            } else {
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + ProjectFileUtils.chapterIntToString(book, chapter) + "_v" + String.format("%02d", startVerse) + end;
-//            }
-//            return name;
-//        }
-    //}
-
     public static File getParentDirectory(TakeInfo takeInfo){
         ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
-        File out = new File(root, slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook() + "/" + ProjectFileUtils.chapterIntToString(slugs.getBook(), takeInfo.getChapter()));
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
+        String path = String.format(
+                "%s/%s/%s/%s",
+                slugs.getLanguage(),
+                slugs.getVersion(),
+                slugs.getBook(),
+                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
+        );
+        File out = new File(root, path);
         return out;
     }
 
@@ -101,8 +87,18 @@ public class ProjectFileUtils {
         ppm.match(file);
         TakeInfo takeInfo = ppm.getTakeInfo();
         ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
-        File out = new File(root, slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook() + "/" + chapterIntToString(slugs.getBook(), takeInfo.getChapter()));
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
+        String path = String.format(
+                "%s/%s/%s/%s",
+                slugs.getLanguage(),
+                slugs.getVersion(),
+                slugs.getBook(),
+                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
+        );
+        File out = new File(root, path);
         return out;
     }
 
@@ -111,14 +107,34 @@ public class ProjectFileUtils {
         ppm.match(file);
         TakeInfo takeInfo = ppm.getTakeInfo();
         ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
-        File out = new File(root, slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook() + "/" + chapterIntToString(slugs.getBook(), takeInfo.getChapter()));
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
+        String path = String.format(
+                "%s/%s/%s/%s",
+                slugs.getLanguage(),
+                slugs.getVersion(),
+                slugs.getBook(),
+                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
+        );
+        File out = new File(root, path);
         return out;
     }
 
     public static File getParentDirectory(Project project, int chapter) {
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
-        return new File(root, project.getTargetLanguageSlug() + "/" + project.getVersionSlug() + "/" + project.getBookSlug() + "/" + chapterIntToString(project, chapter));
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
+        String path = String.format(
+                "%s/%s/%s/%s",
+                project.getTargetLanguageSlug(),
+                project.getVersionSlug(),
+                project.getBookSlug(),
+                chapterIntToString(project, chapter)
+        );
+        return new File(root, path);
     }
 
     public static File getProjectDirectory(Project project) {
@@ -128,12 +144,15 @@ public class ProjectFileUtils {
     }
 
     public static File getLanguageDirectory(Project project) {
-        File root = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder");
+        File root = new File(
+                Environment.getExternalStorageDirectory(),
+                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
+        );
         File projectDir = new File(root, project.getTargetLanguageSlug());
         return projectDir;
     }
 
-    public static void deleteProject(Context ctx, Project project) {
+    public static void deleteProject(Project project, ProjectDatabaseHelper db) {
         File dir = getProjectDirectory(project);
         Utils.deleteRecursive(dir);
         File langDir = getLanguageDirectory(project);
@@ -149,7 +168,6 @@ public class ProjectFileUtils {
                 langDir.delete();
             }
         }
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(ctx);
         db.deleteProject(project);
     }
 
@@ -181,45 +199,6 @@ public class ProjectFileUtils {
         return file.getMetadata().getModeSlug();
     }
 
-//    public static File getFileFromFileName(File file) {
-//        File dir = getParentDirectory(file);
-//        if (file.getName().contains(".wav")) {
-//            return new File(dir, file.getName());
-//        } else {
-//            return new File(dir, file.getName() + ".wav");
-//        }
-//    }
-
-//    public static String getNameWithoutTake(Project project, String name) {
-//        ProjectPatternMatcher ppm = project.getPatternMatcher();
-//        ppm.match(name);
-//        TakeInfo takeInfo = ppm.getTakeInfo();
-//        return takeInfo.getNameWithoutTake();
-//    }
-
-//    public static String getNameWithoutTake(Project project, int mChapter, int mStartVerse, int mEndVerse) {
-//        String anthology = project.getAnthologySlug();
-//        String language = project.getTargetLanguageSlug();
-//        String book = project.getBookSlug();
-//        int bookNumber = Integer.parseInt(project.getBookNumber());
-//        String version = project.getVersionSlug();
-//        if (anthology != null && anthology.compareTo("obs") == 0) {
-//            return language + "_obs_c" + String.format("%02d", mChapter) + "_v" + String.format("%02d", mStartVerse);
-//        } else {
-//            String name;
-//            String end = (mEndVerse != -1 && mStartVerse != mEndVerse) ? String.format("-%02d", mEndVerse) : "";
-//            if (book.compareTo("psa") == 0 && mChapter != 119) {
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + String.format("%03d", mChapter) + "_v" + String.format("%02d", mStartVerse) + end;
-//            } else if (book.compareTo("psa") == 0) {
-//                end = (mEndVerse != -1) ? String.format("-%03d", mEndVerse) : "";
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + ProjectFileUtils.chapterIntToString(book, mChapter) + "_v" + String.format("%03d", mStartVerse) + end;
-//            } else {
-//                name = language + "_" + version + "_b" + String.format("%02d", bookNumber) + "_" + book + "_c" + ProjectFileUtils.chapterIntToString(book, mChapter) + "_v" + String.format("%02d", mStartVerse) + end;
-//            }
-//            return name;
-//        }
-//    }
-
     public static String getNameWithoutExtention(File file) {
         String name = file.getName();
         if (name.contains(".wav")) {
@@ -234,18 +213,5 @@ public class ProjectFileUtils {
 
     public static String getNameWithoutTake(String file){
         return file.split("(_t([\\d]{2}))?(.wav)?$")[0];
-    }
-
-    //Extracts the identifiable section of a filename for source audio
-    public static String getChapterAndVerseSection(String name) {
-        String CHAPTER = "c([\\d]{2,3})";
-        String VERSE = "v([\\d]{2,3})(-([\\d]{2,3}))?";
-        Pattern chapterAndVerseSection = Pattern.compile("(" + CHAPTER + "_" + VERSE + ")");
-        Matcher matcher = chapterAndVerseSection.matcher(name);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return null;
-        }
     }
 }

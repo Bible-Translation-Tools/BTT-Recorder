@@ -7,7 +7,7 @@
     android:animateLayoutChanges="true"
     >
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/unitCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,7 +62,8 @@
                         android:duplicateParentState="true"
                         android:clickable="true"
                         android:cropToPadding="false"
-                        />
+                        android:layout_marginRight="@dimen/default_padding_l"
+                    />
 
                     <ImageView
                         android:id="@+id/unitExpandBtn"
@@ -74,7 +75,7 @@
                         android:duplicateParentState="true"
                         android:clickable="true"
                         android:cropToPadding="false"
-                        android:layout_marginLeft="@dimen/default_padding_m"
+                        android:layout_marginLeft="@dimen/default_padding_l"
                         />
 
                 </LinearLayout>
@@ -145,6 +146,8 @@
                         android:layout_marginStart="@dimen/default_padding_m"
                         android:layout_marginEnd="@dimen/default_padding_m"
                         android:layout_weight="1"
+                        android:progressTint="@color/secondary"
+                        android:thumbTint="@color/secondary"
                         />
 
                     <TextView
@@ -340,6 +343,6 @@
 
         </LinearLayout>
 
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
 </FrameLayout>

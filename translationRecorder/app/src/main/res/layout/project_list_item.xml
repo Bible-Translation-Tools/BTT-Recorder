@@ -25,7 +25,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="40"
-            android:text="Language"
             android:textStyle="bold"
             android:textColor="@color/abc_primary_text_material_light"
             android:textSize="@dimen/title"
@@ -39,7 +38,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="30"
-            android:text="Book"
             android:textSize="@dimen/title"
             android:textColor="@color/abc_primary_text_material_light"
             android:textAlignment="gravity"
@@ -69,7 +67,7 @@
             <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="@dimen/icon_l"
-                android:layout_weight="10"
+                android:layout_weight="15"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_information_grey600_36dp"
                 android:clickable="true"
@@ -80,7 +78,7 @@
             <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="@dimen/icon_l"
-                android:layout_weight="10"
+                android:layout_weight="15"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_microphone_grey600_36dp"
                 android:clickable="true"

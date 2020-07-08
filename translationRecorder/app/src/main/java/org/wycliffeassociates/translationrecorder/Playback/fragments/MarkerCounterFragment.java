@@ -66,7 +66,7 @@ public class MarkerCounterFragment extends Fragment {
     }
 
     private void initViews(){
-        mLeftView.setText("Left");
+        mLeftView.setText(getString(R.string.left_title));
         mVersesRemainingView.setText(String.valueOf(mMarkerMediator.numVersesRemaining()));
         mEscape.setOnClickListener(new View.OnClickListener() {
             @Override
