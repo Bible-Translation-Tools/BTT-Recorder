@@ -3,10 +3,11 @@ package org.wycliffeassociates.translationrecorder.wav;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.door43.tools.reporting.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import org.wycliffeassociates.translationrecorder.project.Project;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,27 +31,32 @@ public class WavMetadata implements Parcelable {
 
     private final int SIZE_OF_LABEL = 4;
 
-    String mAnthology = "";
     String mLanguage = "";
+    String mResource = "";
+    String mAnthology = "";
     String mVersion = "";
-    String mSlug = "";
     String mBookNumber = "";
+    String mBook = "";
     String mMode = "";
     String mChapter = "";
     String mStartVerse = "";
     String mEndVerse = "";
+    String mSourceLanguage = "";
+    String mContributor = "";
+
     HashMap<Integer, WavCue> mCuePoints = new HashMap<>();
 
-    public WavMetadata(Project p, String chapter, String startVerse, String endVerse) {
-        mAnthology = p.getAnthology();
-        mLanguage = p.getTargetLanguage();
-        mVersion = p.getVersion();
-        mSlug = p.getSlug();
+    public WavMetadata(Project p, String contributor, String chapter, String startVerse, String endVerse) {
+        mAnthology = p.getAnthologySlug();
+        mLanguage = p.getTargetLanguageSlug();
+        mVersion = p.getVersionSlug();
+        mBook = p.getBookSlug();
         mBookNumber = p.getBookNumber();
-        mMode = p.getMode();
+        mMode = p.getModeSlug().toLowerCase();
         mChapter = chapter;
         mStartVerse = startVerse;
         mEndVerse = endVerse;
+        mContributor = contributor;
     }
 
     public WavMetadata(File file) {
@@ -60,12 +66,15 @@ public class WavMetadata implements Parcelable {
     public String getAnthology(){return mAnthology;}
     public String getLanguage(){return mLanguage;}
     public String getVersion(){return mVersion;}
-    public String getSlug(){return mSlug;}
+    public String getSlug(){return mBook;}
     public String getBookNumber(){return mBookNumber;}
-    public String getMode(){return mMode;}
+    public String getModeSlug(){return mMode;}
     public String getChapter(){return mChapter;}
     public String getStartVerse(){return mStartVerse;}
     public String getEndVerse(){return mEndVerse;}
+    public String getContributor() {
+        return mContributor;
+    }
 
     private String readLabel(ByteBuffer buffer) {
         if (buffer.remaining() >= SIZE_OF_LABEL) {
@@ -100,7 +109,7 @@ public class WavMetadata implements Parcelable {
                 //audio length field incorrect
                 //TODO: #664
                 if (audioLength < 0 || audioLength > file.length() - WavUtils.HEADER_SIZE) {
-                    throw new RuntimeException("Audio data field reported to be " + audioLength + " while the file length is " + file.length());
+                    throw new IllegalArgumentException("Audio data field reported to be " + audioLength + " while the file length is " + file.length());
                 }
                 //seek to the end of the header + audio data to parse metadata
                 raf.seek(audioLength + WavUtils.HEADER_SIZE);
@@ -117,7 +126,7 @@ public class WavMetadata implements Parcelable {
                         WavUtils.seek(bb, chunkSize);
                     } else {
                         //TODO: #664
-                        throw new RuntimeException("Chunk size larger than remaining file length; " +
+                        throw new IllegalArgumentException("ChunkPlugin size larger than remaining file length; " +
                                 "attempting to allocate " + chunkSize + " with remaining file size of " +
                                 (file.length() - bb.remaining()));
                     }
@@ -276,9 +285,9 @@ public class WavMetadata implements Parcelable {
             if (json.has("version")) {
                 mVersion = json.getString("version");
             }
-            mSlug = "";
-            if (json.has("slug")) {
-                mSlug = json.getString("slug");
+            mBook = "";
+            if (json.has("book")) {
+                mBook = json.getString("book");
             }
             mBookNumber = "";
             if (json.has("book_number")) {
@@ -286,7 +295,7 @@ public class WavMetadata implements Parcelable {
             }
             mMode = "";
             if (json.has("mode")) {
-                mMode = json.getString("mode");
+                mMode = json.getString("mode").toLowerCase();
             }
             mChapter = "";
             if (json.has("chapter")) {
@@ -299,6 +308,10 @@ public class WavMetadata implements Parcelable {
             mEndVerse = "";
             if (json.has("endv")) {
                 mEndVerse = json.getString("endv");
+            }
+            mContributor = "";
+            if (json.has("contributor")) {
+                mContributor = json.getString("contributor");
             }
             if (json.has("markers")) {
                 JSONObject markers = json.getJSONObject("markers");
@@ -332,12 +345,13 @@ public class WavMetadata implements Parcelable {
             json.put("anthology", mAnthology);
             json.put("language", mLanguage);
             json.put("version", mVersion);
-            json.put("slug", mSlug);
+            json.put("book", mBook);
             json.put("book_number", mBookNumber);
             json.put("mode", mMode);
             json.put("chapter", mChapter);
             json.put("startv", mStartVerse);
             json.put("endv", mEndVerse);
+            json.put("contributor", mContributor);
             json.put("markers", getMarkerJsonObject());
             return json;
         } catch (JSONException e) {
@@ -514,6 +528,6 @@ public class WavMetadata implements Parcelable {
             newKey = Math.max(newKey, i);
         }
         newKey++;
-        mCuePoints.put(newKey, cue);
+        mCuePoints.put(Integer.parseInt(cue.getLabel()), cue);
     }
 }

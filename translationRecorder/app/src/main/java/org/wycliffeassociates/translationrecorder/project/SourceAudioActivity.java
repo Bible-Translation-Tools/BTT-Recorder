@@ -6,19 +6,19 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter;
 
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.project.components.Language;
 
 /**
  * Created by sarabiaj on 5/25/2016.
@@ -74,7 +74,7 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
 //        actionBar.hide();
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Source Audio");
+            getSupportActionBar().setTitle(getString(R.string.source_audio));
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -106,7 +106,7 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
             btnSourceLocation.setText("Source Location: " + mProject.getSourceAudioPath());
         }
         if (mSetLanguage) {
-            btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguage());
+            btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguageSlug());
         }
         if(savedInstanceState.getBoolean(mUserSearchingLanguageKey)){
             mSearchText = savedInstanceState.getString(mSearchTextKey);
@@ -189,7 +189,9 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         if (mFragment != null) {
             mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
         }
-        mFragment = new ScrollableListFragment.Builder(new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)).setSearchHint("Choose Source Language:").build();
+        mFragment = new ScrollableListFragment.Builder(
+                new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)
+        ).setSearchHint(getString(R.string.choose_source_language) + ":").build();
         mFragmentManager.beginTransaction().add(R.id.fragment_container, (Fragment) mFragment).commit();
         findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
     }
@@ -262,8 +264,8 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
     public void onItemClick(Object result) {
         Utils.closeKeyboard(this);
         hideSearchMenu();
-        mProject.setSourceLanguage(((Language) result).getCode());
-        btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguage());
+        mProject.setSourceLanguage((Language) result);
+        btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguageSlug());
         mSetLanguage = true;
         mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
         findViewById(R.id.fragment_container).setVisibility(View.INVISIBLE);

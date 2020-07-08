@@ -7,6 +7,8 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,13 +67,19 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
 
 
     public interface OnScrollDelegator {
-
         void delegateOnScroll(float distY);
+        void delegateOnScrollComplete();
         void onCueScroll(int id, float distY);
     }
+
     @Override
     public void onScroll(float x1, float x2, float distX) {
         mOnScrollDelegator.delegateOnScroll(distX);
+    }
+
+    @Override
+    public void onScrollComplete() {
+        mOnScrollDelegator.delegateOnScrollComplete();
     }
 
     public static WaveformFragment newInstance(MarkerMediator mediator){
@@ -90,6 +98,7 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        super.onCreateView(inflater, container, savedInstanceState);
         return inflater.inflate(R.layout.fragment_waveform, container, false);
     }
 
@@ -107,14 +116,19 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
         mFrame.addView(mScrollGestureLayer);
         mFrame.addView(mMarkerLineLayer);
         mFrame.addView(mHighlightLayer);
+
+        int dpSize =  2;
+        DisplayMetrics dm = getResources().getDisplayMetrics() ;
+        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+
         mPaintPlaback = new Paint();
         mPaintPlaback.setColor(getResources().getColor(R.color.primary));
         mPaintPlaback.setStyle(Paint.Style.STROKE);
-        mPaintPlaback.setStrokeWidth(2f);
+        mPaintPlaback.setStrokeWidth(dpSize);
         mPaintBaseLine = new Paint();
         mPaintBaseLine.setColor(getResources().getColor(R.color.secondary));
         mPaintBaseLine.setStyle(Paint.Style.STROKE);
-        mPaintBaseLine.setStrokeWidth(2f);
+        mPaintBaseLine.setStrokeWidth(dpSize);
         mDraggableViewFrame.bringToFront();
         mDraggableViewFrame.setPositionChangeMediator(this);
         mMarkerMediator.setDraggableViewFrame(mDraggableViewFrame);
@@ -145,24 +159,36 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
     //-------------MARKERS----------------------//
 
     public void addStartMarker(int frame){
+        int dpSize =  4;
+        DisplayMetrics dm = getResources().getDisplayMetrics() ;
+        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+
         int color =  getResources().getColor(R.color.dark_moderate_cyan);
-        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_startmarker_cyan, MarkerHolder.START_MARKER_ID, SectionMarkerView.Orientation.LEFT_MARKER, color);
+        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_startmarker_cyan, MarkerHolder.START_MARKER_ID, SectionMarkerView.Orientation.LEFT_MARKER, color, strokeWidth);
         div.setX(div.mapLocationToScreenSpace(frame, mFrame.getWidth())-div.getWidth());
         mMarkerMediator.onAddStartSectionMarker(new SectionMarker(div, frame));
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
     }
 
     public void addEndMarker(int frame){
+        int dpSize =  4;
+        DisplayMetrics dm = getResources().getDisplayMetrics() ;
+        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+
         int color =  getResources().getColor(R.color.dark_moderate_cyan);
-        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_endmarker_cyan, Gravity.BOTTOM, MarkerHolder.END_MARKER_ID, SectionMarkerView.Orientation.RIGHT_MARKER, color);
+        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_endmarker_cyan, Gravity.BOTTOM, MarkerHolder.END_MARKER_ID, SectionMarkerView.Orientation.RIGHT_MARKER, color, strokeWidth);
         div.setX(div.mapLocationToScreenSpace(frame, mFrame.getWidth()));
         mMarkerMediator.onAddEndSectionMarker(new SectionMarker(div, frame));
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
     }
 
     public void addVerseMarker(int verseNumber, int frame){
+        int dpSize =  4;
+        DisplayMetrics dm = getResources().getDisplayMetrics() ;
+        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+
         int color =  getResources().getColor(R.color.yellow);
-        VerseMarkerView div = new VerseMarkerView(getActivity(), R.drawable.verse_marker_yellow, verseNumber, color);
+        VerseMarkerView div = new VerseMarkerView(getActivity(), R.drawable.verse_marker_yellow, verseNumber, color, strokeWidth);
         mMarkerMediator.onAddVerseMarker(verseNumber, new VerseMarker(div, frame));
     }
 

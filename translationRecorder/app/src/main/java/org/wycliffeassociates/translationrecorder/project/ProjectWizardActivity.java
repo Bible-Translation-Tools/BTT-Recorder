@@ -7,21 +7,23 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.annotation.Nullable;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
-import org.wycliffeassociates.translationrecorder.project.adapters.ProjectCategoryAdapter;
-
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.project.adapters.ModeCategoryAdapter;
-import org.wycliffeassociates.translationrecorder.project.adapters.TargetBookAdapter;
-import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.adapters.GenericAdapter;
+import org.wycliffeassociates.translationrecorder.project.components.Anthology;
+import org.wycliffeassociates.translationrecorder.project.components.Book;
+import org.wycliffeassociates.translationrecorder.project.components.Language;
+import org.wycliffeassociates.translationrecorder.project.components.Mode;
+import org.wycliffeassociates.translationrecorder.project.components.Version;
 
 
 /**
@@ -38,6 +40,7 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     protected String mSearchText;
     protected FragmentManager mFragmentManager;
     private SearchView mSearchViewAction;
+    private ProjectDatabaseHelper db;
 
     interface ProjectContract {
         String PROJECT_KEY = mProjectKey;
@@ -59,14 +62,16 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFragmentManager = getFragmentManager();
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
 
         this.displayFragment();
+
         mProject = new Project();
 
         setContentView(R.layout.activity_scrollable_list);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("New Project");
+            getSupportActionBar().setTitle(R.string.new_project);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -155,42 +160,25 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         clearSearchState();
         Utils.closeKeyboard(this);
         if (mCurrentFragment == TARGET_LANGUAGE && result instanceof Language) {
-            ((Project) mProject).setTargetLanguage(((Language) result).getCode());
+            mProject.setTargetLanguage((Language) result);
             mCurrentFragment++;
             this.displayFragment();
-        } else if (mCurrentFragment == PROJECT && result instanceof String) {
-            String project = "";
-            if (((String) result).compareTo("Bible: OT") == 0) {
-                project = "ot";
-            } else if (((String) result).compareTo("Bible: NT") == 0) {
-                project = "nt";
-            } else {
-                project = "obs";
-            }
-            ((Project) mProject).setProject(project);
+        } else if (mCurrentFragment == PROJECT && result instanceof Anthology) {
+            mProject.setAnthology((Anthology)result);
             mLastFragment = mCurrentFragment;
-            mCurrentFragment = project.compareTo("obs") == 0 ? SOURCE_LANGUAGE : BOOK;
+            mCurrentFragment = mProject.getAnthologySlug().compareTo("hjklhjkhkl") == 0 ? SOURCE_LANGUAGE : BOOK;
             this.displayFragment();
         } else if (mCurrentFragment == BOOK && result instanceof Book) {
             Book book = (Book) result;
-            mProject.setBookNumber(book.getOrder());
-            mProject.setSlug(book.getSlug());
+            mProject.setBook(book);
             mCurrentFragment++;
             this.displayFragment();
-        } else if (mCurrentFragment == SOURCE_TEXT && result instanceof String) {
-            String source = "";
-            if (((String) result).compareTo("Unlocked Literal Bible") == 0) {
-                source = "ulb";
-            } else if (((String) result).compareTo("Unlocked Dynamic Bible") == 0) {
-                source = "udb";
-            } else {
-                source = "reg";
-            }
-            ((Project) mProject).setVersion((String) source);
+        } else if (mCurrentFragment == SOURCE_TEXT && result instanceof Version) {
+            mProject.setVersion((Version)result);
             mCurrentFragment++;
             this.displayFragment();
-        } else if (mCurrentFragment == MODE && result instanceof String) {
-            ((Project) mProject).setMode(((String) result).toLowerCase());
+        } else if (mCurrentFragment == MODE && result instanceof Mode) {
+            mProject.setMode((Mode) result);
             mLastFragment = mCurrentFragment;
             mCurrentFragment++;
             this.displayFragment();
@@ -224,33 +212,32 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         switch (mCurrentFragment) {
             case TARGET_LANGUAGE:
                 mFragment = new ScrollableListFragment
-                        .Builder(new TargetLanguageAdapter(Language.getLanguages(this), this))
-                        .setSearchHint("Choose Target Language:")
+                        .Builder(new GenericAdapter(Language.getLanguages(db), this))
+                        .setSearchHint(getString(R.string.choose_target_language))
                         .build();
                 break;
             case PROJECT:
                 mFragment = new ScrollableListFragment
-                        //.Builder(new ProjectCategoryAdapter(new String[]{"Bible: OT", "Bible: NT", "Open Bible Stories"}, this))
-                        .Builder(new ProjectCategoryAdapter(new String[]{"Bible: OT", "Bible: NT"}, this))
-                        .setSearchHint("Choose a Project")
+                        .Builder(new GenericAdapter(getAnthologiesList(), this))
+                        .setSearchHint(getString(R.string.choose_project))
                         .build();
                 break;
             case BOOK:
                 mFragment = new ScrollableListFragment
-                        .Builder(new TargetBookAdapter(ParseJSON.getBooks(this, mProject.getAnthology()), this))
-                        .setSearchHint("Choose a Book")
+                        .Builder(new GenericAdapter(getBooksList(mProject.getAnthologySlug()), this))
+                        .setSearchHint(getString(R.string.choose_book))
                         .build();
                 break;
             case SOURCE_TEXT:
                 mFragment = new ScrollableListFragment
-                        .Builder(new ProjectCategoryAdapter(new String[]{"Unlocked Literal Bible", "Unlocked Dynamic Bible", "Regular"}, this))
-                        .setSearchHint("Choose Translation Type")
+                        .Builder(new GenericAdapter(getVersionsList(mProject.getAnthologySlug()), this))
+                        .setSearchHint(getString(R.string.choose_translation_type))
                         .build();
                 break;
             case MODE:
                 mFragment = new ScrollableListFragment
-                        .Builder(new ModeCategoryAdapter(new String[]{"Verse", "Chunk"}, this))
-                        .setSearchHint("Choose a Mode")
+                        .Builder(new GenericAdapter(getModeList(mProject.getAnthologySlug()), this))
+                        .setSearchHint(getString(R.string.choose_mode))
                         .build();
                 break;
             default:
@@ -268,12 +255,33 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         }
     }
 
+    private Anthology[] getAnthologiesList(){
+        Anthology[] anthologies = db.getAnthologies();
+        return anthologies;
+    }
+
+    private Book[] getBooksList(String anthologySlug){
+        Book[] books = db.getBooks(anthologySlug);
+        return books;
+    }
+
+    private Version[] getVersionsList(String anthologySlug){
+        Version[] versions = db.getVersions(anthologySlug);
+        return versions;
+    }
+
+    private Mode[] getModeList(String anthologySlug){
+        Mode[] modes = db.getModes(anthologySlug);
+        return modes;
+    }
+
     public static void displayProjectExists(Context context){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Project Already Exists!");
-        builder.setMessage("A project already exists for that language, book, and version.\n" +
-                "If you would like to switch recording modes, please delete the project before creating it again.");
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.project_exists);
+        builder.setMessage(
+                TranslationRecorderApp.getContext().getResources().getString(R.string.project_exists_message)
+        );
+        builder.setPositiveButton(context.getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.dismiss();

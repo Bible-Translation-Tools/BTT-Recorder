@@ -1,10 +1,11 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.adapters;
 
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ActionMode;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +19,12 @@ import android.widget.TextView;
 import com.bignerdranch.android.multiselector.MultiSelector;
 import com.bignerdranch.android.multiselector.SwappingHolder;
 
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.project.TakeInfo;
 import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
+import org.wycliffeassociates.translationrecorder.widgets.OnCardExpandedListener;
 import org.wycliffeassociates.translationrecorder.widgets.UnitCard;
 
 import java.util.ArrayList;
@@ -29,9 +33,10 @@ import java.util.List;
 /**
  * Created by leongv on 7/28/2016.
  */
-public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHolder> {
+public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHolder> implements UnitCard.DatabaseAccessor, OnCardExpandedListener {
 
     private AppCompatActivity mCtx;
+    private RecyclerView recyclerView;
     private Project mProject;
     private int mChapterNum;
     private List<UnitCard> mUnitCardList;
@@ -39,16 +44,71 @@ public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHo
     private List<ViewHolder> mSelectedCards = new ArrayList<>();
     private MultiSelector mMultiSelector = new MultiSelector();
     private ActionMode mActionMode;
+    private ProjectDatabaseHelper db;
+
 
 
     // Constructor
-    public UnitCardAdapter(AppCompatActivity context, Project project, int chapter, List<UnitCard> unitCardList) {
+    public UnitCardAdapter(
+            AppCompatActivity context,
+            Project project,
+            int chapter,
+            List<UnitCard> unitCardList,
+            ProjectDatabaseHelper db
+    ) {
         mUnitCardList = unitCardList;
         mCtx = context;
         mProject = project;
         mChapterNum = chapter;
+        this.db = db;
     }
 
+    @Override
+    public void updateSelectedTake(TakeInfo takeInfo) {
+        db.setSelectedTake(takeInfo);
+    }
+
+    @Override
+    public int selectedTakeNumber(TakeInfo takeInfo) {
+        int selectedTakeNumber = db.getSelectedTakeNumber(takeInfo);
+        return selectedTakeNumber;
+    }
+
+    @Override
+    public int takeRating(TakeInfo takeInfo) {
+        int takeRating = db.getTakeRating(takeInfo);
+        return takeRating;
+    }
+
+    @Override
+    public int takeCount(Project project, int chapter, int firstVerse) {
+        int takeCount = 0;
+        if (db.chapterExists(mProject, chapter) && db.unitExists(mProject, chapter, firstVerse)) {
+            int unitId = db.getUnitId(project, chapter, firstVerse);
+            takeCount = db.getTakeCount(unitId);
+        }
+        return takeCount;
+    }
+
+    @Override
+    public void deleteTake(TakeInfo takeInfo) {
+        db.deleteTake(takeInfo);
+    }
+
+    @Override
+    public void removeSelectedTake(TakeInfo takeInfo) {
+        db.removeSelectedTake(takeInfo);
+    }
+
+    @Override
+    public void selectTake(TakeInfo takeInfo) {
+        db.setSelectedTake(takeInfo);
+    }
+
+    @Override
+    public void onCardExpanded(int position) {
+        recyclerView.getLayoutManager().scrollToPosition(position);
+    }
 
 //    private ActionMode.Callback mMultiSelectMode = new ModalMultiSelectorCallback(mMultiSelector) {
 //
@@ -165,10 +225,10 @@ public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHo
             // Raise card, and show appropriate visual cue, if it's already selected
             if (mMultiSelector.isSelected(position, 0)) {
                 mSelectedCards.add(this);
-                unitCard.raise();
+                unitCard.raise(mCtx);
             } else {
                 mSelectedCards.remove(this);
-                unitCard.drop();
+                unitCard.drop(mCtx);
             }
             // Hide expand icon if it's empty
             if (unitCard.isEmpty()) {
@@ -230,6 +290,14 @@ public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHo
 //            }
             return true;
         }
+
+        public void pausePlayers() {
+            for(UnitCard uc: mUnitCardList) {
+                if (uc.isExpanded()) {
+                    uc.pauseAudio();
+                }
+            }
+        }
     }
 
 
@@ -264,13 +332,13 @@ public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHo
 
     private void setListeners(final UnitCard unitCard, final ViewHolder holder) {
         int position = holder.getAdapterPosition();
-        holder.unitRecordBtn.setOnClickListener(unitCard.getUnitRecordOnClick());
-        holder.unitExpandBtn.setOnClickListener(unitCard.getUnitExpandOnClick(position, mExpandedCards));
-        holder.takeDeleteBtn.setOnClickListener(unitCard.getTakeDeleteOnClick(position, this));
+        holder.unitRecordBtn.setOnClickListener(unitCard.getUnitRecordOnClick(mCtx, db));
+        holder.unitExpandBtn.setOnClickListener(unitCard.getUnitExpandOnClick(position, mExpandedCards, this));
+        holder.takeDeleteBtn.setOnClickListener(unitCard.getTakeDeleteOnClick(mCtx, this, position, this));
         holder.takePlayPauseBtn.setOnClickListener(unitCard.getTakePlayPauseOnClick());
         holder.takeEditBtn.setOnClickListener(unitCard.getTakeEditOnClickListener());
-        holder.takeRatingBtn.setOnClickListener(unitCard.getTakeRatingOnClick());
-        holder.takeSelectBtn.setOnClickListener(unitCard.getTakeSelectOnClick());
+        holder.takeRatingBtn.setOnClickListener(unitCard.getTakeRatingOnClick(mCtx));
+        holder.takeSelectBtn.setOnClickListener(unitCard.getTakeSelectOnClick(this));
         holder.nextTakeBtn.setOnClickListener(unitCard.getTakeIncrementOnClick());
         holder.prevTakeBtn.setOnClickListener(unitCard.getTakeDecrementOnClick());
     }
@@ -281,6 +349,16 @@ public class UnitCardAdapter extends RecyclerView.Adapter<UnitCardAdapter.ViewHo
                 uc.destroyAudioPlayer();
             }
         }
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
+
+    public UnitCard getItem(int id) {
+        return mUnitCardList.get(id);
     }
 
 }

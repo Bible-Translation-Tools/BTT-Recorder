@@ -6,12 +6,13 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,29 +23,35 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import com.door43.tools.reporting.Logger;
+
+import com.pixplicity.sharp.Sharp;
+import jdenticon.Jdenticon;
+import org.wycliffeassociates.translationrecorder.DocumentationActivity;
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export;
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFragment;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
+import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
+import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ProjectAdapter;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog;
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ExportSourceAudioTask;
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask;
 import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingScreen;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
 import org.wycliffeassociates.translationrecorder.SplashScreen;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
+import org.wycliffeassociates.translationrecorder.project.components.User;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by sarabiaj on 6/23/2016.
@@ -62,6 +69,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     private int mNumProjects = 0;
     private ProgressDialog mPd;
     private volatile int mProgress = 0;
+    private volatile String mProgressTitle = null;
     private volatile boolean mZipping = false;
     private volatile boolean mExporting = false;
     private ExportTaskFragment mExportTaskFragment;
@@ -78,29 +86,35 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     private final String STATE_RESYNC = "db_resync";
 
     private final String STATE_PROGRESS = "upload_progress";
+    private final String STATE_PROGRESS_TITLE = "upload_progress_title";
     public static final int PROJECT_WIZARD_REQUEST = RESULT_FIRST_USER;
     public static final int SAVE_SOURCE_AUDIO_REQUEST = RESULT_FIRST_USER + 1;
     private boolean mDbResyncing = false;
     private File mSourceAudioFile;
     private Project mProjectToExport;
+    private ProjectDatabaseHelper db;
+    private boolean isIdenticonPlaying = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_management);
 
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+
         Toolbar mToolbar = (Toolbar) findViewById(R.id.project_management_toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Project Management");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            initializeIdenticon();
         }
-
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (savedInstanceState != null) {
             mZipping = savedInstanceState.getBoolean(STATE_ZIPPING, false);
             mExporting = savedInstanceState.getBoolean(STATE_EXPORTING, false);
             mProgress = savedInstanceState.getInt(STATE_PROGRESS, 0);
+            mProgressTitle = savedInstanceState.getString(STATE_PROGRESS_TITLE, null);
             mDbResyncing = savedInstanceState.getBoolean(STATE_RESYNC, false);
         }
     }
@@ -124,9 +138,9 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
             fm.executePendingTransactions();
         } else {
             if (mZipping) {
-                zipProgress(mProgress);
+                zipProgress(mProgress, mProgressTitle);
             } else if (mExporting) {
-                exportProgress(mProgress);
+                exportProgress(mProgress, mProgressTitle);
             }
         }
         if (mTaskFragment == null) {
@@ -137,8 +151,18 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         //still need to track whether a db resync was issued so as to not issue them in the middle of another
         if (!mDbResyncing) {
             mDbResyncing = true;
-            ProjectListResyncTask task = new ProjectListResyncTask(DATABASE_RESYNC_TASK, getBaseContext(), getFragmentManager());
-            mTaskFragment.executeRunnable(task, "Resyncing Database", "Please wait...", true);
+            ProjectListResyncTask task = new ProjectListResyncTask(
+                    DATABASE_RESYNC_TASK,
+                    getFragmentManager(),
+                    db,
+                    new ChunkPluginLoader(this)
+            );
+            mTaskFragment.executeRunnable(
+                    task,
+                    getString(R.string.resyncing_database),
+                    getString(R.string.please_wait),
+                    true
+            );
         }
     }
 
@@ -148,6 +172,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         if (mPd != null) {
             savedInstanceState.putInt(STATE_PROGRESS, mPd.getProgress());
         }
+        savedInstanceState.putString(STATE_PROGRESS_TITLE, mProgressTitle);
         savedInstanceState.putBoolean(STATE_EXPORTING, mExporting);
         savedInstanceState.putBoolean(STATE_ZIPPING, mZipping);
         savedInstanceState.putBoolean(STATE_RESYNC, mDbResyncing);
@@ -171,6 +196,10 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                 Intent intent = new Intent(this, Settings.class);
                 startActivity(intent);
                 return true;
+            case R.id.action_help:
+                Intent help = new Intent(this, DocumentationActivity.class);
+                startActivity(help);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -187,36 +216,44 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
         hideProjectsIfEmpty(mNumProjects);
         if (mNumProjects > 0) {
-            initializeRecentProject();
-            if (mNumProjects > 1) {
-                populateProjectList();
-            }
-        } else {
-            mProjectList.setVisibility(View.GONE);
+            Project recent = initializeRecentProject();
+            populateProjectList(recent);
         }
     }
 
-    public void initializeRecentProject() {
+
+    //Returns the project that was initialized
+    public Project initializeRecentProject() {
         Project project = null;
-        if (!pref.getString(Settings.KEY_PREF_LANG, "").equals("")
-                && !pref.getString(Settings.KEY_PREF_BOOK, "").equals("")) {
-            project = Project.getProjectFromPreferences(this);
-            Logger.w(this.toString(), "Recent Project: language " + project.getTargetLanguage()
-                    + " book " + project.getSlug() + " version "
-                    + project.getVersion() + " mode " + project.getMode());
+        int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
+        if (projectId != -1) {
+            project = db.getProject(projectId);
+            Logger.w(this.toString(), "Recent Project: language " + project.getTargetLanguageSlug()
+                    + " book " + project.getBookSlug() + " version "
+                    + project.getVersionSlug() + " mode " + project.getModeSlug());
         } else {
-            ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
             List<Project> projects = db.getAllProjects();
             if (projects.size() > 0) {
                 project = projects.get(0);
             }
         }
         if (project != null) {
-            ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
             ProjectAdapter.initializeProjectCard(this, project, db, findViewById(R.id.recent_project));
+            return project;
         } else {
             findViewById(R.id.recent_project).setVisibility(View.GONE);
+            return null;
         }
+    }
+
+    public void initializeIdenticon() {
+        ImageView imageView = findViewById(R.id.identicon);
+        int userId = pref.getInt(Settings.KEY_PROFILE, -1);
+        final User user = db.getUser(userId);
+        String svg = Jdenticon.Companion.toSvg(user.getHash(), 512, 0f);
+        imageView.setBackground(Sharp.loadString(svg).getDrawable());
+        imageView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        imageView.setOnClickListener(identiconPlayerClick(user.getAudio().toString()));
     }
 
     public void hideProjectsIfEmpty(int numProjects) {
@@ -228,40 +265,34 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         }
     }
 
-    private void removeProjectFromPreferences(Project project) {
-        Map<String, ?> vals = pref.getAll();
-        String prefLang = (String) vals.get(Settings.KEY_PREF_LANG);
-        String prefSource = (String) vals.get(Settings.KEY_PREF_VERSION);
-        String prefProject = (String) vals.get(Settings.KEY_PREF_ANTHOLOGY);
-        String prefBook = (String) vals.get(Settings.KEY_PREF_BOOK);
-
-        if (prefLang != null && prefLang.equals(project.getTargetLanguage())) {
-            pref.edit().putString(Settings.KEY_PREF_LANG, "").commit();
-        }
-        if (prefSource != null && prefSource.equals(project.getVersion())) {
-            pref.edit().putString(Settings.KEY_PREF_VERSION, "").commit();
-        }
-        if (prefProject != null && prefProject.equals(project.getAnthology())) {
-            pref.edit().putString(Settings.KEY_PREF_ANTHOLOGY, "").commit();
-        }
-        if (prefBook != null && prefBook.equals(project.getSlug())) {
-            pref.edit().putString(Settings.KEY_PREF_BOOK, "").commit();
-        }
+    private void removeProjectFromPreferences() {
+        pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, -1).commit();
     }
 
-    private void populateProjectList() {
-        final ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
-        final List<Project> projects = db.getAllProjects();
-        for (Project p : projects) {
-            Logger.w(this.toString(), "Project: language " + p.getTargetLanguage() + " book " + p.getSlug() + " version " + p.getVersion() + " mode " + p.getMode());
+    private void populateProjectList(Project recent) {
+        List<Project> projects = db.getAllProjects();
+        if (recent != null) {
+            for (int i = 0; i < projects.size(); i++) {
+                if (recent.equals(projects.get(i))) {
+                    projects.remove(i);
+                    break;
+                }
+            }
         }
-        mAdapter = new ProjectAdapter(this, projects);
+        for (Project p : projects) {
+            String projectName = "language " + p.getTargetLanguageSlug()
+                    + " book " + p.getBookSlug()
+                    + " version " + p.getVersionSlug()
+                    + " mode " + p.getModeSlug();
+            Logger.w(this.toString(), "Project: " + projectName);
+        }
+        mAdapter = new ProjectAdapter(this, projects, db);
         mProjectList.setAdapter(mAdapter);
     }
 
     //sets the profile in the preferences to "" then returns to the splash screen
     private void logout() {
-        pref.edit().putString(Settings.KEY_PROFILE, "").commit();
+        pref.edit().remove(Settings.KEY_PROFILE).commit();
         finishAffinity();
         Intent intent = new Intent(this, SplashScreen.class);
         startActivity(intent);
@@ -272,26 +303,15 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     }
 
     private void loadProject(Project project) {
-        pref.edit().putString("resume", "resume").commit();
-
-        pref.edit().putString(Settings.KEY_PREF_BOOK, project.getSlug()).commit();
-        pref.edit().putString(Settings.KEY_PREF_BOOK_NUM, project.getBookNumber()).commit();
-        pref.edit().putString(Settings.KEY_PREF_LANG, project.getTargetLanguage()).commit();
-        pref.edit().putString(Settings.KEY_PREF_VERSION, project.getVersion()).commit();
-        pref.edit().putString(Settings.KEY_PREF_ANTHOLOGY, project.getAnthology()).commit();
-        pref.edit().putString(Settings.KEY_PREF_CHUNK_VERSE, project.getMode()).commit();
-        pref.edit().putString(Settings.KEY_PREF_LANG_SRC, project.getSourceLanguage()).commit();
-
-        //FIXME: find the last place worked on?
-        pref.edit().putString(Settings.KEY_PREF_CHAPTER, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_START_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_END_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_CHUNK, "1").commit();
+        if (!db.projectExists(project)) {
+            Logger.e(this.toString(), "Project " + project + " does not exist");
+        }
+        int projectId = db.getProjectId(project);
+        pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, projectId).commit();
     }
 
     private boolean addProjectToDatabase(Project project) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
-        if(db.projectExists(project)) {
+        if (db.projectExists(project)) {
             ProjectWizardActivity.displayProjectExists(this);
             return false;
         } else {
@@ -310,7 +330,12 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                         loadProject(project);
                         finish();
                         //TODO: should find place left off at?
-                        Intent intent = RecordingScreen.getNewRecordingIntent(this, project, 1, 1);
+                        Intent intent = RecordingActivity.getNewRecordingIntent(
+                                this,
+                                project,
+                                ChunkPlugin.DEFAULT_CHAPTER,
+                                ChunkPlugin.DEFAULT_UNIT
+                        );
                         startActivity(intent);
                     } else {
                         onResume();
@@ -328,9 +353,21 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
                     try {
                         fos = getContentResolver().openOutputStream(uri, "w");
                         bos = new BufferedOutputStream(fos);
-                        //sending output streams to the task to run in a thread means they cannot be closed in a finally block here
-                        ExportSourceAudioTask task = new ExportSourceAudioTask(SOURCE_AUDIO_TASK, mProjectToExport, mProjectToExport.getProjectDirectory(mProjectToExport), getFilesDir(), bos);
-                        mTaskFragment.executeRunnable(task, "Exporting Source Audio", "Please wait...", false);
+                        //sending output streams to the task to run in a thread means
+                        // they cannot be closed in a finally block here
+                        ExportSourceAudioTask task = new ExportSourceAudioTask(
+                                SOURCE_AUDIO_TASK,
+                                mProjectToExport,
+                                ProjectFileUtils.getProjectDirectory(mProjectToExport),
+                                getFilesDir(),
+                                bos
+                        );
+                        mTaskFragment.executeRunnable(
+                                task,
+                                getString(R.string.exporting_source_audio),
+                                getString(R.string.please_wait),
+                                false
+                        );
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -353,30 +390,70 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         }
     };
 
+    private View.OnClickListener identiconPlayerClick(final String audioPath) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!isIdenticonPlaying) {
+                    try {
+                        final MediaPlayer player = new MediaPlayer();
+                        player.setDataSource(audioPath);
+                        player.prepare();
+                        player.setOnPreparedListener(onIdenticonPlayerPrepared());
+                        player.setOnCompletionListener(onIdenticonPlayerCompleted());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+
+    private MediaPlayer.OnCompletionListener onIdenticonPlayerCompleted() {
+        return new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+                isIdenticonPlaying = false;
+            }
+        };
+    }
+
+    private MediaPlayer.OnPreparedListener onIdenticonPlayerPrepared() {
+        return new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                isIdenticonPlaying = true;
+                mp.start();
+            }
+        };
+    }
+
     @Override
     public void onDelete(final Project project) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder
-                .setTitle("Delete Project")
-                .setMessage("Deleting this project will remove all associated verse and chunk " +
-                        "recordings.\n\nAre you sure?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setTitle(getString(R.string.delete_project))
+                .setMessage(getString(R.string.confirm_delete_project_alt))
+                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == dialog.BUTTON_POSITIVE) {
-                            Logger.w(this.toString(), "Delete Project: language " + project.getTargetLanguage()
-                                    + " book " + project.getSlug() + " version "
-                                    + project.getVersion() + " mode " + project.getMode());
-                            Project.deleteProject(ActivityProjectManager.this, project);
-                            populateProjectList();
+                            String projectName = "language " + project.getTargetLanguageSlug()
+                                    + " book " + project.getBookSlug() + " version "
+                                    + project.getVersionSlug() + " mode " + project.getModeSlug();
+                            Logger.w(this.toString(), "Delete Project: " + projectName);
+                            if (project.equals(Project.getProjectFromPreferences(ActivityProjectManager.this, db))) {
+                                removeProjectFromPreferences();
+                            }
+                            ProjectFileUtils.deleteProject(project, db);
                             hideProjectsIfEmpty(mAdapter.getCount());
-                            removeProjectFromPreferences(project);
                             mNumProjects--;
                             initializeViews();
                         }
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -387,19 +464,19 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         dialog.show();
     }
 
-    public void exportProgress(int progress) {
+    public void exportProgress(int progress, String title) {
         mPd = new ProgressDialog(this);
-        mPd.setTitle("Uploading...");
+        mPd.setTitle(title != null ? title : getString(R.string.uploading));
         mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mPd.setProgress(progress);
         mPd.setCancelable(false);
         mPd.show();
     }
 
-    public void zipProgress(int progress) {
+    public void zipProgress(int progress, String title) {
         mPd = new ProgressDialog(this);
-        mPd.setTitle("Packaging files to export.");
-        mPd.setMessage("Please wait...");
+        mPd.setTitle(title != null ? title : getString(R.string.packaging_files));
+        mPd.setMessage(getString(R.string.please_wait));
         mPd.setProgress(progress);
         mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mPd.setCancelable(false);
@@ -407,22 +484,28 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     }
 
     public void dismissProgress() {
-        mPd.dismiss();
+        if(mPd != null) {
+            mPd.dismiss();
+        }
     }
 
     public void incrementProgress(int progress) {
-        mPd.incrementProgressBy(progress);
+        if(mPd != null) {
+            mPd.incrementProgressBy(progress);
+        }
     }
 
     public void setUploadProgress(int progress) {
-        mPd.setProgress(progress);
+        if(mPd != null) {
+            mPd.setProgress(progress);
+        }
     }
 
     public void showProgress(boolean mode) {
         if (mode == true) {
-            zipProgress(0);
+            zipProgress(0, mProgressTitle);
         } else {
-            exportProgress(0);
+            exportProgress(0, mProgressTitle);
         }
     }
 
@@ -438,7 +521,17 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
     @Override
     public void setCurrentFile(String currentFile) {
-        mPd.setMessage(currentFile);
+        if(mPd != null) {
+            mPd.setMessage(currentFile);
+        }
+    }
+
+    @Override
+    public void setProgressTitle(String title) {
+        mProgressTitle = title;
+        if (mPd != null) {
+            mPd.setTitle(mProgressTitle);
+        }
     }
 
     @Override
@@ -466,7 +559,12 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        mSourceAudioFile = new File(getFilesDir(), project.getTargetLanguage() + "_" + project.getVersion() + "_" + project.getSlug() + ".tr");
+        String trName = project.getTargetLanguageSlug() + "_"
+                + project.getVersionSlug() + "_"
+                + project.getBookSlug() + "_"
+                + project.getModeSlug()
+                + ".tr";
+        mSourceAudioFile = new File(getFilesDir(), trName);
         intent.putExtra(Intent.EXTRA_TITLE, mSourceAudioFile.getName());
         startActivityForResult(intent, SAVE_SOURCE_AUDIO_REQUEST);
     }
@@ -475,10 +573,24 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     public void onTaskComplete(int taskTag, int resultCode) {
         if (resultCode == TaskFragment.STATUS_OK) {
             if (taskTag == DATABASE_RESYNC_TASK) {
-                ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
                 mNumProjects = db.getNumProjects();
                 mDbResyncing = false;
                 initializeViews();
+            } else if(taskTag == SOURCE_AUDIO_TASK) {
+                FeedbackDialog fd = FeedbackDialog.newInstance(
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_complete)
+                );
+                fd.show(getFragmentManager(), "SOURCE_AUDIO");
+            }
+        } else if(resultCode == TaskFragment.STATUS_ERROR) {
+            if(taskTag == SOURCE_AUDIO_TASK) {
+                FeedbackDialog fd = FeedbackDialog.newInstance(
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_failed)
+
+                );
+                fd.show(getFragmentManager(), "SOURCE_AUDIO");
             }
         }
     }

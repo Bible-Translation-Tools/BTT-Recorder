@@ -1,11 +1,11 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.tasks;
 
-import com.wycliffeassociates.io.ArchiveOfHolding;
+import com.door43.tools.reporting.Logger;
+import org.wycliffeassociates.io.ArchiveOfHolding;
 
 import org.apache.commons.io.FileUtils;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
 import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 
 import java.io.BufferedOutputStream;
@@ -77,27 +77,33 @@ public class ExportSourceAudioTask extends Task {
     }
 
     private File stageFilesForArchive(Project project, File input, File stagingRoot) {
-        File root = new File(stagingRoot, project.getTargetLanguage() + "_" + project.getVersion() + "_" + project.getSlug());
-        File lang = new File(root, project.getTargetLanguage());
-        File version = new File(lang, project.getVersion());
-        File book = new File(version, project.getSlug());
+        File root = new File(stagingRoot, project.getTargetLanguageSlug() + "_" + project.getVersionSlug() + "_" + project.getBookSlug());
+        File lang = new File(root, project.getTargetLanguageSlug());
+        File version = new File(lang, project.getVersionSlug());
+        File book = new File(version, project.getBookSlug());
         book.mkdirs();
-        for (File c : input.listFiles()) {
-            if (c.isDirectory()) {
-                File chapter = new File(book, c.getName());
-                chapter.mkdir();
-                for (File f : c.listFiles()) {
-                    if (!f.isDirectory()) {
-                        try {
-                            FileUtils.copyFileToDirectory(f, chapter);
-                            mStagingProgress += f.length();
-                            //this step accounts for half of the work, so it is multiplied by 50 instead of 100
-                            int progressPercentage = (int) ((mStagingProgress / (double) mTotalStagingSize) * 50);
-                            onTaskProgressUpdateDelegator(progressPercentage);
-                        } catch (IOException e) {
-                            Logger.e(this.toString(), "IOException staging files for archive", e);
-                            e.printStackTrace();
+        if(input.listFiles() != null) {
+            for (File c : input.listFiles()) {
+                if (c.isDirectory()) {
+                    File chapter = new File(book, c.getName());
+                    chapter.mkdir();
+                    if (c.listFiles() != null) {
+                        for (File f : c.listFiles()) {
+                            if (!f.isDirectory()) {
+                                try {
+                                    FileUtils.copyFileToDirectory(f, chapter);
+                                    mStagingProgress += f.length();
+                                    //this step accounts for half of the work, so it is multiplied by 50 instead of 100
+                                    int progressPercentage = (int) ((mStagingProgress / (double) mTotalStagingSize) * 50);
+                                    onTaskProgressUpdateDelegator(progressPercentage);
+                                } catch (IOException e) {
+                                    Logger.e(this.toString(), "IOException staging files for archive", e);
+                                    e.printStackTrace();
+                                }
+                            }
                         }
+                    } else {
+                        continue;
                     }
                 }
             }

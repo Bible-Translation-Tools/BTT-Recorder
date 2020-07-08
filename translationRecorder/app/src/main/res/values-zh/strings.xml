@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <string name="app_name">BTT录音机</string>
+    <string name="settings_menu">设置</string>
+    <string name="logout_menu">退出</string>
+    <string name="help_menu">帮助</string>
+    <string name="project_management">项目管理</string>
+    <string name="new_project">新项目</string>
+    <string name="choose_target_language">选择目标语言</string>
+    <string name="choose_project">选择一个项目</string>
+    <string name="choose_book">选择一本书</string>
+    <string name="choose_translation_type">选择翻译类型</string>
+    <string name="choose_mode">选择一种模式</string>
+
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="delete_take">删除记录</string>
+    <string name="rate_take">给这个评分</string>
+    <string name="label_take_detailed">记录 <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">章节 <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+
+    <string name="project">项目</string>
+    <string name="uploading" translatable="false">上传</string>
+    <string name="project_upload">项目上传</string>
+    <string name="project_uploaded">项目上传成功</string>
+    <string name="project_upload_failed">项目上传失败： <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="upload_step_one">步骤 1/3: 生成清单文件</string>
+    <string name="upload_step_two">步骤 2/3: 打包要导出的文件</string>
+    <string name="upload_step_three">步骤 3/3: 上传</string>
+    <string name="packaging_files">打包要导出的文件</string>
+    <string name="delete_project">删除项目</string>
+    <string name="confirm_delete_project_alt">删除此项目将删除所有关联的经句和段落录制。\n\n你确定吗?</string>
+    <string name="target_language">目标语言</string>
+
+    <string name="set_chapter_level" translatable="false">设置章节级别</string>
+    <string name="compile_chapters" translatable="false">编译章节</string>
+    <string name="set_checking_level">设置检查级别</string>
+    <string name="warning">警告</string>
+    <string name="compile_chapters_message">把所有单元编成一章音频？</string>
+    <string name="recompile_chapters_message">重新编译一章将重写当前音频并重置检查级别。</string>
+    <string name="compiling_chapter">编译章节</string>
+
+    <string name="source_audio">源音频</string>
+    <string name="select_source_language">选择源语言</string>
+    <string name="select_source_location">选择源位置</string>
+    <string name="source_audio_not_found">在默认位置找不到源音频。如果要将源音频用于项目，请选择源语言，然后使用在设备或SD卡上的按钮找到相应的源音频文件夹。</string>
+    <string name="source_audio_location">源音频位置</string>
+    <string name="source_audio_language">源音频语言</string>
+    <string name="choose_source_language">选择源语言</string>
+
+    <string name="app_settings">BTT录音机设置</string>
+    <string name="source_language">源语言</string>
+    <string name="add_temp_language">添加临时语言</string>
+    <string name="update_language_from_td">从翻译数据库更新语言</string>
+    <string name="update_language_from_file">从文件更新语言</string>
+    <string name="change_upload_server">更改上载服务器</string>
+    <string name="app_version">BTT录音机版本</string>
+    <string name="language_code_exists">语言代码已经存在！</string>
+    <string name="language_code_length_tip">语言代码必须包含6个字符！</string>
+    <string name="language_name">语言名称： </string>
+    <string name="language_code">语言代码： </string>
+    <string name="add">添加</string>
+    <string name="languages_updated">语言更新成功！</string>
+    <string name="invalid_json">无效语言文件</string>
+    <string name="server_name">服务器名称： </string>
+    <string name="restore_defaults">恢复</string>
+    <string name="save">保存</string>
+    <string name="version">版本</string>
+    <string name="label_skip">跳过</string>
+
+    <string name="chapter_title">章节</string>
+    <string name="chunk_title">段落</string>
+    <string name="title_verse">经句</string>
+
+    <!-- DESCRIPTIONS -->
+    <string name="files_content_desc" translatable="false">“文件”按钮</string>
+    <string name="record_content_desc" translatable="false">“录制”按钮</string>
+
+    <!-- SETTINGS (Values) -->
+    <string name="folder_name" translatable="false">BTTRecorder</string>
+    <string name="pref_default_lang" translatable="false">中文</string>
+    <string name="pref_upload_server" translatable="false">opentranslationtools.org</string>
+    <string name="action_search" translatable="false">搜索</string>
+    <string name="menu_update" translatable="false">更新</string>
+
+    <!-- SETTINGS (Summaries) -->
+    <string name="unit">单位</string>
+    <string name="translation_type">翻译类型</string>
+
+    <!-- LOGIN -->
+    <string name="record_name">你的名字叫什么？</string>
+    <string name="privacy">如果您担心您的隐私或安全，请使用昵称或假名</string>
+    <string name="txt_record"><u>录制</u></string>
+    <string name="txt_btn_redo">重做</string>
+    <string name="txt_btn_yes">是</string>
+    <string name="new_user"><u>新用户</u></string>
+    <string name="available_users">可用用户</string>
+    <string name="is_this_ok_txt">可以吗？</string>
+
+    <string name="permissions_denied_title">需要权限</string>
+    <string name="permissions_denied_message">请启用使用BTT录音机的权限</string>
+    <string name="open_permissions">打开权限设置</string>
+
+    <string name="project_exists">项目已存在！</string>
+    <string name="project_exists_message">该语言、书本和版本的项目已经存在。\n如果要切换录制模式，请在重新创建项目之前将其删除。</string>
+    <string name="no_source_audio">无源音频</string>
+    <string name="left_title">剩余</string>
+    <string name="resyncing_database">重新同步数据库</string>
+    <string name="exporting_source_audio">导出源音频</string>
+    <string name="source_generation_complete">源音频生成完成。</string>
+    <string name="source_generation_failed">源音频生成失败。</string>
+
+    <string name="label_ok">好的</string>
+    <string name="label_close">关闭</string>
+    <string name="title_cancel">取消</string>
+    <string name="please_wait">请等待</string>
+</resources>

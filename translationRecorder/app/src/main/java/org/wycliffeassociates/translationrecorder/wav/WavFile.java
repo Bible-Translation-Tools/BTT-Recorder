@@ -4,11 +4,12 @@ import android.media.AudioFormat;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.door43.tools.reporting.Logger;
+
 import org.json.JSONException;
 import org.wycliffeassociates.translationrecorder.AudioInfo;
-import org.wycliffeassociates.translationrecorder.FilesPage.FileNameExtractor;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -22,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -68,7 +70,9 @@ public class WavFile implements Parcelable {
 
     void finishWrite(int totalAudioLength) throws IOException {
         mTotalAudioLength = totalAudioLength;
-        writeMetadata(totalAudioLength);
+        if(mMetadata != null) {
+            writeMetadata(totalAudioLength);
+        }
     }
 
     public WavFile(Parcel in) {
@@ -252,10 +256,6 @@ public class WavFile implements Parcelable {
                 e.printStackTrace();
             }
         }
-    }
-
-    public void setMetadata(Project project, String chapter, String startVerse, String endVerse) {
-        mMetadata = new WavMetadata(project, chapter, startVerse, endVerse);
     }
 
     private void writeMetadata(int totalAudioLength) throws IOException {
@@ -444,46 +444,6 @@ public class WavFile implements Parcelable {
         }
     }
 
-//    private byte[] parseInfo() throws IOException {
-//        if (mFile != null && mFile.length() > 44) {
-//            byte[] size = new byte[4];
-//            RandomAccessFile raf = null;
-//            try {
-//                raf = new RandomAccessFile(mFile, "r");
-//                raf.seek(4);
-//                raf.read(size);
-//                int fileSize = littleEndianToDecimal(size);
-//                raf.seek(40);
-//                raf.read(size);
-//                int audioSize = littleEndianToDecimal(size);
-//                //check if this is okay
-//                raf.seek(44 + audioSize);
-//                raf.read(size);
-//                String tag = new String(size, StandardCharsets.US_ASCII);
-//                if (tag.compareTo("LIST") == 0) {
-//                    raf.seek(44 + audioSize + 16);
-//                    raf.read(size);
-//                    mMetadataLength = littleEndianToDecimal(size);
-//                    byte[] metadata = new byte[mMetadataLength];
-//                    raf.read(metadata);
-//                    return metadata;
-//                } else {
-//                    Logger.e(this.toString(), "tag was: " + tag);
-//                }
-//            } finally {
-//                try {
-//                    raf.close();
-//                } catch (IOException e) {
-//                    Logger.e(this.toString(), "IOException while closing stream", e);
-//                    e.printStackTrace();
-//                }
-//            }
-//        } else {
-//            Logger.e(this.toString(), "parse info failed! File not null is..." + (mFile != null) + " file length is..." + mFile.length());
-//        }
-//        return null;
-//    }
-
     public String getMetadataString() throws JSONException {
         if (mMetadata == null) {
             return "";
@@ -504,6 +464,11 @@ public class WavFile implements Parcelable {
         return this;
     }
 
+    public WavFile clearMarkers() {
+        mMetadata.mCuePoints = new HashMap<>();
+        return this;
+    }
+
     public void commit(){
         try {
             writeMetadata(mTotalAudioLength);
@@ -516,35 +481,25 @@ public class WavFile implements Parcelable {
         return mMetadata;
     }
 
-//    public static JSONObject readTrackInfo(byte[] data) throws JSONException {
-//        String decoded = new String(data, StandardCharsets.US_ASCII);
-//        Logger.e("WavFile", decoded);
-//        JSONObject json = new JSONObject(decoded);
-//        return json;
-//    }
-//
-//    int littleEndianToDecimal(byte[] header) {
-//        ByteBuffer byteBuffer = ByteBuffer.wrap(header);
-//        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-//        int value = byteBuffer.getInt();
-//        return value;
-//    }
-
     public static WavFile compileChapter(Project project, int chapter, List<WavFile> toCompile) {
-        File root = FileNameExtractor.getParentDirectory(project, chapter);
-        File chap = new File(root, "chapter.wav");
+        File root = ProjectFileUtils.getParentDirectory(project, chapter);
+        File chap = new File(root, project.getChapterFileName(chapter));
         chap.delete();
-        String chapterString = FileNameExtractor.chapterIntToString(project, chapter);
+        String chapterString = ProjectFileUtils.chapterIntToString(project, chapter);
         String startVerse = toCompile.get(0).getMetadata().getStartVerse();
         String endVerse = toCompile.get(toCompile.size()-1).getMetadata().getEndVerse();
-        WavFile chapterWav = new WavFile(chap, new WavMetadata(project, chapterString, startVerse, endVerse));
+        //chapter wav isn't particularly useful in terms of keeping it for a final product,
+        // so don't worry about contributors
+        WavMetadata metadata = new WavMetadata(project, "", chapterString, startVerse, endVerse);
+        WavFile chapterWav = new WavFile(chap, metadata);
+        int locationOffset = 0;
         for (WavFile wav : toCompile) {
             try (WavOutputStream wos = new WavOutputStream(chapterWav, true, WavOutputStream.BUFFERED)){
                 List<WavCue> cues = wav.getMetadata().getCuePoints();
                 for(WavCue cue : cues){
-                    chapterWav.addMarker(cue.getLabel(), chapterWav.getTotalAudioLength() / 2 + cue.getLocation());
+                    chapterWav.addMarker(cue.getLabel(), locationOffset + cue.getLocation());
                 }
-                chapterWav.addMarker("Verse " + wav.getMetadata().getStartVerse(), chapterWav.getTotalAudioLength()/2);
+                locationOffset += wav.getTotalAudioLength()/2;
                 try (FileInputStream fis = new FileInputStream(wav.getFile());
                     BufferedInputStream bis = new BufferedInputStream(fis)){
                     byte[] buffer = new byte[5096];
@@ -575,11 +530,25 @@ public class WavFile implements Parcelable {
         return chapterWav;
     }
 
-    public static WavFile insertWavFile(WavFile base, WavFile insert, int insertFrame) throws IOException, JSONException {
+    public static WavFile insertWavFile(
+            WavFile base,
+            WavFile insert,
+            int insertFrame
+    ) throws IOException, JSONException {
+
+        // Prepare new metadata
+        WavMetadata newMetadata = base.getMetadata();
+        for (WavCue cue: newMetadata.getCuePoints()) {
+            if(cue.getLocation() >= insertFrame) {
+                cue.setLocation(cue.getLocation() + (insert.getTotalAudioLength()/2));
+            }
+        }
+
         //convert to two byte PCM
         insertFrame *= 2;
+
         File result = new File(base.getFile().getParentFile(),"temp.wav");
-        WavFile resultWav = new WavFile(result, base.getMetadata());
+        WavFile resultWav = new WavFile(result, newMetadata);
 
         long start = System.currentTimeMillis();
 
@@ -589,8 +558,16 @@ public class WavFile implements Parcelable {
 
             WavOutputStream wos = new WavOutputStream(resultWav, 0);
         ) {
-            MappedByteBuffer baseBuffer = fisBase.getChannel().map(FileChannel.MapMode.READ_ONLY, HEADER_SIZE, base.getTotalAudioLength());
-            MappedByteBuffer insertBuffer = fisInsert.getChannel().map(FileChannel.MapMode.READ_ONLY, HEADER_SIZE, insert.getTotalAudioLength());
+            MappedByteBuffer baseBuffer = fisBase.getChannel().map(
+                    FileChannel.MapMode.READ_ONLY,
+                    HEADER_SIZE,
+                    base.getTotalAudioLength()
+            );
+            MappedByteBuffer insertBuffer = fisInsert.getChannel().map(
+                    FileChannel.MapMode.READ_ONLY,
+                    HEADER_SIZE,
+                    insert.getTotalAudioLength()
+            );
             int oldAudioLength = base.getTotalAudioLength();
             int newAudioLength = insert.getTotalAudioLength();
 
@@ -637,14 +614,19 @@ public class WavFile implements Parcelable {
             }
             wos.flush();
             if (result.length() != AudioInfo.HEADER_SIZE + oldAudioLength + newAudioLength) {
-                Logger.e("WavFile", "ERROR: resulting filesize not right. length is " + result.length() + " should be " + (AudioInfo.HEADER_SIZE + oldAudioLength + newAudioLength));
-                Logger.e("WavFile", "new audio written was " + newWritten + " newAudioLength is " + newAudioLength + " old audio written was " + oldWritten + " oldAudioLength is " + oldAudioLength);
+                String errorMessage = "ERROR: resulting filesize not right. length is " + result.length()
+                        + " should be " + (AudioInfo.HEADER_SIZE + oldAudioLength + newAudioLength);
+                Logger.e("WavFile", errorMessage);
+                String infoMessage = "new audio written was " + newWritten
+                        + " newAudioLength is " + newAudioLength
+                        + " old audio written was " + oldWritten
+                        + " oldAudioLength is " + oldAudioLength;
+                Logger.e("WavFile", infoMessage);
             }
             baseBuffer = null;
             insertBuffer = null;
             Runtime.getRuntime().gc();
         }
-        System.out.println("Insert took: " + (System.currentTimeMillis() - start) + "ms");
 
         return resultWav;
     }

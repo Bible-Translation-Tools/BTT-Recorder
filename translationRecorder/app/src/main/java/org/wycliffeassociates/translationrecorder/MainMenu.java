@@ -1,6 +1,5 @@
 package org.wycliffeassociates.translationrecorder;
 
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
@@ -15,28 +14,33 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.GithubReporter;
+import com.door43.tools.reporting.GlobalExceptionHandler;
+import com.door43.tools.reporting.Logger;
+
 import org.apache.commons.io.FileUtils;
-import org.wycliffeassociates.translationrecorder.FilesPage.FileNameExtractor;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingScreen;
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
 import org.wycliffeassociates.translationrecorder.Reporting.BugReportDialog;
-import org.wycliffeassociates.translationrecorder.Reporting.GithubReporter;
-import org.wycliffeassociates.translationrecorder.Reporting.GlobalExceptionHandler;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
+import org.wycliffeassociates.translationrecorder.project.ProjectSlugs;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
+import org.wycliffeassociates.translationrecorder.project.TakeInfo;
 
 import java.io.File;
 import java.io.IOException;
-
+import java.util.List;
 
 public class MainMenu extends Activity {
 
     private RelativeLayout btnRecord;
     private ImageButton btnFiles;
     private SharedPreferences pref;
+    private ProjectDatabaseHelper db;
 
     private int mNumProjects = 0;
 
@@ -66,6 +70,8 @@ public class MainMenu extends Activity {
         System.out.println("internal files dir is " + this.getCacheDir());
         System.out.println("External files dir is " + Environment.getExternalStorageDirectory());
 
+        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+
         initApp();
     }
 
@@ -73,7 +79,6 @@ public class MainMenu extends Activity {
     protected void onResume() {
         super.onResume();
 
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
         mNumProjects = db.getNumProjects();
 
         btnRecord = (RelativeLayout) findViewById(R.id.new_record);
@@ -102,7 +107,7 @@ public class MainMenu extends Activity {
     }
 
     private boolean emptyPreferences() {
-        if (pref.getString(Settings.KEY_PREF_LANG, "").compareTo("") == 0) {
+        if (pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1) == -1) {
             return true;
         }
         return false;
@@ -114,9 +119,14 @@ public class MainMenu extends Activity {
             case PROJECT_WIZARD_REQUEST: {
                 if (resultCode == RESULT_OK) {
                     Project project = data.getParcelableExtra(Project.PROJECT_EXTRA);
-                    if(addProjectToDatabase(project)) {
+                    if (addProjectToDatabase(project)) {
                         loadProject(project);
-                        Intent intent = RecordingScreen.getNewRecordingIntent(this, project, 1, 1);
+                        Intent intent = RecordingActivity.getNewRecordingIntent(
+                                this,
+                                project,
+                                ChunkPlugin.DEFAULT_CHAPTER,
+                                ChunkPlugin.DEFAULT_UNIT
+                        );
                         startActivity(intent);
                     } else {
                         onResume();
@@ -134,14 +144,21 @@ public class MainMenu extends Activity {
     }
 
     private void startRecordingScreen() {
-        Project project = Project.getProjectFromPreferences(this);
-        Intent intent = RecordingScreen.getNewRecordingIntent(this, project, 1, 1);
+        Project project = Project.getProjectFromPreferences(this, db);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        int chapter = pref.getInt(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER);
+        int unit = pref.getInt(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT);
+        Intent intent = RecordingActivity.getNewRecordingIntent(
+                this,
+                project,
+                chapter,
+                unit
+        );
         startActivity(intent);
     }
 
     private boolean addProjectToDatabase(Project project) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
-        if(db.projectExists(project)) {
+        if (db.projectExists(project)) {
             ProjectWizardActivity.displayProjectExists(this);
             return false;
         } else {
@@ -151,24 +168,14 @@ public class MainMenu extends Activity {
     }
 
 
-
     private void loadProject(Project project) {
         pref.edit().putString("resume", "resume").commit();
 
-        pref.edit().putString(Settings.KEY_PREF_BOOK, project.getSlug()).commit();
-        pref.edit().putString(Settings.KEY_PREF_BOOK_NUM, project.getBookNumber()).commit();
-        pref.edit().putString(Settings.KEY_PREF_LANG, project.getTargetLanguage()).commit();
-        pref.edit().putString(Settings.KEY_PREF_VERSION, project.getVersion()).commit();
-        pref.edit().putString(Settings.KEY_PREF_ANTHOLOGY, project.getAnthology()).commit();
-        pref.edit().putString(Settings.KEY_PREF_CHUNK_VERSE, project.getMode()).commit();
-        pref.edit().putString(Settings.KEY_PREF_LANG_SRC, project.getSourceLanguage()).commit();
-        pref.edit().putString(Settings.KEY_PREF_SRC_LOC, project.getSourceAudioPath()).commit();
-
-        //FIXME: find the last place worked on?
-        pref.edit().putString(Settings.KEY_PREF_CHAPTER, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_START_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_END_VERSE, "1").commit();
-        pref.edit().putString(Settings.KEY_PREF_CHUNK, "1").commit();
+        if (db.projectExists(project)) {
+            pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, db.getProjectId(project)).commit();
+        } else {
+            Logger.e(this.toString(), "Project " + project + " doesn't exist in the database");
+        }
     }
 
     public void report(final String message) {
@@ -225,20 +232,26 @@ public class MainMenu extends Activity {
     }
 
     private void initViews() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(this);
+        int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
         TextView languageView = (TextView) findViewById(R.id.language_view);
-        String language = pref.getString(Settings.KEY_PREF_LANG, "");
-        if (language.compareTo("") != 0) {
-            language = db.getLanguageName(language);
-        }
-        languageView.setText(language);
-
         TextView bookView = (TextView) findViewById(R.id.book_view);
-        String book = pref.getString(Settings.KEY_PREF_BOOK, "");
-        if (book.compareTo("") != 0) {
-            book = db.getBookName(book);
+        if (projectId != -1) {
+            Project project = db.getProject(projectId);
+            String language = project.getTargetLanguageSlug();
+            if (language.compareTo("") != 0) {
+                language = db.getLanguageName(language);
+            }
+            languageView.setText(language);
+
+            String book = project.getBookSlug();
+            if (book.compareTo("") != 0) {
+                book = db.getBookName(book);
+            }
+            bookView.setText(book);
+        } else {
+            languageView.setText("");
+            bookView.setText("");
         }
-        bookView.setText(book);
     }
 
     private void initApp() {
@@ -251,10 +264,19 @@ public class MainMenu extends Activity {
 
         //if the current directory is already set, then don't overwrite it
         if (pref.getString("current_directory", null) == null) {
-            pref.edit().putString("current_directory",
-                    Environment.getExternalStoragePublicDirectory("TranslationRecorder").toString()).commit();
+            pref.edit().putString(
+                    "current_directory",
+                    Environment.getExternalStoragePublicDirectory(
+                            getResources().getString(R.string.folder_name)
+                    ).toString()
+            ).commit();
         }
-        pref.edit().putString("root_directory", Environment.getExternalStoragePublicDirectory("TranslationRecorder").toString()).commit();
+        pref.edit().putString(
+                "root_directory",
+                Environment.getExternalStoragePublicDirectory(
+                        getResources().getString(R.string.folder_name)
+                ).toString()
+        ).commit();
 
         //configure logger
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
@@ -282,12 +304,32 @@ public class MainMenu extends Activity {
         if (visFiles == null) {
             return;
         }
-        String rootPath = new File(Environment.getExternalStorageDirectory(), "TranslationRecorder").getAbsolutePath();
+        String rootPath = new File(
+                Environment.getExternalStorageDirectory(),
+                getResources().getString(R.string.folder_name)
+            ).getAbsolutePath();
+        List<ProjectPatternMatcher> patterns = db.getProjectPatternMatchers();
         for (File v : visFiles) {
-            FileNameExtractor fne = new FileNameExtractor(v);
+            boolean matched = false;
+            TakeInfo takeInfo = null;
+            //no idea what project the vis file is, so try all known anthology regexes until one works
+            for (ProjectPatternMatcher ppm : patterns) {
+                if (ppm.match(v)) {
+                    matched = true;
+                    takeInfo = ppm.getTakeInfo();
+                    break;
+                }
+            }
+            if (!matched) {
+                v.delete();
+                continue;
+            }
             boolean found = false;
-            String path = rootPath + "/" + fne.getLang() + "/" + fne.getSource() + "/" + fne.getBook() + "/" + String.format("%02d", fne.getChapter());
-            String name = fne.getNameWithoutTake() + "_t" + String.format("%02d", fne.getTake()) + ".wav";
+            ProjectSlugs slugs = takeInfo.getProjectSlugs();
+            String path = rootPath + "/" + slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook()
+                    + "/" + String.format("%02d", takeInfo.getChapter());
+            String visFileWithoutExtension = v.getName().split(".vis$")[0];
+            String name = visFileWithoutExtension + "_t" + String.format("%02d", takeInfo.getTake()) + ".wav";
             File searchName = new File(path, name);
             if (searchName != null && searchName.exists()) {
                 //check if the names match up; exclude the path to get to them or the file extention
@@ -307,7 +349,9 @@ public class MainMenu extends Activity {
             return "";
         }
         String nameWithExtention = a.getName();
-        if (nameWithExtention.lastIndexOf('.') < 0 || nameWithExtention.lastIndexOf('.') > nameWithExtention.length()) {
+        boolean hasNoExtension = nameWithExtention.lastIndexOf('.') < 0;
+        if (hasNoExtension || nameWithExtention.lastIndexOf('.') > nameWithExtention.length()
+        ) {
             return "";
         }
         String filename = nameWithExtention.substring(0, nameWithExtention.lastIndexOf('.'));

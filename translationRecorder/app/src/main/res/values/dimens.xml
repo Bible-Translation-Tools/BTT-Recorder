@@ -1,25 +1,52 @@
 <resources>
-    <dimen name="title">20sp</dimen>
-    <dimen name="body">16sp</dimen>
+    <dimen name="title">16sp</dimen>
+    <dimen name="body">14sp</dimen>
     <dimen name="list_item_height">70dp</dimen>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="default_padding_xxs">2dp</dimen>
-    <dimen name="default_padding_xs">4dp</dimen>
-    <dimen name="default_padding_s">8dp</dimen>
-    <dimen name="default_padding_m">16dp</dimen>
-    <dimen name="default_padding_l">32dp</dimen>
+    <dimen name="default_padding_xxs">1dp</dimen>
+    <dimen name="default_padding_xs">2dp</dimen>
+    <dimen name="default_padding_s">4dp</dimen>
+    <dimen name="default_padding_m">8dp</dimen>
+    <dimen name="default_padding_l">16dp</dimen>
 
-    <dimen name="heading_1">18sp</dimen>
-    <dimen name="heading_2">16sp</dimen>
-    <dimen name="heading_3">14sp</dimen>
-    <dimen name="heading_4">12sp</dimen>
+    <dimen name="padding_xl">21dp</dimen>
 
-    <dimen name="text_size_m">18sp</dimen>
+    <dimen name="heading_1">16sp</dimen>
+    <dimen name="heading_2">14sp</dimen>
+    <dimen name="heading_3">12sp</dimen>
+    <dimen name="heading_4">10sp</dimen>
+
+    <dimen name="text_size_s">10sp</dimen>
+    <dimen name="text_size_m">14sp</dimen>
+    <dimen name="text_size_l">16sp</dimen>
+    <dimen name="text_size_xl">18sp</dimen>
 
     <dimen name="action_bar_negative">-64dp</dimen>
+
+    <dimen name="icon_xs">12dp</dimen>
+    <dimen name="icon_s">14dp</dimen>
+    <dimen name="icon_m">16dp</dimen>
+    <dimen name="icon_l">20dp</dimen>
+    <dimen name="icon_xl">24dp</dimen>
+    <dimen name="icon_xxl">28dp</dimen>
+
+    <dimen name="rating_icon_size">64dp</dimen>
+
+    <dimen name="unit_picker_size">36dp</dimen>
+    <dimen name="tabbed_widget_size">64dp</dimen>
+    <dimen name="project_card_padding">12dp</dimen>
+
+    <dimen name="splash_title_size">36sp</dimen>
+
+
+    <dimen name="headline">20dp</dimen>
+    <dimen name="dialog_content_margin">24dp</dimen>
+    <dimen name="dialog_controls_margin">8dp</dimen>
+
+    <integer name="project_management_list_weight">95</integer>
 
 </resources>

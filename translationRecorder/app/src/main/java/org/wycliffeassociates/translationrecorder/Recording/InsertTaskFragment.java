@@ -5,13 +5,11 @@ import android.app.Fragment;
 import android.os.Bundle;
 
 import org.json.JSONException;
-import org.wycliffeassociates.translationrecorder.FilesPage.FileNameExtractor;
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
+import org.wycliffeassociates.translationrecorder.wav.WavFile;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.wycliffeassociates.translationrecorder.AudioInfo;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
 
 /**
  * Created by sarabiaj on 3/10/2016.
@@ -21,12 +19,12 @@ public class InsertTaskFragment extends Fragment {
         void writeInsert(WavFile base, WavFile insertClip, int insertLoc);
     }
 
-    private RecordingScreen mCtx;
+    private RecordingActivity mCtx;
 
     @Override
     public void onAttach(Activity activity){
         super.onAttach(activity);
-        mCtx = (RecordingScreen)activity;
+        mCtx = (RecordingActivity)activity;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class InsertTaskFragment extends Fragment {
                     WavFile result = WavFile.insertWavFile(base, insertClip, insertFrame);
                     insertClip.getFile().delete();
                     File dir = new File(mCtx.getExternalCacheDir(), "Visualization");
-                    File vis = new File(dir, FileNameExtractor.getNameWithoutExtention(insertClip.getFile())+".vis");
+                    File vis = new File(dir, ProjectFileUtils.getNameWithoutExtention(insertClip.getFile())+".vis");
                     vis.delete();
                     result.getFile().renameTo(insertClip.getFile());
                     mCtx.insertCallback(new WavFile(insertClip.getFile()));

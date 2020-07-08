@@ -47,6 +47,7 @@ public class MarkerCounterFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        super.onCreateView(inflater, container, savedInstanceState);
         return inflater.inflate(R.layout.fragment_marker_top_bar, container, false);
     }
 
@@ -65,7 +66,7 @@ public class MarkerCounterFragment extends Fragment {
     }
 
     private void initViews(){
-        mLeftView.setText("Left");
+        mLeftView.setText(getString(R.string.left_title));
         mVersesRemainingView.setText(String.valueOf(mMarkerMediator.numVersesRemaining()));
         mEscape.setOnClickListener(new View.OnClickListener() {
             @Override

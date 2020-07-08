@@ -14,22 +14,18 @@ import android.widget.TextView;
 
 import com.filippudak.ProgressPieView.ProgressPieView;
 
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityChapterList;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog;
 import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingScreen;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Chunks;
+import org.wycliffeassociates.translationrecorder.project.Project;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
- *
  * Creates a custom view for the audio entries in the file screen.
- *
  */
 public class ProjectAdapter extends ArrayAdapter {
     //class for caching the views in a row
@@ -43,14 +39,14 @@ public class ProjectAdapter extends ArrayAdapter {
     LayoutInflater mLayoutInflater;
     List<Project> mProjectList;
     Activity mCtx;
-    ProjectDatabaseHelper mDb;
+    ProjectDatabaseHelper db;
 
-    public ProjectAdapter(Activity context, List<Project> projectList) {
+    public ProjectAdapter(Activity context, List<Project> projectList, ProjectDatabaseHelper db) {
         super(context, R.layout.project_list_item, projectList);
         mCtx = context;
         mProjectList = projectList;
         mLayoutInflater = context.getLayoutInflater();
-        mDb = new ProjectDatabaseHelper(context);
+        this.db = db;
     }
 
     public View getView(final int position, View convertView, final ViewGroup parent) {
@@ -72,44 +68,57 @@ public class ProjectAdapter extends ArrayAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        initializeProjectCard(mCtx, mProjectList.get(position), mDb, holder.mLanguage, holder.mBook, holder.mInfo, holder.mRecord, holder.mTextLayout, holder.mProgressPie);
+        initializeProjectCard(
+                mCtx,
+                mProjectList.get(position),
+                db,
+                holder.mLanguage,
+                holder.mBook,
+                holder.mInfo,
+                holder.mRecord,
+                holder.mTextLayout,
+                holder.mProgressPie
+        );
 
         return convertView;
     }
 
-    public static void initializeProjectCard(final Activity ctx, final Project project, ProjectDatabaseHelper dB, TextView languageView, TextView bookView,
-                                             ImageButton infoView, ImageButton recordView, LinearLayout textLayout, ProgressPieView progressPie) {
+    public static void initializeProjectCard(
+            final Activity ctx,
+            final Project project,
+            final ProjectDatabaseHelper dB,
+            TextView languageView,
+            TextView bookView,
+            ImageButton infoView,
+            ImageButton recordView,
+            LinearLayout textLayout,
+            ProgressPieView progressPie
+    ) {
+        String book = project.getBookName();
+        bookView.setText(book);
 
-        if(project.isOBS()){
-            bookView.setText("Open Bible Stories");
-        } else {
-            String book = dB.getBookName(project.getSlug());
-            bookView.setText(book);
-        }
-
-        String language = dB.getLanguageName(project.getTargetLanguage());
+        String language = dB.getLanguageName(project.getTargetLanguageSlug());
         languageView.setText(language);
 
-        // Calculate project's progress
+        // Get project's progress
         if (dB.projectExists(project)) {
-            try {
-                // TODO: This is a bottle neck. Please optimize the progress calculation.
-                Chunks chunks = new Chunks(ctx.getBaseContext(), project.getSlug());
-                int chapterCount = chunks.getNumChapters();
-                int projectId = dB.getProjectId(project);
-                int progress = Math.round((float)dB.getProjectProgressSum(projectId) / chapterCount);
-                progressPie.setProgress(progress);
-            } catch (IOException e) {
-                Logger.e("ProjectAdapter init project card", "IOException", e);
-            }
+            int projectID = dB.getProjectId(project);
+            progressPie.setProgress(dB.getProjectProgress(projectID));
         }
 
         recordView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Project.loadProjectIntoPreferences(ctx, project);
+                project.loadProjectIntoPreferences(ctx, dB);
                 //TODO: should find place left off at?
-                v.getContext().startActivity(RecordingScreen.getNewRecordingIntent(v.getContext(), project, 1, 1));
+                v.getContext().startActivity(
+                        RecordingActivity.getNewRecordingIntent(
+                                v.getContext(),
+                                project,
+                                ChunkPlugin.DEFAULT_CHAPTER,
+                                ChunkPlugin.DEFAULT_UNIT
+                        )
+                );
             }
         });
 
@@ -136,7 +145,12 @@ public class ProjectAdapter extends ArrayAdapter {
 
     }
 
-    public static void initializeProjectCard(final Activity ctx, final Project project, ProjectDatabaseHelper db, View projectCard) {
+    public static void initializeProjectCard(
+            final Activity ctx,
+            final Project project,
+            ProjectDatabaseHelper db,
+            View projectCard
+    ) {
         TextView languageView = (TextView) projectCard.findViewById(R.id.language_text_view);
         TextView bookView = (TextView) projectCard.findViewById(R.id.book_text_view);
         ImageButton info = (ImageButton) projectCard.findViewById(R.id.info_button);

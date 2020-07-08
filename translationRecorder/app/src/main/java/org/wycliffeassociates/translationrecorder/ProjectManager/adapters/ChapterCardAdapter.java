@@ -1,11 +1,13 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.adapters;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ActionMode;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,13 +25,15 @@ import com.bignerdranch.android.multiselector.MultiSelector;
 import com.bignerdranch.android.multiselector.SwappingHolder;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
 import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
+import org.wycliffeassociates.translationrecorder.widgets.OnCardExpandedListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,25 +41,48 @@ import java.util.List;
 /**
  * Created by leongv on 8/15/2016.
  */
-public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.ViewHolder> {
+public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.ViewHolder> implements ChapterCard.ChapterDB, OnCardExpandedListener {
 
     // Attributes
     private AppCompatActivity mCtx;
+    private RecyclerView recyclerView;
     private Project mProject;
     private List<ChapterCard> mChapterCardList;
     private List<Integer> mExpandedCards = new ArrayList<>();
     private List<Integer> mSelectedCards = new ArrayList<>();
     private MultiSelector mMultiSelector = new MultiSelector();
     private ActionMode mActionMode;
+    private ProjectDatabaseHelper db;
 
+    private int RAISED_CARD_BACKGROUND_COLOR;
+    private int DROPPED_CARD_BACKGROUND_COLOR;
+    private int RAISED_CARD_TEXT_COLOR;
+    private int DROPPED_CARD_TEXT_COLOR;
+    private int DROPPED_CARD_EMPTY_TEXT_COLOR;
 
     // Constructor
-    public ChapterCardAdapter(AppCompatActivity context, Project project, List<ChapterCard> chapterCardList) {
+    public ChapterCardAdapter(
+            AppCompatActivity context,
+            Project project,
+            List<ChapterCard> chapterCardList,
+            ProjectDatabaseHelper db
+    ) {
         mCtx = context;
         mProject = project;
         mChapterCardList = chapterCardList;
+        this.db = db;
+
+        initializeColors(context);
     }
 
+    private void initializeColors(Context mCtx) {
+        RAISED_CARD_BACKGROUND_COLOR = mCtx.getResources().getColor(R.color.accent);
+        RAISED_CARD_TEXT_COLOR = mCtx.getResources().getColor(R.color.text_light);
+
+        DROPPED_CARD_BACKGROUND_COLOR = mCtx.getResources().getColor(R.color.card_bg);
+        DROPPED_CARD_EMPTY_TEXT_COLOR = mCtx.getResources().getColor(R.color.primary_text_disabled_material_light);
+        DROPPED_CARD_TEXT_COLOR = mCtx.getResources().getColor(R.color.primary_text_default_material_light);
+    }
 
     private ActionMode.Callback mMultiSelectMode = new ModalMultiSelectorCallback(mMultiSelector) {
         @Override
@@ -112,6 +139,16 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
         }
     };
 
+    @Override
+    public int checkingLevel(Project project, int chapter) {
+        int checkingLevel = db.getChapterCheckingLevel(project, chapter);
+        return checkingLevel;
+    }
+
+    @Override
+    public void onCardExpanded(int position) {
+        recyclerView.getLayoutManager().scrollToPosition(position);
+    }
 
     public class ViewHolder extends SwappingHolder implements View.OnClickListener,
             View.OnLongClickListener {
@@ -174,7 +211,7 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
             progressPie.setProgress(chapterCard.getProgress());
 
             // Checking Level
-            chapterCard.refreshCheckingLevel(mProject, pos + 1);
+            chapterCard.refreshCheckingLevel(ChapterCardAdapter.this, mProject, chapterCard.getChapterNumber());
             checkLevelBtn.setStep(chapterCard.getCheckingLevel());
 
             // Compile
@@ -198,13 +235,17 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
 
             // Raise card, and show appropriate visual cue, if it's already selected
             if (mMultiSelector.isSelected(pos, 0)) {
-                chapterCard.raise();
+                chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
                 if (!mSelectedCards.contains(getAdapterPosition())) {
                     mSelectedCards.add(getAdapterPosition());
                 }
             } else {
                 mSelectedCards.remove((Integer) getAdapterPosition());
-                chapterCard.drop();
+                chapterCard.drop(
+                        DROPPED_CARD_BACKGROUND_COLOR,
+                        DROPPED_CARD_TEXT_COLOR,
+                        DROPPED_CARD_EMPTY_TEXT_COLOR
+                );
             }
 
             // Clickable
@@ -236,11 +277,14 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
                 // Raise/drop card
                 if (mMultiSelector.isSelected(this.getAdapterPosition(), 0)) {
                     mSelectedCards.add(getAdapterPosition());
-                    chapterCard.raise();
+                    chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
                 } else {
                     mSelectedCards.remove((Integer) getAdapterPosition());
-                    chapterCard.drop();
-                }
+                    chapterCard.drop(
+                            DROPPED_CARD_BACKGROUND_COLOR,
+                            DROPPED_CARD_TEXT_COLOR,
+                            DROPPED_CARD_EMPTY_TEXT_COLOR
+                    );                }
 
                 setAvailableActions();
 
@@ -252,7 +296,7 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
             } else {
                 chapterCard.pauseAudio();
                 chapterCard.destroyAudioPlayer();
-                Intent intent = ActivityUnitList.getActivityUnitListIntent(mCtx, mProject, getAdapterPosition() + 1);
+                Intent intent = ActivityUnitList.getActivityUnitListIntent(mCtx, mProject, chapterCard.getChapterNumber());
                 mCtx.startActivity(intent);
             }
         }
@@ -273,7 +317,7 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
                 toggleExpansion(this, mExpandedCards, this.getAdapterPosition());
             }
 
-            chapterCard.raise();
+            chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
 
             setAvailableActions();
 
@@ -325,11 +369,11 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
 
     // Private Methods
     private void setListeners(final ViewHolder holder, final ChapterCard chapterCard) {
-        holder.checkLevelBtn.setOnClickListener(chapterCard.getCheckLevelOnClick());
-        holder.compileBtn.setOnClickListener(chapterCard.getCompileOnClick());
-        holder.recordBtn.setOnClickListener(chapterCard.getRecordOnClick());
-        holder.expandBtn.setOnClickListener(chapterCard.getExpandOnClick());
-        holder.deleteBtn.setOnClickListener(chapterCard.getDeleteOnClick(this));
+        holder.checkLevelBtn.setOnClickListener(chapterCard.getCheckLevelOnClick(mCtx.getFragmentManager()));
+        holder.compileBtn.setOnClickListener(chapterCard.getCompileOnClick(mCtx.getFragmentManager()));
+        holder.recordBtn.setOnClickListener(chapterCard.getRecordOnClick(mCtx));
+        holder.expandBtn.setOnClickListener(chapterCard.getExpandOnClick(this, holder.getAdapterPosition()));
+        holder.deleteBtn.setOnClickListener(chapterCard.getDeleteOnClick(this, mCtx));
         holder.playPauseBtn.setOnClickListener(chapterCard.getPlayPauseOnClick());
     }
 
@@ -396,6 +440,16 @@ public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.
                 cc.destroyAudioPlayer();
             }
         }
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
+
+    public ChapterCard getItem(int index) {
+        return mChapterCardList.get(index);
     }
 
 }

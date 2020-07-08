@@ -21,8 +21,9 @@ import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer
 import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer;
 import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer;
 import org.wycliffeassociates.translationrecorder.Playback.overlays.TimecodeLayer;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
+import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.widgets.AudioPlayer;
 
 /**
  * Created by sarabiaj on 11/4/2016.
@@ -47,6 +48,7 @@ public class FragmentTabbedWidget extends Fragment implements MinimapLayer.Minim
 
     ViewCreatedCallback mViewCreatedCallback;
     MediaController mMediaController;
+    SourceAudio.OnAudioListener mAudioListener;
 
     String mFilename = "";
     Project mProject;
@@ -88,10 +90,12 @@ public class FragmentTabbedWidget extends Fragment implements MinimapLayer.Minim
         mMediaController = (MediaController) activity;
         mMinimapDrawDelegator = (MinimapLayer.MinimapDrawDelegator) activity;
         mMinimapLineDrawDelegator = (DelegateMinimapMarkerDraw) activity;
+        mAudioListener = (SourceAudio.OnAudioListener) activity;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        super.onCreateView(inflater, container, savedInstanceState);
         return inflater.inflate(R.layout.fragment_tabbed_widget, container, false);
     }
 
@@ -180,6 +184,8 @@ public class FragmentTabbedWidget extends Fragment implements MinimapLayer.Minim
                 mSwitchToMinimap.setBackgroundColor(getResources().getColor(R.color.mostly_black));
             }
         });
+
+        mSrcPlayer.setSourceAudioListener(mAudioListener);
     }
 
     @Override
@@ -193,6 +199,10 @@ public class FragmentTabbedWidget extends Fragment implements MinimapLayer.Minim
         super.onDestroy();
         mSrcPlayer.cleanup();
         mViewCreatedCallback = null;
+    }
+
+    public SourceAudio getSrcPlayer() {
+        return mSrcPlayer;
     }
 
     public void initializeTimecode(int durationMs){
@@ -257,6 +267,9 @@ public class FragmentTabbedWidget extends Fragment implements MinimapLayer.Minim
             onLocationChanged();
         }
     }
+
+    @Override
+    public void onScrollComplete() {}
 
     @Override
     public void onTap(float x) {

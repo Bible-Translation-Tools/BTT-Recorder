@@ -7,11 +7,10 @@
     android:layout_height="match_parent"
     >
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/unit_list_toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/abc_action_bar_default_height_material"
-        android:elevation="@dimen/appbar_elevation"
         android:theme="@style/TR.Toolbar"
         app:popupTheme="@style/TR.Popup"
         />
@@ -25,14 +24,14 @@
         android:gravity="center_horizontal"
         >
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/unit_list"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="80"
+            android:layout_weight="@integer/project_management_list_weight"
             android:scrollbars="vertical"
-            android:paddingTop="@dimen/default_padding_m"
-            android:paddingBottom="@dimen/default_padding_m"
+            android:paddingTop="@dimen/default_padding_l"
+            android:paddingBottom="@dimen/default_padding_l"
             android:clipToPadding="false"
             android:divider="@color/background_material_light"
             />

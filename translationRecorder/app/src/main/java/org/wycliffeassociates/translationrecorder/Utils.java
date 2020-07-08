@@ -5,7 +5,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
 import java.io.File;
 
@@ -41,8 +41,10 @@ public class Utils {
     //http://stackoverflow.com/questions/13410949/how-to-delete-folder-from-internal-storage-in-android
     public static void deleteRecursive(File fileOrDirectory) {
         if (fileOrDirectory.isDirectory()) {
-            for (File child : fileOrDirectory.listFiles()) {
-                deleteRecursive(child);
+            if(fileOrDirectory.listFiles() != null) {
+                for (File child : fileOrDirectory.listFiles()) {
+                    deleteRecursive(child);
+                }
             }
         }
         fileOrDirectory.delete();

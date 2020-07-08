@@ -1,22 +1,25 @@
 package org.wycliffeassociates.translationrecorder.widgets;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.view.View;
 
-import org.wycliffeassociates.translationrecorder.FilesPage.FileNameExtractor;
+import com.door43.tools.reporting.Logger;
+
 import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity;
-import org.wycliffeassociates.translationrecorder.ProjectManager.Project;
 import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter;
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog;
 import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingScreen;
-import org.wycliffeassociates.translationrecorder.Reporting.Logger;
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
+import org.wycliffeassociates.translationrecorder.project.TakeInfo;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
 
 import java.io.File;
@@ -33,6 +36,20 @@ import java.util.List;
  * Created by leongv on 7/28/2016.
  */
 public class UnitCard {
+
+    public interface DatabaseAccessor {
+        void updateSelectedTake(TakeInfo takeInfo);
+        int selectedTakeNumber(TakeInfo takeInfo);
+        int takeCount(Project project, int chapter, int firstVerse);
+        void deleteTake(TakeInfo takeInfo);
+        void removeSelectedTake(TakeInfo takeInfo);
+        void selectTake(TakeInfo takeInfo);
+        int takeRating(TakeInfo takeInfo);
+    }
+
+    public interface OnTakeDeleteListener {
+        void onTakeDeleted();
+    }
 
     public static int NO_TAKES = -1;
     public static int MIN_TAKE_THRESHOLD = 2;
@@ -59,25 +76,30 @@ public class UnitCard {
     private final int mFirstVerse;
     private final int mEndVerse;
     private int mTakeCount;
-    private int mSelectedTake;
     private SoftReference<List<File>> mTakeList;
     private SoftReference<AudioPlayer> mAudioPlayer;
-    private Activity mCtx;
-    private Resources.Theme mTheme;
-
+    private OnTakeDeleteListener onTakeDeleteListener;
+    private final DatabaseAccessor databaseAccessor;
 
     // Constructors
-    public UnitCard(Activity ctx, Project project, int chapter, int firstVerse, int endVerse) {
-        mTitle = Utils.capitalizeFirstLetter(project.getMode()) + " " + firstVerse;
+    public UnitCard(
+            DatabaseAccessor db,
+            Project project,
+            String title,
+            int chapter,
+            int firstVerse,
+            int endVerse,
+            OnTakeDeleteListener listener
+    ) {
+        mTitle = title;
         mFirstVerse = firstVerse;
         mEndVerse = endVerse;
         mChapter = chapter;
         mProject = project;
-        mCtx = ctx;
-        mTheme = mCtx.getTheme();
+        onTakeDeleteListener = listener;
+        databaseAccessor = db;
         refreshTakeCount();
     }
-
 
     // Setters
     public void setTitle(String title) {
@@ -87,7 +109,6 @@ public class UnitCard {
     public void setViewHolder(UnitCardAdapter.ViewHolder vh) {
         mViewHolder = vh;
     }
-
 
     // Getters
     public String getTitle() {
@@ -110,12 +131,16 @@ public class UnitCard {
         return mIsEmpty;
     }
 
-
     // Private Methods
     private AudioPlayer initializeAudioPlayer() {
         AudioPlayer ap = new AudioPlayer();
         if (mViewHolder != null) {
-            ap.refreshView(mViewHolder.elapsed, mViewHolder.duration, mViewHolder.takePlayPauseBtn, mViewHolder.seekBar);
+            ap.refreshView(
+                    mViewHolder.elapsed,
+                    mViewHolder.duration,
+                    mViewHolder.takePlayPauseBtn,
+                    mViewHolder.seekBar
+            );
         }
         mAudioPlayer = new SoftReference<AudioPlayer>(ap);
         return ap;
@@ -141,7 +166,12 @@ public class UnitCard {
                 ap.loadFile(getTakeList().get(mTakeIndex));
             }
         }
-        ap.refreshView(mViewHolder.elapsed, mViewHolder.duration, mViewHolder.takePlayPauseBtn, mViewHolder.seekBar);
+        ap.refreshView(
+                mViewHolder.elapsed,
+                mViewHolder.duration,
+                mViewHolder.takePlayPauseBtn,
+                mViewHolder.seekBar
+        );
     }
 
     private List<File> getTakeList() {
@@ -156,34 +186,44 @@ public class UnitCard {
     }
 
     private List<File> populateTakeList() {
-        File root = Project.getProjectDirectory(mProject);
-        String chap = FileNameExtractor.chapterIntToString(mProject, mChapter);
+        File root = ProjectFileUtils.getProjectDirectory(mProject);
+        String chap = ProjectFileUtils.chapterIntToString(mProject, mChapter);
         File folder = new File(root, chap);
         File[] files = folder.listFiles();
-        FileNameExtractor fne;
+        ProjectPatternMatcher ppm;
         int first = mFirstVerse;
         int end = mEndVerse;
         //Get only the files of the appropriate unit
         List<File> resultFiles = new ArrayList<>();
         if (files != null) {
             for (File file : files) {
-                fne = new FileNameExtractor(file);
-                if (fne.getStartVerse() == first && fne.getEndVerse() == end) {
-                    resultFiles.add(file);
+                ppm = mProject.getPatternMatcher();
+                ppm.match(file);
+                if(ppm.matched()) {
+                    TakeInfo ti = ppm.getTakeInfo();
+                    if (ti != null && ti.getStartVerse() == first && ti.getEndVerse() == end) {
+                        resultFiles.add(file);
+                    }
                 }
             }
         }
         Collections.sort(resultFiles, new Comparator<File>() {
             @Override
             public int compare(File f, File s) {
-                FileNameExtractor fne = new FileNameExtractor(f);
-                FileNameExtractor fne2 = new FileNameExtractor(s);
+                ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                ProjectPatternMatcher ppm2 = mProject.getPatternMatcher();
+                ppm.match(f);
+                TakeInfo takeInfo = ppm.getTakeInfo();
+                ppm2.match(s);
+                TakeInfo takeInfo2 = ppm2.getTakeInfo();
+
+
 //                Long first = f.lastModified();
 //                Long second = s.lastModified();
                 //Change to take name rather than last modified because editing verse markers modifies the file
                 //this means that adding verse markers would change the postition in the list when returning to the card
-                Integer first = fne.getTake();
-                Integer second = fne2.getTake();
+                Integer first = takeInfo.getTake();
+                Integer second = takeInfo2.getTake();
                 return first.compareTo(second);
             }
         });
@@ -194,6 +234,7 @@ public class UnitCard {
     private void refreshTakes() {
         //if the soft reference still has the takes, cool, if not, repopulate them
         List<File> takes = getTakeList();
+        refreshTakeCountText(takes);
         refreshTakeText(takes);
         if (takes.size() > 0) {
             File take = takes.get(mTakeIndex);
@@ -204,24 +245,24 @@ public class UnitCard {
 
     private void refreshSelectedTake(File take) {
         if (mViewHolder != null) {
-            ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
-            FileNameExtractor fne = new FileNameExtractor(take);
-            int chosen = db.getSelectedTakeNumber(fne);
-            mViewHolder.takeSelectBtn.setActivated(chosen == fne.getTake());
-            db.close();
+            ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+            ppm.match(take);
+            TakeInfo takeInfo = ppm.getTakeInfo();
+            int chosen = databaseAccessor.selectedTakeNumber(takeInfo);
+            mViewHolder.takeSelectBtn.setActivated(chosen == takeInfo.getTake());
         }
     }
 
     private void refreshTakeRating(File take) {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
-        FileNameExtractor fne = new FileNameExtractor(take);
+        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+        ppm.match(take);
+        TakeInfo takeInfo = ppm.getTakeInfo();
         Logger.w(this.toString(), "Refreshing take rating for " + take.getName());
-        mCurrentTakeRating = db.getTakeRating(fne);
+        mCurrentTakeRating = databaseAccessor.takeRating(takeInfo);
         if (mViewHolder != null) {
             mViewHolder.takeRatingBtn.setStep(mCurrentTakeRating);
             mViewHolder.takeRatingBtn.invalidate();
         }
-        db.close();
     }
 
     private void refreshTakeText(List<File> takes) {
@@ -230,16 +271,34 @@ public class UnitCard {
         }
 
         final String text;
+
         if (takes.size() > 0) {
-            text = "Take " + (mTakeIndex + 1) + " of " + takes.size();
+            text = TranslationRecorderApp.getContext().getResources().getString(
+                    R.string.label_take_detailed,
+                    String.valueOf((mTakeIndex + 1)),
+                    String.valueOf(takes.size())
+            );
             long created = takes.get(mTakeIndex).lastModified();
             mViewHolder.currentTakeTimeStamp.setText(convertTime(created));
         } else {
-            text = "Take 0 of " + takes.size();
+            text = TranslationRecorderApp.getContext().getResources().getString(
+                    R.string.label_take_detailed,
+                    "0",
+                    String.valueOf(takes.size())
+            );
             mViewHolder.currentTakeTimeStamp.setText("");
         }
         mViewHolder.currentTake.setText(text);
         mViewHolder.currentTake.invalidate();
+    }
+
+    private void refreshTakeCountText(List<File> takes) {
+        if (mViewHolder == null) {
+            return;
+        }
+
+        mViewHolder.unitCard.refreshTakeCount();
+        mViewHolder.takeCount.setText(String.valueOf(takes.size()));
     }
 
     private String convertTime(long time) {
@@ -251,17 +310,21 @@ public class UnitCard {
 
     // Public API
     public void refreshUnitStarted(Project project, int chapter, int startVerse) {
-        File dir = Project.getProjectDirectory(project);
-        String chapterString = FileNameExtractor.chapterIntToString(project, chapter);
+        File dir = ProjectFileUtils.getProjectDirectory(project);
+        String chapterString = ProjectFileUtils.chapterIntToString(project, chapter);
         File chapterDir = new File(dir, chapterString);
         if (chapterDir.exists()) {
             File[] files = chapterDir.listFiles();
             if (files != null) {
                 for (File f : files) {
-                    FileNameExtractor fne = new FileNameExtractor(f);
-                    if (fne.getStartVerse() == startVerse) {
-                        mIsEmpty = false;
-                        return;
+                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                    ppm.match(f);
+                    if (ppm.matched()) {
+                        TakeInfo takeInfo = ppm.getTakeInfo();
+                        if (takeInfo != null && takeInfo.getStartVerse() == startVerse) {
+                            mIsEmpty = false;
+                            return;
+                        }
                     }
                 }
             }
@@ -270,15 +333,7 @@ public class UnitCard {
     }
 
     public void refreshTakeCount() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
-        //Need to check both chapter and unit first
-        if (db.chapterExists(mProject, mChapter) && db.unitExists(mProject, mChapter, mFirstVerse)) {
-            int unitId = db.getUnitId(mProject, mChapter, mFirstVerse);
-            mTakeCount = db.getTakeCount(unitId);
-            db.close();
-        } else {
-            mTakeCount = NO_TAKES;
-        }
+        mTakeCount = databaseAccessor.takeCount(mProject, mChapter, mFirstVerse);
     }
 
     public void expand() {
@@ -303,24 +358,24 @@ public class UnitCard {
         }
     }
 
-    public void raise() {
+    public void raise(Context context) {
         if (mViewHolder == null) {
             return;
         }
         mViewHolder.cardView.setCardElevation(8f);
-        mViewHolder.cardContainer.setBackgroundColor(mCtx.getResources().getColor(R.color.accent));
-        mViewHolder.unitTitle.setTextColor(mCtx.getResources().getColor(R.color.text_light));
+        mViewHolder.cardContainer.setBackgroundColor(context.getResources().getColor(R.color.accent));
+        mViewHolder.unitTitle.setTextColor(context.getResources().getColor(R.color.text_light));
         mViewHolder.unitActions.setEnabled(false);
     }
 
-    public void drop() {
+    public void drop(Context context) {
         if (mViewHolder == null) {
             return;
         }
         mViewHolder.cardView.setCardElevation(2f);
-        mViewHolder.cardContainer.setBackgroundColor(mCtx.getResources().getColor(R.color.card_bg));
+        mViewHolder.cardContainer.setBackgroundColor(context.getResources().getColor(R.color.card_bg));
         mViewHolder.unitTitle.setTextColor(
-                mCtx.getResources().getColor((isEmpty()) ? R.color.primary_text_disabled_material_light : R.color.primary_text_default_material_light)
+                context.getResources().getColor((isEmpty()) ? R.color.primary_text_disabled_material_light : R.color.primary_text_default_material_light)
         );
         mViewHolder.unitActions.setEnabled(true);
     }
@@ -343,18 +398,24 @@ public class UnitCard {
         }
     }
 
-    public View.OnClickListener getUnitRecordOnClick() {
+    public View.OnClickListener getUnitRecordOnClick(final Context context, final ProjectDatabaseHelper db) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pauseAudio();
-                Project.loadProjectIntoPreferences(mCtx, mProject);
-                view.getContext().startActivity(RecordingScreen.getNewRecordingIntent(mCtx, mProject, mChapter, mFirstVerse));
+                mProject.loadProjectIntoPreferences(context, db);
+                view.getContext().startActivity(
+                        RecordingActivity.getNewRecordingIntent(context, mProject, mChapter, mFirstVerse)
+                );
             }
         };
     }
 
-    public View.OnClickListener getUnitExpandOnClick(final int position, final List<Integer> expandedCards) {
+    public View.OnClickListener getUnitExpandOnClick(
+            final int position,
+            final List<Integer> expandedCards,
+            final OnCardExpandedListener listener
+    ) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -363,6 +424,7 @@ public class UnitCard {
                     if (!expandedCards.contains(position)) {
                         expandedCards.add(position);
                     }
+                    listener.onCardExpanded(position);
                 } else {
                     pauseAudio();
                     collapse();
@@ -410,24 +472,29 @@ public class UnitCard {
         };
     }
 
-    public View.OnClickListener getTakeDeleteOnClick(final int position, final UnitCardAdapter adapter) {
+    public View.OnClickListener getTakeDeleteOnClick(
+            final Context ctx,
+            final DatabaseAccessor db,
+            final int position,
+            final UnitCardAdapter adapter
+    ) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pauseAudio();
                 final List<File> takes = getTakeList();
                 if (takes.size() > 0) {
-                    AlertDialog dialog = new AlertDialog.Builder(mCtx)
-                            .setTitle("Delete take?")
+                    AlertDialog dialog = new AlertDialog.Builder(ctx)
+                            .setTitle(ctx.getString(R.string.delete_take))
                             .setIcon(R.drawable.ic_delete_black_36dp)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            .setPositiveButton(ctx.getString(R.string.yes), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     File selectedFile = takes.get(mTakeIndex);
-                                    FileNameExtractor fne = new FileNameExtractor(selectedFile);
-                                    ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
-                                    db.deleteTake(fne);
-                                    db.close();
+                                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                                    ppm.match(selectedFile);
+                                    TakeInfo takeInfo = ppm.getTakeInfo();
+                                    db.deleteTake(takeInfo);
                                     takes.get(mTakeIndex).delete();
                                     takes.remove(mTakeIndex);
                                     //keep the same index in the list, unless the one removed was the last take.
@@ -447,9 +514,10 @@ public class UnitCard {
                                         destroyAudioPlayer();
                                         adapter.notifyItemChanged(position);
                                     }
+                                    onTakeDeleteListener.onTakeDeleted();
                                 }
                             })
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(ctx.getString(R.string.no), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
@@ -470,7 +538,13 @@ public class UnitCard {
                 if (takes.size() > 0) {
                     pauseAudio();
                     WavFile wavFile = new WavFile(takes.get(mTakeIndex));
-                    Intent intent = PlaybackActivity.getPlaybackIntent(v.getContext(), wavFile, mProject, mChapter, mFirstVerse);
+                    Intent intent = PlaybackActivity.getPlaybackIntent(
+                            v.getContext(),
+                            wavFile,
+                            mProject,
+                            mChapter,
+                            mFirstVerse
+                    );
                     v.getContext().startActivity(intent);
                 }
             }
@@ -484,13 +558,14 @@ public class UnitCard {
                 if (mViewHolder.takePlayPauseBtn.isActivated()) {
                     pauseAudio();
                 } else {
+                    mViewHolder.pausePlayers();
                     playAudio();
                 }
             }
         };
     }
 
-    public View.OnClickListener getTakeRatingOnClick() {
+    public View.OnClickListener getTakeRatingOnClick(final Activity context) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -498,29 +573,32 @@ public class UnitCard {
                 if (takes.size() > 0) {
                     pauseAudio();
                     String name = takes.get(mTakeIndex).getName();
-                    RatingDialog dialog = RatingDialog.newInstance(name, mCurrentTakeRating);
-                    dialog.show(mCtx.getFragmentManager(), "single_take_rating");
+                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                    ppm.match(name);
+                    TakeInfo takeInfo = ppm.getTakeInfo();
+                    RatingDialog dialog = RatingDialog.newInstance(takeInfo, mCurrentTakeRating);
+                    dialog.show(context.getFragmentManager(), "single_take_rating");
                 }
             }
         };
     }
 
-    public View.OnClickListener getTakeSelectOnClick() {
+    public View.OnClickListener getTakeSelectOnClick(final DatabaseAccessor db) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 List<File> takes = getTakeList();
                 if (takes.size() > 0) {
-                    ProjectDatabaseHelper db = new ProjectDatabaseHelper(mCtx);
-                    FileNameExtractor fne = new FileNameExtractor(takes.get(mTakeIndex));
+                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                    ppm.match(takes.get(mTakeIndex));
+                    TakeInfo takeInfo = ppm.getTakeInfo();
                     if (view.isActivated()) {
                         view.setActivated(false);
-                        db.removeSelectedTake(fne);
+                        db.removeSelectedTake(takeInfo);
                     } else {
                         view.setActivated(true);
-                        db.setSelectedTake(fne);
+                        db.selectTake(takeInfo);
                     }
-                    db.close();
                 }
             }
         };
