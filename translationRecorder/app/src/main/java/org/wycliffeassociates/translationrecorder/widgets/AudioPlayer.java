@@ -122,14 +122,10 @@ public class AudioPlayer {
             public void onCompletion(MediaPlayer mp) {
                 togglePlayPauseButton(false);
                 if (mSeekBar != null) {
-                    mMediaPlayer.seekTo(0);
                     int max = mSeekBar.getMax();
                     updateDurationView(max);
                     updateSeekBar(0);
                     updateElapsedView(0);
-                }
-                if(mMediaPlayer.isPlaying()) {
-                    mMediaPlayer.seekTo(0);
                 }
             }
         });
@@ -190,7 +186,7 @@ public class AudioPlayer {
                 Runnable loop = new Runnable() {
                     @Override
                     public void run() {
-                        if (mMediaPlayer != null && !mPlayerReleased) {
+                        if (mMediaPlayer != null && !mPlayerReleased && isPlaying()) {
                             mCurrentProgress = mMediaPlayer.getCurrentPosition();
                             updateElapsedView(mCurrentProgress);
                             if (mSeekBar != null && mCurrentProgress > mSeekBar.getProgress()) {
