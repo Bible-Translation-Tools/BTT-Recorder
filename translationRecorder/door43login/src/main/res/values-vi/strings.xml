@@ -11,31 +11,32 @@
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2> Bạn được tự do: </h2><p> Chia sẻ, sao chép và phân phối các tài liệu dưới bất kì phương tiện hoặc định dạng nào; Sửa đổi, remix, phối lại và xây dựng dựa trên các tài liệu với bất kì mục đích nào, kể cả thương mại. Việc cấp phép không thể thu hồi những quyền tự do miễn là bạn làm theo các điều khoản cấp phép. </p><h2> Theo các điều khoản sau đây: </h2><p> <b>Ghi công</b> - Bạn phải cung cấp danh tính phù hợp, cung cấp một liên kết đến các giấy phép, và cho biết nếu những thay đổi đã được thực hiện. Bạn có thể làm như vậy trong bất kỳ cách thức nào hợp lí, nhưng không phải cách để hàm ý người cấp giấy phép đồng ý với bạn hoặc với việc sử dụng của bạn; <br/> <b>ShareAlike</b> - Nếu bạn phối lại, biến đổi, hoặc xây dựng dựa trên các tài liệu, bạn phải phân phối đóng góp của bạn theo giấy phép tương tự như bản gốc; <br/> <b>Không có hạn chế bổ sung</b> - Bạn không được áp dụng điều khoản pháp lý hoặc biện pháp công nghệ để hạn chế người khác theo pháp lí làm bất cứ điều gì được giấy phép cho phép. </p><h2> Thông báo: </h2><p> Bạn không cần phải tuân theo các giấy phép cho các phần của tài liệu trong phạm vi công cộng hoặc khi việc sử dụng của bạn được cho phép ngoại lệ hoặc hạn chế; Không có sự bảo đảm được cung cấp. Giấy phép có thể không cung cấp cho bạn tất cả các quyền cần thiết cho mục đích sử dụng của bạn. Ví dụ, các quyền khác như công khai, riêng tư, hoặc các quyền nhân thân có thể giới hạn cách sử dụng các tài liệu. </p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines"><![CDATA[<h1>Translation Guidelines</h1>
-<p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the <xliff:g id="organization_name">Wycliffe Associates</xliff:g> project. All translation activities are carried out according to these common guidelines.</em></p>
+    <string name="translation_guidlines"><![CDATA[<h1>Nguyên tắc Dịch thuật</h1>
+<p><em>Tuyên bố sau đây về nguyên tắc và qui trình được sử dụng trong dịch thuật được đăng kí bởi tất cả tổ chức thành viên và người đóng góp cho dự án của <xliff:g id="organization_name">Wycliffe Associates</xliff:g>. Tất cả hoạt động dịch thuật đều được thực hiện dựa trên những nguyên tắc chung này.</em></p>
 <p>
-  <strong>Accurate</strong> - Translate accurately, without detracting from, changing, or adding to the meaning of the original text. Translated content should faithfully communicate as precisely as possible the meaning of the original text as it would have been understood by the original audience.
-  <br/><br/><strong>Clear</strong> - Use whatever language structures are necessary to achieve the highest level of comprehension. This includes rearranging the form of a text and using as many or as few terms as necessary to communicate the original meaning as accurately as possible.
-  <br/><br/><strong>Faithful</strong> - Use key terms that are faithful to the vocabulary of the original biblical languages. Terms addressing the relationship between God the Father and God the Son should be retained in translated content and clarified, as needed, in footnotes or other supplemental resources.
-  <br/><br/><strong>Authoritative</strong> - Use the original language biblical texts as the highest authority for translation of biblical content. Reliable biblical content in other languages may be used for clarification and as intermediary source texts.
-  <br/><br/><strong>Pure</strong> - Avoid any political, denominational, ideological, social, cultural, or theological bias in your translation.
-  <br/><br/><strong>Expressive</strong> - Communicate the feelings and attitudes of the original text. As much as possible, maintain the literary forms in the original text, including narrative, poetry, exhortation, and prophecy, representing them with corresponding forms that communicate in a similar way in your language.
-  <br/><br/><strong>Historical</strong> - Communicate historical events and facts accurately, providing additional information as needed in order to accurately communicate the intended message to people who do not share the same context and culture as the original recipients of the original content.
-  <br/><br/><strong>Natural</strong> - Use language forms that are effective and that reflect the way your language is used in corresponding contexts.
-  <br/><br/><strong>Collaborative</strong> - Where possible, work together with other believers who speak your language to translate, check, and distribute the translated content, ensuring that it is of the highest quality and available to as many people as possible.
-  <br/><br/><strong>Ongoing</strong> - Encourage the periodic review of translations to ascertain when revision or a new translation is needed.
+  <strong>Tính chính xác</strong> - Dịch thuật chính xác, không phỉ báng, sửa đổi, hoặc thêm ý nghĩa vào văn bản gốc. Nội dung dịch phải truyền đạt chân thật một cách chính xác nhất có thể về ý nghĩa của văn bản gốc giống như được hiểu bởi người xem gốc.
+  <br/><br/><strong>Rõ ràng</strong> - Sử dụng bất cứ cấu trúc ngôn ngữ cần thiết nào  để đạt được mức độ lĩnh hội cao nhất. Việc này bao gồm sắp xếp lại dạng văn bản và sử dụng ít hay nhiều từ ngữ để truyền đạt ý nghĩa ban đầu một cách chính xác nhất có thể.
+  <br/><br/><strong>Thành thật</strong> - Sử dụng những từ khóa mang tính trung thành với từ vựng của ngôn ngữ được dùng trong Kinh Thánh. Từ ngữ chỉ mối quan hệ giữ Đức Chúa Cha và Đức Chúa Con nên được giữ trong nội dung dịch và được làm rõ nếu cần thiết, ở phần chú thích hoặc những tài liệu bổ sung.
+  <br/><br/><strong>Tính thẩm quyền</strong> - Sử dụng ngôn từ gốc trong văn bản trong Kinh Thánh bằng thẩm quyền cao nhất cho việc dịch thuật nội dung Kinh Thánh. Nội dung Kinh Thánh đáng tin cậy trong các ngôn ngữ khác có thể được dùng để làm rõ hoặc dùng như văn bản gốc trung gian.
+  <br/><br/><strong>Thuần túy</strong> - Tránh thành kiến về chính trị, giáo phái, hệ tư tưởng, xã hội, văn hóa hoặc 
+ thần học trong bản dịch của bạn.
+  <br/><br/><strong>Tính biểu cảm</strong> - Truyền đạt những cảm xúc và thái độ của văn bản gốc. Nhiều nhất có thể, giữ dạng văn chương của văn bản gốc, bao gồm tự sự, thơ ca, khích lệ và tiên tri, diễn tả nó với những dạng tương ứng để truyền đạt một cách tương tự giống như ngôn ngữ của bạn.
+  <br/><br/><strong>Tính lịch sử</strong> - Truyền đạt những sự kiện lịch sử và sự việc một cách chính xác, cung cấp thêm thông tin nếu cầu thiết để truyền tải chính xác thông điệp được dự định cho những người không có cùng bối cảnh và văn hóa giống như người xem gốc của nội dung gốc.
+  <br/><br/><strong>Tính tự nhiên</strong> - Sử dụng những dạng ngôn từ có hiệu quả và phản ánh cách ngôn ngữ của bạn được sử dụng trong những bối cảnh tương ứng.
+  <br/><br/><strong>Tính cộng tác</strong> - Khi có thể, hãy làm việc cùng với những tín đồ khác mà họ nói ngôn ngữ của bạn để dịch, kiểm tra và phân phối nội dung dịch, đảm bảo rằng nó có giá trị tốt nhất và sẵn sàng sử dụng cho nhiều người nhất có thể.
+  <br/><br/><strong>Tính liên tục</strong> - Khuyến khích xem lại bản dịch thuật định kì để xác minh khi nào cần sửa đổi hoặc cần có bản dịch mới.
 </p>
-<h1>Managing and Identifying Translation Quality</h1>
-<p>The quality of a translation generally refers to the fidelity of the translation to the meaning of the original, and the degree to which the translation is understandable and effective for the speakers of the receptor language. The strategy we suggest involves checking the forms and communicative quality of the translation with the language community, and checking the fidelity of the translation with the Church in that people group.</p>
-<p>The specific steps involved may vary significantly, depending on the language and context of the translation project. Generally, we consider a good translation to be one that is:</p>
+<h1>Quản lí và Xác định Chất lượng Dịch thuật</h1>
+<p>Chất lượng của bản dịch nhìn chung là tính trung thành của bản dịch với ý nghĩa của bản gốc, và mức độ mà bản dịch có thể hiểu được và hiệu quả cho người nói của ngôn ngữ đích. Chiến lược được đề xuất bao gồm kiểm tra dạng và chất lượng truyền đạt của bản dịch với cộng đồng ngôn ngữ, và kiểm tra tính trung thành của bản dịch với Giáo hội của nhóm người đó.</p>
+<p>Các bước cụ thể liên quan có thể khác biệt đáng kể, dựa trên ngôn ngữ và bối cảnh của dự án dịch thuật. Nhìn chung, chúng tôi xem xét một bản dịch là tốt khi nó:</p>
 <p>
-  <strong>Accurate</strong> - Faithful to the intended meaning of the original, as determined by the Church in that people group and in alignment with the Church global and historical, and consequently:
-  <br/><br/><strong>Affirmed by the Church</strong> - Endorsed and used by the Church.
+  <strong>Chính xác</strong> - Trung thành với ý nghĩa chủ định của bản gốc, như đã được xác định bởi Giáo hội của nhóm người đó và trong sự liên kết với Giáo hội toàn cầu và lịch sử, và kết quả là:
+  <br/><br/><strong>Được xác nhận bởi Giáo hội</strong> - Được Giáo hội chứng thực và sử dụng.
 </p>
-<p>In addition, a good translation is reviewed by the speakers of the language community and is found to be:</p>
+<p>Thêm vào đó, một bản dịch tốt được xét duyệt bởi người nói của cộng đồng ngôn ngữ và được công nhận là:</p>
 <p>
-  <strong>Natural</strong> - Using current forms of the language, and
-  <br/><br/><strong>Clear</strong> - Strives for the highest level of comprehension by hearers.
+  <strong>Tự nhiên</strong> - Sử dụng hình thức ngôn ngữ hiện tại và
+  <br/><br/><strong>Rõ ràng</strong> - Phấn đấu đến mức lãnh hội cao nhất của người nghe.
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
     <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
