@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <!-- The terms that users must agree with in order to use the app -->
+    <string name="terms_title">Điều khoản sử dụng</string>
+    <string name="terms">Bằng việc sử dụng ứng dụng này, bạn đồng ý với tuyên bố đức tin và nguyên tắc dịch thuật và phát hành cách sản phẩm của bạn theo các điều khoản của Giấy phép Quốc tế Creative Commons Attribution-ShareAlike 4.0.</string>
+    <string name="view_license_agreement">Thỏa thuận cấp phép</string>
+    <string name="license_deny">Không, cảm ơn</string>
+    <string name="license_accept">Tôi đồng ý</string>
+    <string name="view_statement_of_faith">Tuyên bố về Đức tin</string>
+    <string name="view_translation_guidelines">Nguyên tắc Dịch thuật</string>
+    <!-- This is the license agreement to use the app. It is formatted as HTML. -->
+    <string name="license"><![CDATA[<h2> Bạn được tự do: </h2><p> Chia sẻ, sao chép và phân phối các tài liệu dưới bất kì phương tiện hoặc định dạng nào; Sửa đổi, remix, phối lại và xây dựng dựa trên các tài liệu với bất kì mục đích nào, kể cả thương mại. Việc cấp phép không thể thu hồi những quyền tự do miễn là bạn làm theo các điều khoản cấp phép. </p><h2> Theo các điều khoản sau đây: </h2><p> <b>Ghi công</b> - Bạn phải cung cấp danh tính phù hợp, cung cấp một liên kết đến các giấy phép, và cho biết nếu những thay đổi đã được thực hiện. Bạn có thể làm như vậy trong bất kỳ cách thức nào hợp lí, nhưng không phải cách để hàm ý người cấp giấy phép đồng ý với bạn hoặc với việc sử dụng của bạn; <br/> <b>ShareAlike</b> - Nếu bạn phối lại, biến đổi, hoặc xây dựng dựa trên các tài liệu, bạn phải phân phối đóng góp của bạn theo giấy phép tương tự như bản gốc; <br/> <b>Không có hạn chế bổ sung</b> - Bạn không được áp dụng điều khoản pháp lý hoặc biện pháp công nghệ để hạn chế người khác theo pháp lí làm bất cứ điều gì được giấy phép cho phép. </p><h2> Thông báo: </h2><p> Bạn không cần phải tuân theo các giấy phép cho các phần của tài liệu trong phạm vi công cộng hoặc khi việc sử dụng của bạn được cho phép ngoại lệ hoặc hạn chế; Không có sự bảo đảm được cung cấp. Giấy phép có thể không cung cấp cho bạn tất cả các quyền cần thiết cho mục đích sử dụng của bạn. Ví dụ, các quyền khác như công khai, riêng tư, hoặc các quyền nhân thân có thể giới hạn cách sử dụng các tài liệu. </p>]]></string>
+    <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
+    <string name="translation_guidlines"><![CDATA[<h1>Nguyên tắc Dịch thuật</h1>
+<p><em>Tuyên bố sau đây về nguyên tắc và qui trình được sử dụng trong dịch thuật được đăng kí bởi tất cả tổ chức thành viên và người đóng góp cho dự án của <xliff:g id="organization_name">Wycliffe Associates</xliff:g>. Tất cả hoạt động dịch thuật đều được thực hiện dựa trên những nguyên tắc chung này.</em></p>
+<p>
+  <strong>Tính chính xác</strong> - Dịch thuật chính xác, không phỉ báng, sửa đổi, hoặc thêm ý nghĩa vào văn bản gốc. Nội dung dịch phải truyền đạt chân thật một cách chính xác nhất có thể về ý nghĩa của văn bản gốc giống như được hiểu bởi người xem gốc.
+  <br/><br/><strong>Rõ ràng</strong> - Sử dụng bất cứ cấu trúc ngôn ngữ cần thiết nào  để đạt được mức độ lĩnh hội cao nhất. Việc này bao gồm sắp xếp lại dạng văn bản và sử dụng ít hay nhiều từ ngữ để truyền đạt ý nghĩa ban đầu một cách chính xác nhất có thể.
+  <br/><br/><strong>Thành thật</strong> - Sử dụng những từ khóa mang tính trung thành với từ vựng của ngôn ngữ được dùng trong Kinh Thánh. Từ ngữ chỉ mối quan hệ giữ Đức Chúa Cha và Đức Chúa Con nên được giữ trong nội dung dịch và được làm rõ nếu cần thiết, ở phần chú thích hoặc những tài liệu bổ sung.
+  <br/><br/><strong>Tính thẩm quyền</strong> - Sử dụng ngôn từ gốc trong văn bản trong Kinh Thánh bằng thẩm quyền cao nhất cho việc dịch thuật nội dung Kinh Thánh. Nội dung Kinh Thánh đáng tin cậy trong các ngôn ngữ khác có thể được dùng để làm rõ hoặc dùng như văn bản gốc trung gian.
+  <br/><br/><strong>Thuần túy</strong> - Tránh thành kiến về chính trị, giáo phái, hệ tư tưởng, xã hội, văn hóa hoặc 
+ thần học trong bản dịch của bạn.
+  <br/><br/><strong>Tính biểu cảm</strong> - Truyền đạt những cảm xúc và thái độ của văn bản gốc. Nhiều nhất có thể, giữ dạng văn chương của văn bản gốc, bao gồm tự sự, thơ ca, khích lệ và tiên tri, diễn tả nó với những dạng tương ứng để truyền đạt một cách tương tự giống như ngôn ngữ của bạn.
+  <br/><br/><strong>Tính lịch sử</strong> - Truyền đạt những sự kiện lịch sử và sự việc một cách chính xác, cung cấp thêm thông tin nếu cầu thiết để truyền tải chính xác thông điệp được dự định cho những người không có cùng bối cảnh và văn hóa giống như người xem gốc của nội dung gốc.
+  <br/><br/><strong>Tính tự nhiên</strong> - Sử dụng những dạng ngôn từ có hiệu quả và phản ánh cách ngôn ngữ của bạn được sử dụng trong những bối cảnh tương ứng.
+  <br/><br/><strong>Tính cộng tác</strong> - Khi có thể, hãy làm việc cùng với những tín đồ khác mà họ nói ngôn ngữ của bạn để dịch, kiểm tra và phân phối nội dung dịch, đảm bảo rằng nó có giá trị tốt nhất và sẵn sàng sử dụng cho nhiều người nhất có thể.
+  <br/><br/><strong>Tính liên tục</strong> - Khuyến khích xem lại bản dịch thuật định kì để xác minh khi nào cần sửa đổi hoặc cần có bản dịch mới.
+</p>
+<h1>Quản lí và Xác định Chất lượng Dịch thuật</h1>
+<p>Chất lượng của bản dịch nhìn chung là tính trung thành của bản dịch với ý nghĩa của bản gốc, và mức độ mà bản dịch có thể hiểu được và hiệu quả cho người nói của ngôn ngữ đích. Chiến lược được đề xuất bao gồm kiểm tra dạng và chất lượng truyền đạt của bản dịch với cộng đồng ngôn ngữ, và kiểm tra tính trung thành của bản dịch với Giáo hội của nhóm người đó.</p>
+<p>Các bước cụ thể liên quan có thể khác biệt đáng kể, dựa trên ngôn ngữ và bối cảnh của dự án dịch thuật. Nhìn chung, chúng tôi xem xét một bản dịch là tốt khi nó:</p>
+<p>
+  <strong>Chính xác</strong> - Trung thành với ý nghĩa chủ định của bản gốc, như đã được xác định bởi Giáo hội của nhóm người đó và trong sự liên kết với Giáo hội toàn cầu và lịch sử, và kết quả là:
+  <br/><br/><strong>Được xác nhận bởi Giáo hội</strong> - Được Giáo hội chứng thực và sử dụng.
+</p>
+<p>Thêm vào đó, một bản dịch tốt được xét duyệt bởi người nói của cộng đồng ngôn ngữ và được công nhận là:</p>
+<p>
+  <strong>Tự nhiên</strong> - Sử dụng hình thức ngôn ngữ hiện tại và
+  <br/><br/><strong>Rõ ràng</strong> - Phấn đấu đến mức lãnh hội cao nhất của người nghe.
+</p>]]></string>
+    <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
+    <string name="statement_of_faith"><![CDATA[<h1>Tuyên bố về Đức tin</h1>
+<p>
+Nguồn cảm hứng từ Đức Chúa Trời và hệ quả thẩm quyền của toàn bộ Kinh thánh chính điển.
+  <br/><br/>Giáo lí về Chúa Ba Ngôi - Chúa là một, tồn tại trong ba ngôi vị: Chúa Cha, Chúa Con và Đức Thánh Linh.
+  <br/><br/>Sự thất bại của con người, hậu quả là suy đồi đạo đức và nhu cầu tái sinh.
+  <br/><br/>Sự chuộc tội thông qua cái chết thay thế của Đấng Christ
+  <br/><br/>Giáo lý về sự xưng công bình bởi đức tin.
+  <br/><br/>Sự sống lại của cơ thể, trong trường hợp của những người công chính và bất công.
+  <br/><br/>Sự sống đời đời của người được cứu và hình phạt đời đời của kẻ lạc lối.
+</p>]]></string>
+</resources>

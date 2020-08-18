@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <string name="app_name">Thu âm BTT</string>
+    <string name="settings_menu">Cài đặt</string>
+    <string name="logout_menu">Đăng xuất</string>
+    <string name="help_menu">Trợ giúp</string>
+    <string name="project_management">Quản lý dự án</string>
+    <string name="new_project">Dự án mới</string>
+    <string name="choose_target_language">Chọn ngôn ngữ gốc</string>
+    <string name="choose_project">Chọn một Dự án</string>
+    <string name="choose_book">Chọn một Sách</string>
+    <string name="choose_translation_type">Chọn một Loại Dịch thuật</string>
+    <string name="choose_mode">Chọn một chế độ</string>
+    <string name="yes">Đồng ý</string>
+    <string name="no">Không</string>
+    <string name="delete_take">Xóa bản ghi âm?</string>
+    <string name="rate_take">Đánh giá bản ghi âm</string>
+    <string name="label_take_detailed">Bản ghi <xliff:g example="1" id="current">%1$s</xliff:g> của <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Chương <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="project">Dự án</string>
+    <string name="project_upload">Tải lên Dự án</string>
+    <string name="project_uploaded">Dự án tải lên thành công</string>
+    <string name="project_upload_failed">Dự án tải lên thất bại: <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="upload_step_one">Bước 1/3: Khởi tạo file manifest</string>
+    <string name="upload_step_two">Bước 2/3: Đóng gói file để xuất bản</string>
+    <string name="upload_step_three">Bước 3/3: Đang tải lên</string>
+    <string name="packaging_files">Đóng gói file để xuất bản</string>
+    <string name="delete_project">Xóa dự án</string>
+    <string name="confirm_delete_project_alt">Xóa dự án này sẽ xóa bỏ tất cả Câu và Đoạn ghi âm. \n\nBạn chắc chắn chứ?</string>
+    <string name="target_language">Ngôn ngữ đích</string>
+    <string name="set_checking_level">Đặt mức kiểm tra</string>
+    <string name="warning">Cảnh báo</string>
+    <string name="compile_chapters_message">Biên soạn tất cả đơn vị thành một bản thu âm của một Chương?</string>
+    <string name="recompile_chapters_message">Biên soạn lại một Chương sẽ ghi đè lên bản ghi âm hiện tại và đặt lại mức kiểm tra.</string>
+    <string name="compiling_chapter">Đang biên soạn Chương</string>
+    <string name="source_audio">Thu âm gốc</string>
+    <string name="select_source_language">Chọn ngôn ngữ gốc</string>
+    <string name="select_source_location">Chọn Vị trí Thư mục gốc</string>
+    <string name="source_audio_not_found">Bản thu âm gốc không được tìm thấy. Nếu bạn muốn sử dụng bản gốc cho dự án, vui lòng chọn một ngôn ngữ gốc và tìm một thư mục thu âm gốc trên thiết bị hoặc thẻ SD bằng những nút dưới đây.</string>
+    <string name="source_audio_location">Vị trí Thư mục Thu âm gốc</string>
+    <string name="source_audio_language">Ngôn ngữ Thu âm gốc</string>
+    <string name="choose_source_language">Chọn ngôn ngữ gốc</string>
+    <string name="app_settings">Cài đặt Thu âm BTT</string>
+    <string name="source_language">Ngôn ngữ gốc</string>
+    <string name="add_temp_language">Thêm ngôn ngữ tạm</string>
+    <string name="update_language_from_td">Cập nhật các ngôn ngữ từ translationDatabase</string>
+    <string name="update_language_from_file">Tải lên các ngôn ngữ từ file</string>
+    <string name="change_upload_server">Thay đổi Server Tải lên</string>
+    <string name="app_version">Phiên bản Thu âm BTT</string>
+    <string name="language_code_exists">Mã ngôn ngữ đã tồn tại!</string>
+    <string name="language_code_length_tip">Mã ngôn ngữ phải có đúng 6 ký tự!</string>
+    <string name="language_name">Tên ngôn ngữ: </string>
+    <string name="language_code">Mã ngôn ngữ: </string>
+    <string name="add">Thêm</string>
+    <string name="languages_updated">Ngôn ngữ đã được cập nhật thành công!</string>
+    <string name="invalid_json">File ngôn ngữ không hợp lệ</string>
+    <string name="server_name">Tên Server: </string>
+    <string name="restore_defaults">Khôi phục</string>
+    <string name="save">Lưu</string>
+    <string name="version">Phiên bản</string>
+    <string name="label_skip">Bỏ qua</string>
+    <string name="chapter_title">Chương</string>
+    <string name="chunk_title">Đoạn</string>
+    <string name="title_verse">Câu</string>
+    <!-- DESCRIPTIONS -->
+    <!-- SETTINGS (Values) -->
+    <!-- SETTINGS (Summaries) -->
+    <string name="unit">Đơn vị</string>
+    <string name="translation_type">Loại Dịch thuật</string>
+    <!-- LOGIN -->
+    <string name="record_name">Tên bạn là gì?</string>
+    <string name="privacy">Nếu bạn lo ngại về quyền riêng tư hoặc sự an toàn, vui lòng sử dụng biệt danh hoặc bút danh</string>
+    <string name="txt_record"><u>Ghi âm</u></string>
+    <string name="txt_btn_redo">Thử lại</string>
+    <string name="txt_btn_yes">Đồng ý</string>
+    <string name="new_user"><u>Người dùng mới</u></string>
+    <string name="available_users">Người dùng có sẵn</string>
+    <string name="is_this_ok_txt">Bản này ổn chứ?</string>
+    <string name="permissions_denied_title">Yêu cầu quyền truy cập</string>
+    <string name="permissions_denied_message">Vui lòng cho phép quyền truy cập để sử dụng Thu âm BTT</string>
+    <string name="open_permissions">Mở Cài đặt Quyền truy cập</string>
+    <string name="project_exists">Dự án đã tồn tại!</string>
+    <string name="project_exists_message">Dự án đã có bằng ngôn ngữ, sách hoặc phiên bản đó.\nNếu bạn muốn chuyển đổi chế độ ghi âm, vui lòng xóa dự án trước khi tạo lại nó.</string>
+    <string name="no_source_audio">Không có bản thu âm gốc</string>
+    <string name="left_title">Còn lại</string>
+    <string name="resyncing_database">Đang tái đồng bộ Cơ sở dữ liệu</string>
+    <string name="exporting_source_audio">Đang xuất bản thu âm gốc</string>
+    <string name="source_generation_complete">Bản thu âm đã tạo thành công.</string>
+    <string name="source_generation_failed">Tạo Bản thu âm không thành công.</string>
+    <string name="label_ok">OK</string>
+    <string name="label_close">Đóng</string>
+    <string name="title_cancel">Hủy</string>
+    <string name="please_wait">Vui lòng đợi</string>
+</resources>
