@@ -39,14 +39,14 @@
   <br/><br/><strong>Rõ ràng</strong> - Phấn đấu đến mức lãnh hội cao nhất của người nghe.
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
+    <string name="statement_of_faith"><![CDATA[<h1>Tuyên bố về Đức tin</h1>
 <p>
-  The divine inspiration and consequent authority of the whole canonical Scriptures.
-  <br/><br/>The doctrine of the Trinity—God is one, existing in three persons, the Father, the Son and the Holy Spirit.
-  <br/><br/>The fall of man, his consequent moral depravity, and his need for regeneration.
-  <br/><br/>The atonement through the substitutionary death of Christ.
-  <br/><br/>The doctrine of justification by faith.
-  <br/><br/>The resurrection of the body, in the case of the just and the unjust.
-  <br/><br/>The eternal life of the saved and the eternal punishment of the lost.
+Nguồn cảm hứng từ Đức Chúa Trời và hệ quả thẩm quyền của toàn bộ Kinh thánh chính điển.
+  <br/><br/>Giáo lí về Chúa Ba Ngôi - Chúa là một, tồn tại trong ba ngôi vị: Chúa Cha, Chúa Con và Đức Thánh Linh.
+  <br/><br/>Sự thất bại của con người, hậu quả là suy đồi đạo đức và nhu cầu tái sinh.
+  <br/><br/>Sự chuộc tội thông qua cái chết thay thế của Đấng Christ
+  <br/><br/>Giáo lý về sự xưng công bình bởi đức tin.
+  <br/><br/>Sự sống lại của cơ thể, trong trường hợp của những người công chính và bất công.
+  <br/><br/>Sự sống đời đời của người được cứu và hình phạt đời đời của kẻ lạc lối.
 </p>]]></string>
 </resources>
