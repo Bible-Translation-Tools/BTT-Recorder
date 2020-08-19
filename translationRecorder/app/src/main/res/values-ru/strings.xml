@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">BTT Recorder</string>
+    <string name="app_name" comment="BTT Recorder is a name and should not be translated">BTT Recorder</string>
     <string name="settings_menu">Настройки</string>
     <string name="logout_menu">Выход</string>
     <string name="help_menu">Помощь</string>
@@ -41,13 +41,13 @@
     <string name="source_audio_location">Местоположение исходного аудио</string>
     <string name="source_audio_language">Язык исходного аудио</string>
     <string name="choose_source_language">Выберите исходный язык</string>
-    <string name="app_settings">BTT Recorder Настройки</string>
+    <string name="app_settings" comment="app_settings&#10;BTT Recorder is a name and should not be translated">BTT Recorder Настройки</string>
     <string name="source_language">Исходный язык</string>
     <string name="add_temp_language">Добавить временный язык</string>
     <string name="update_language_from_td">Обновить языки из translationDatabase</string>
     <string name="update_language_from_file">Обновить языки из файла</string>
     <string name="change_upload_server">Изменить сервер загрузки</string>
-    <string name="app_version">BTT Recorder Версия</string>
+    <string name="app_version" comment="app_version&#10;BTT Recorder is a name and should not be translated">BTT Recorder Версия</string>
     <string name="language_code_exists">Такой код языка уже существует!</string>
     <string name="language_code_length_tip">Код языка должен состоять из 6 символов!</string>
     <string name="language_name">Название языка: </string>
@@ -83,7 +83,7 @@
     <string name="available_users">Доступные пользователи</string>
     <string name="is_this_ok_txt">Продолжить?</string>
     <string name="permissions_denied_title">Требуются разрешения</string>
-    <string name="permissions_denied_message">Пожалуйста предоставьте разрешения для работы с BTT Recorder</string>
+    <string name="permissions_denied_message" comment="permissions_denied_message&#10;BTT Recorder is a name and should not be translated">Пожалуйста предоставьте разрешения для работы с BTT Recorder</string>
     <string name="open_permissions">Открыть настройки разрешений</string>
     <string name="project_exists">Такой проект уже существует!</string>
     <string name="project_exists_message">Проект для этого языка, книги и версии уже существует.\nЕсли вы хотите переключить режим, удалите проект и создайте снова.</string>
