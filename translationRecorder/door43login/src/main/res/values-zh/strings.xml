@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <!-- The terms that users must agree with in order to use the app -->
+    <string name="terms_title">使用条款</string>
+    <string name="terms">通过使用此应用程序，您同意信条和翻译指南，并根据知识共享署名共享4.0国际许可条款发布您的作品。</string>
+    <string name="view_license_agreement">许可协议</string>
+    <string name="license_deny">不，谢谢</string>
+    <string name="license_accept">我同意</string>
+    <string name="view_statement_of_faith">信条</string>
+    <string name="view_translation_guidelines">翻译指南</string>
+    <!-- This is the license agreement to use the app. It is formatted as HTML. -->
+    <string name="license"><![CDATA[<h2>你有权：</h2>
+<p>以任何媒体或格式共享、复制和重新分发这些资料；基于这些资料，从事其他用途的改编、重新混音、转换和构建，甚至商业用途。只要您遵守许可条款，许可方就不能撤销这些权利。</p>
+<h2>根据以下条款：</h2>
+<p>
+    <b>归属</b> - 您必须给予适当的信任，提供到许可证的链接，并指明是否进行了更改。您可以以任何合理的方式这样做，但不能以任何方式表明许可方认可您或您的使用；
+    <br/><b>共享</b> - 如果在这些资料的基础上您重新混合，转换，或构建，您必须在原件的许可证下分发您的作品；
+    <br/><b>无附加限制</b> -  您不得应用法律条款或技术措施去限制他人做许可证所允许的任何事情。
+</p>
+<h2>公告：</h2>
+<p>您不必遵守公共领域或适用例外或限制对您使用资料元素的许可；不提供任何保证。许可证可能不会授予您所期望的所有权限。例如，其他权利，如公开权、隐私权或道德权利，可能会限制您使用资料的方式。</p>]]></string>
+    <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
+    <string name="translation_guidlines"><![CDATA[<h1>翻译指南</h1>
+<p><em><xliff:g id="organization_name">Wycliffe Associates</xliff:g>项目的所有成员组织和贡献者签署了以下关于翻译中使用的原则和程序的声明。所有翻译活动都是根据这些共同准则进行的。</em></p>
+<p>
+  <strong>准确</strong> - 准确翻译，不减损、改变或增加原文的意思。翻译的内容应尽可能准确地传达原文的意思，就像原文读者所理解的内容。
+  <br/><br/><strong>清晰</strong> - 使用任何必要的语言结构来达到最高的理解水平。这包括重新安排文本的形式，使用尽可能多或尽可能少的术语尽可能准确地传达原文的意思。
+  <br/><br/><strong>信实</strong> - 使用与原始圣经语言词汇一致的关键术语。有关父神与子神之间关系的术语应保留在翻译内容中，并根据需要在脚注或其他补充资源中加以澄清。
+  <br/><br/><strong>权威</strong> - 使用圣经原文作为翻译圣经内容的最高权威。其他语言的可靠圣经内容可用于澄清和作为中间源文本。
+  <br/><br/><strong>纯净</strong> - 在在您的翻译中避免任何政治，宗派，意识形态，社会，文化或神学偏见。
+  <br/><br/><strong>表达</strong> - 传达原文的情感和态度。尽可能保持原文中的文学形式，包括叙述、诗歌、劝诫和预言，并使用您的语言中类似的方式做相应的表达。
+  <br/><br/><strong>历史</strong> - 准确地传达历史事件和事实，根据需要提供附加信息，以便准确地将信息传达给不同文化背景的接收者。
+  <br/><br/><strong>自然</strong> - 使用有效的语言形式以及在相应的背景中使用的语言方式。
+  <br/><br/><strong>协同</strong> - 在可能的情况下，与同一语言的其他信徒一起翻译、检查和分发翻译的内容，确保它是最高质量的，并且适用于最广泛的人群。
+  <br/><br/><strong>持续</strong> - 鼓励定期审查翻译，以确定何时需要修订或新的翻译。
+</p>
+<h1>翻译质量的管理与鉴别</h1>
+<p>译文的质量一般是指译文对原文表述的忠实程度，以及使用者对译文的理解及有效程度。我们建议与同一语言社区的同工们一起检查翻译的形式和表述质量，以及与他们所参与的教会一起检查翻译的忠实性。</p>
+<p>所涉及的具体步骤可能有很大不同，这取决于翻译项目的语言和背景。一般来说，我们认为一个好的翻译是：</p>
+<p>
+  <strong>准确</strong> - 忠实于原作的意图，由该人群中的教会确定，并与教会的全球和历史一致，因此：
+  <br/><br/><strong>经教会确认</strong> - 得到教会的认可和使用。
+</p>
+<p>此外，一个好的翻译是经由同一语言社区的权威审查，发现是：</p>
+<p>
+  <strong>自然</strong> - 使用当前的语言形式，以及
+  <br/><br/><strong>清晰</strong> - 努力获得听众的最高理解水平。
+</p>]]></string>
+    <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
+    <string name="statement_of_faith"><![CDATA[<h1>信条</h1>
+<p>
+  圣经的神圣启示和权威
+  <br/><br/>三位一体的教义 - 一位神存在三个位格，即父、子和圣灵。
+  <br/><br/>人的堕落，随之而来的道德堕落，以及他对重生的需要。
+  <br/><br/>通过基督的替代性死亡来赎罪。
+  <br/><br/>因信称义的教义。
+  <br/><br/>身体的复活，无论公义的和不义的。
+  <br/><br/>被拯救者的永生和迷失者的永恒惩罚。
+</p>]]></string>
+</resources>
