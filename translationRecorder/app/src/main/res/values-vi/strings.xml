@@ -33,6 +33,7 @@
     <string name="compile_chapters_message">Biên soạn tất cả đơn vị thành một bản thu âm của một Chương?</string>
     <string name="recompile_chapters_message">Biên soạn lại một Chương sẽ ghi đè lên bản ghi âm hiện tại và đặt lại mức kiểm tra.</string>
     <string name="compiling_chapter">Đang biên soạn Chương</string>
+    <string name="delete_chapter_recording">Delete Chapter Recording?</string>
     <string name="source_audio">Thu âm gốc</string>
     <string name="select_source_language">Chọn ngôn ngữ gốc</string>
     <string name="select_source_location">Chọn Vị trí Thư mục gốc</string>
@@ -59,6 +60,11 @@
     <string name="save">Lưu</string>
     <string name="version">Phiên bản</string>
     <string name="label_skip">Bỏ qua</string>
+    <string name="saving">Saving</string>
+    <string name="writing_changes">Writing changes to file, please wait...</string>
+    <string name="inserting_recording">Inserting recording</string>
+    <string name="audio_player_error">Could not initialize the audio player</string>
+    <string name="restart_device">If this issue continues, try restarting your device.</string>
     <string name="chapter_title">Chương</string>
     <string name="chunk_title">Đoạn</string>
     <string name="title_verse">Câu</string>
