@@ -326,8 +326,8 @@ public class RecordingActivity extends PermissionActivity implements
     private void displayProgressDialog() {
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setTitle("Inserting recording");
-        mProgressDialog.setMessage("Please wait...");
+        mProgressDialog.setTitle(R.string.inserting_recording);
+        mProgressDialog.setMessage(getResources().getString(R.string.please_wait));
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
