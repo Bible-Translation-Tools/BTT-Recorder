@@ -321,8 +321,8 @@ public class PlaybackActivity extends Activity implements
 
     public void requestUserToRestart() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Could not initialize the audio player");
-        builder.setMessage("If this issue continues, try restarting your device.");
+        builder.setTitle(R.string.audio_player_error);
+        builder.setMessage(getResources().getString(R.string.restart_device));
         builder.setCancelable(false);
         builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
             @Override
@@ -729,8 +729,8 @@ public class PlaybackActivity extends Activity implements
     public void writeCutToFile(final File to, final WavFile from, final Intent intent) {
 
         final ProgressDialog pd = new ProgressDialog(this);
-        pd.setTitle("Saving");
-        pd.setMessage("Writing changes to file, please wait...");
+        pd.setTitle(R.string.saving);
+        pd.setMessage(getResources().getString(R.string.writing_changes));
         pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         pd.setProgressNumberFormat(null);
         pd.setCancelable(false);

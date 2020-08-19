@@ -48,7 +48,7 @@ public class DocumentationActivity extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.documentation_toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Help");
+            getSupportActionBar().setTitle(R.string.help_menu);
             if(mIsOnline) {
                 getSupportActionBar().setIcon(R.drawable.ic_wifi_white_24dp);
             } else {
