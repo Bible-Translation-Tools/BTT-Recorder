@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name" comment="BTT Recorder is a name and should not be translated">BTT Recorder</string>
+    <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">设置</string>
     <string name="logout_menu">退出</string>
     <string name="help_menu">帮助</string>
@@ -41,13 +41,13 @@
     <string name="source_audio_location">源音频位置</string>
     <string name="source_audio_language">源音频语言</string>
     <string name="choose_source_language">选择源语言</string>
-    <string name="app_settings" comment="app_settings&#10;BTT Recorder is a name and should not be translated">BTT Recorder设置</string>
+    <string name="app_settings">BTT Recorder设置</string>
     <string name="source_language">源语言</string>
     <string name="add_temp_language">添加临时语言</string>
     <string name="update_language_from_td">从翻译数据库更新语言</string>
     <string name="update_language_from_file">从文件更新语言</string>
     <string name="change_upload_server">更改上载服务器</string>
-    <string name="app_version" comment="app_version&#10;BTT Recorder is a name and should not be translated">BTT Recorder版本</string>
+    <string name="app_version">BTT Recorder版本</string>
     <string name="language_code_exists">语言代码已经存在！</string>
     <string name="language_code_length_tip">语言代码必须包含6个字符！</string>
     <string name="language_name">语言名称： </string>
@@ -83,7 +83,7 @@
     <string name="available_users">可用用户</string>
     <string name="is_this_ok_txt">可以吗？</string>
     <string name="permissions_denied_title">需要权限</string>
-    <string name="permissions_denied_message" comment="permissions_denied_message&#10;BTT Recorder is a name and should not be translated">请启用使用BTT Recorder的权限</string>
+    <string name="permissions_denied_message">请启用使用BTT Recorder的权限</string>
     <string name="open_permissions">打开权限设置</string>
     <string name="project_exists">项目已存在！</string>
     <string name="project_exists_message">该语言、书本和版本的项目已经存在。\n如果要切换录制模式，请在重新创建项目之前将其删除。</string>
