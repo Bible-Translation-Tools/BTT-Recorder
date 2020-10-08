@@ -2,7 +2,7 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">Ajustes</string>
-    <string name="logout_menu">Logout</string>
+    <string name="logout_menu">Cerrar sesión</string>
     <string name="help_menu">Help</string>
     <string name="project_management">Project Management</string>
     <string name="new_project">New Project</string>
