@@ -4,23 +4,23 @@
     <string name="settings_menu">Ajustes</string>
     <string name="logout_menu">Cerrar sesión</string>
     <string name="help_menu">Ayuda</string>
-    <string name="project_management">Project Management</string>
-    <string name="new_project">New Project</string>
-    <string name="choose_target_language">Choose Target Language</string>
-    <string name="choose_project">Choose a Project</string>
-    <string name="choose_book">Choose a Book</string>
-    <string name="choose_translation_type">Choose Translation Type</string>
-    <string name="choose_mode">Choose a Mode</string>
-    <string name="yes">Yes</string>
+    <string name="project_management">Gestión de proyectos</string>
+    <string name="new_project">Nuevo proyecto</string>
+    <string name="choose_target_language">Elija el idioma de destino</string>
+    <string name="choose_project">Elija un proyecto</string>
+    <string name="choose_book">Elija un libro</string>
+    <string name="choose_translation_type">Elija el tipo de traducción</string>
+    <string name="choose_mode">Elige un modo</string>
+    <string name="yes">Sí</string>
     <string name="no">No</string>
-    <string name="delete_take">Delete take?</string>
-    <string name="rate_take">Rate this take</string>
-    <string name="label_take_detailed">Take <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
-    <string name="label_chapter_title_detailed">Chapter <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
-    <string name="project">Project</string>
-    <string name="project_upload">Project upload</string>
-    <string name="project_uploaded">Project successfully uploaded</string>
-    <string name="project_upload_failed">Project upload failed: <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="delete_take">¿Borrar tomo?</string>
+    <string name="rate_take">Calificar esta toma</string>
+    <string name="label_take_detailed">Toma <xliff:g example="1" id="current">%1$s</xliff:g> de <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Capítulo <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="project">Proyecto</string>
+    <string name="project_upload">Carga de proyecto</string>
+    <string name="project_uploaded">Proyecto cargado con éxito</string>
+    <string name="project_upload_failed">Error en la carga del proyecto: <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="upload_step_one">Step 1/3: Generating manifest file</string>
     <string name="upload_step_two">Step 2/3: Packaging files to export</string>
     <string name="upload_step_three">Step 3/3: Uploading</string>
