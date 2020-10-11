@@ -21,13 +21,13 @@
     <string name="project_upload">Carga de proyecto</string>
     <string name="project_uploaded">Proyecto cargado con éxito</string>
     <string name="project_upload_failed">Error en la carga del proyecto: <xliff:g example="error" id="message">%1$s</xliff:g></string>
-    <string name="upload_step_one">Step 1/3: Generating manifest file</string>
-    <string name="upload_step_two">Step 2/3: Packaging files to export</string>
-    <string name="upload_step_three">Step 3/3: Uploading</string>
-    <string name="packaging_files">Packaging files to export</string>
-    <string name="delete_project">Delete Project</string>
-    <string name="confirm_delete_project_alt">Deleting this project will remove all associated verse and chunk recordings.\n\nAre you sure?</string>
-    <string name="target_language">Target Language</string>
+    <string name="upload_step_one">Paso 1/3: Generando archivo manifiesto</string>
+    <string name="upload_step_two">Empaquetando archivos para exportar</string>
+    <string name="upload_step_three">Paso 3/3: Cargando</string>
+    <string name="packaging_files">Empaquetando archivos para exportar</string>
+    <string name="delete_project">Borrar Proyecto</string>
+    <string name="confirm_delete_project_alt">Eliminar este proyecto eliminará todas las grabaciones asociadas de versículo y fragmentos.\n\n¿Estás seguro?</string>
+    <string name="target_language">Idioma de destino</string>
     <string name="set_checking_level">Set Checking Level</string>
     <string name="warning">Warning</string>
     <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
