@@ -38,6 +38,7 @@
     <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
     <string name="recompile_chapters_message">Re-compiling a chapter will over-write the current audio and reset the checking level.</string>
     <string name="compiling_chapter">Compiling Chapter</string>
+    <string name="delete_chapter_recording">Delete Chapter Recording?</string>
 
     <string name="source_audio">Source Audio</string>
     <string name="select_source_language">Select Source Language</string>
@@ -66,6 +67,11 @@
     <string name="save">Save</string>
     <string name="version">Version</string>
     <string name="label_skip">Skip</string>
+    <string name="saving">Saving</string>
+    <string name="writing_changes">Writing changes to file, please wait...</string>
+    <string name="inserting_recording">Inserting recording</string>
+    <string name="audio_player_error">Could not initialize the audio player</string>
+    <string name="restart_device">If this issue continues, try restarting your device.</string>
 
     <string name="chapter_title">Chapter</string>
     <string name="chunk_title">Chunk</string>

@@ -424,9 +424,9 @@ public class ChapterCard {
             public void onClick(View view) {
                 pauseAudio();
                 AlertDialog dialog = new AlertDialog.Builder(context)
-                        .setTitle("Delete Chapter Recording?")
+                        .setTitle(R.string.delete_chapter_recording)
                         .setIcon(R.drawable.ic_delete_black_36dp)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 destroyAudioPlayer();
@@ -437,7 +437,7 @@ public class ChapterCard {
                                 adapter.notifyItemChanged(mViewHolder.getAdapterPosition());
                             }
                         })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();

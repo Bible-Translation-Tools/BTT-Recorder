@@ -69,7 +69,7 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
         PreferenceManager.setDefaultValues(this, R.xml.preference, false);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Settings");
+            getSupportActionBar().setTitle(R.string.settings_menu);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
