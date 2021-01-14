@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <string name="app_name">BTT Recorder</string>
+    <string name="settings_menu">Ajustes</string>
+    <string name="logout_menu">Cerrar sesión</string>
+    <string name="help_menu">Ayuda</string>
+    <string name="project_management">Gestión de proyectos</string>
+    <string name="new_project">Nuevo proyecto</string>
+    <string name="choose_target_language">Elija el idioma de destino</string>
+    <string name="choose_project">Elija un proyecto</string>
+    <string name="choose_book">Elija un libro</string>
+    <string name="choose_translation_type">Elija el tipo de traducción</string>
+    <string name="choose_mode">Elige un modo</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="delete_take">¿Borrar tomo?</string>
+    <string name="rate_take">Calificar esta toma</string>
+    <string name="label_take_detailed">Toma <xliff:g example="1" id="current">%1$s</xliff:g> de <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Capítulo <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="project">Proyecto</string>
+    <string name="project_upload">Carga de proyecto</string>
+    <string name="project_uploaded">Proyecto cargado con éxito</string>
+    <string name="project_upload_failed">Error en la carga del proyecto: <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="upload_step_one">Paso 1/3: Generando archivo manifiesto</string>
+    <string name="upload_step_two">Empaquetando archivos para exportar</string>
+    <string name="upload_step_three">Paso 3/3: Cargando</string>
+    <string name="packaging_files">Empaquetando archivos para exportar</string>
+    <string name="delete_project">Borrar Proyecto</string>
+    <string name="confirm_delete_project_alt">Eliminar este proyecto eliminará todas las grabaciones asociadas de versículo y fragmentos.\n\n¿Estás seguro?</string>
+    <string name="target_language">Idioma de destino</string>
+    <string name="set_checking_level">Configurar nivel de verificación</string>
+    <string name="warning">Advertencia</string>
+    <string name="compile_chapters_message">¿Compilar todas las unidades en un solo capítulo audio?</string>
+    <string name="recompile_chapters_message">Volver a compilar un capítulo sobrescribirá el audio actual y restablecerá el nivel de comprobación.</string>
+    <string name="compiling_chapter">Compilando Capítulo</string>
+    <string name="delete_chapter_recording">¿Borrar grabación de capítulo?</string>
+    <string name="source_audio">Audio origen</string>
+    <string name="select_source_language">Seleccione el idioma de origen</string>
+    <string name="select_source_location">Seleccionar ubicación origen</string>
+    <string name="source_audio_not_found">No se pudo encontrar el audio fuente en la ubicación por defecto. Si desea que el audio original se use con su proyecto, por favor selecciona un idioma de origen y luego encuentra la carpeta de audio de origen correspondiente en tu dispositivo o tarjeta SD usando los botones abajo.</string>
+    <string name="source_audio_location">Ubicación de audio origen</string>
+    <string name="source_audio_language">Idioma de audio original</string>
+    <string name="choose_source_language">Elija el idioma de destino</string>
+    <string name="app_settings">Configuración de BTT Recorder</string>
+    <string name="source_language">Lenguaje fuente</string>
+    <string name="add_temp_language">Añadir lenguaje temporal</string>
+    <string name="update_language_from_td">Actualizar idiomas de la base de datos de traducción</string>
+    <string name="update_language_from_file">Actualizar Idiomas desde archivo</string>
+    <string name="change_upload_server">Cambiar el servidor de subida</string>
+    <string name="app_version">Versión de BTT Grabadora</string>
+    <string name="language_code_exists">¡El código del idioma ya existe!</string>
+    <string name="language_code_length_tip">El código de idioma debe contener exactamente 6 caracteres!</string>
+    <string name="language_name">Nombre de idioma: </string>
+    <string name="language_code">Código del idioma: </string>
+    <string name="add">Añade</string>
+    <string name="languages_updated">Idiomas actualizados con éxito!</string>
+    <string name="invalid_json">Archivo de idiomas inválido</string>
+    <string name="server_name">Nombre del servidor: </string>
+    <string name="restore_defaults">Restaurar</string>
+    <string name="save">Guardar</string>
+    <string name="version">Versión</string>
+    <string name="label_skip">Omitir</string>
+    <string name="saving">Guardando</string>
+    <string name="writing_changes">Escribiendo cambios al archivo, espere por favor...</string>
+    <string name="inserting_recording">Insertando grabación</string>
+    <string name="audio_player_error">No se pudo inicializar el reproductor de audio</string>
+    <string name="restart_device">Si este problema continúa, intente reiniciar su dispositivo.</string>
+    <string name="chapter_title">Capítulo</string>
+    <string name="chunk_title">Segmento</string>
+    <string name="title_verse">Verso</string>
+    <!-- DESCRIPTIONS -->
+    <!-- SETTINGS (Values) -->
+    <!-- SETTINGS (Summaries) -->
+    <string name="unit">Unidad</string>
+    <string name="translation_type">Tipo de Traducción</string>
+    <!-- LOGIN -->
+    <string name="record_name">Cuál es tu Nombre?</string>
+    <string name="privacy">Si estás preocupado por tu privacidad o seguridad, por favor usa un apodo o un seudónimo</string>
+    <string name="txt_record"><u>Grabar</u></string>
+    <string name="txt_btn_redo">Rehacer</string>
+    <string name="txt_btn_yes">Sí</string>
+    <string name="new_user"><u>Usuario nuevo</u></string>
+    <string name="available_users">Usuarios Disponibles</string>
+    <string name="is_this_ok_txt">¿Está bien esto?</string>
+    <string name="permissions_denied_title">Se necesitan permisos</string>
+    <string name="permissions_denied_message">Por favor, habilite los permisos para usar BTT Recorder</string>
+    <string name="open_permissions">Abre los ajustes de permisos</string>
+    <string name="project_exists">¡El proyecto ya existe!</string>
+    <string name="project_exists_message">Ya existe un proyecto para ese idioma, libro y versión.\nSi desea cambiar los modos de grabación, por favor borre el proyecto antes de crearlo de nuevo.</string>
+    <string name="no_source_audio">Sin fuente de audio</string>
+    <string name="left_title">Queda</string>
+    <string name="resyncing_database">Resincronizando base de datos</string>
+    <string name="exporting_source_audio">Exportando audio fuente</string>
+    <string name="source_generation_complete">Generación de audio fuente completa.</string>
+    <string name="source_generation_failed">Error en la generación de audio de origen.</string>
+    <string name="label_ok">Acepto</string>
+    <string name="label_close">Cierre</string>
+    <string name="title_cancel">Cancela</string>
+    <string name="please_wait">Por favor espere</string>
+</resources>

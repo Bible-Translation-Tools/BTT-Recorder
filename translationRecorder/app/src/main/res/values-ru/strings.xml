@@ -33,6 +33,7 @@
     <string name="compile_chapters_message">Объединить все элементы в аудио файл целой главы?</string>
     <string name="recompile_chapters_message">Повторное объединение главы перезапишет существующее аудио и сбросит уровень проверки.</string>
     <string name="compiling_chapter">Объединение главы</string>
+    <string name="delete_chapter_recording">Удалить запись главы?</string>
     <string name="source_audio">Исходное аудио</string>
     <string name="select_source_language">Выберите исходный язык</string>
     <string name="select_source_location">Выберите исходное аудио</string>
@@ -59,6 +60,11 @@
     <string name="save">Сохранить</string>
     <string name="version">Версия</string>
     <string name="label_skip">Пропустить</string>
+    <string name="saving">Сохранение</string>
+    <string name="writing_changes">Запись изменений в файл, пожалуйста, подождите...</string>
+    <string name="inserting_recording">Вставляется запись</string>
+    <string name="audio_player_error">Не удалось инициализировать аудио плеер</string>
+    <string name="restart_device">Если эта проблема продолжится, попробуйте перезапустить устройство.</string>
     <string name="chapter_title">Глава</string>
     <string name="chunk_title">Отрывок</string>
     <string name="title_verse">Стих</string>
