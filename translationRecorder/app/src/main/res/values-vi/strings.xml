@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">Thu âm BTT</string>
+    <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">Cài đặt</string>
     <string name="logout_menu">Đăng xuất</string>
     <string name="help_menu">Trợ giúp</string>
@@ -33,6 +33,7 @@
     <string name="compile_chapters_message">Biên soạn tất cả đơn vị thành một bản thu âm của một Chương?</string>
     <string name="recompile_chapters_message">Biên soạn lại một Chương sẽ ghi đè lên bản ghi âm hiện tại và đặt lại mức kiểm tra.</string>
     <string name="compiling_chapter">Đang biên soạn Chương</string>
+    <string name="delete_chapter_recording">Xóa bản Ghi âm Chương?</string>
     <string name="source_audio">Thu âm gốc</string>
     <string name="select_source_language">Chọn ngôn ngữ gốc</string>
     <string name="select_source_location">Chọn Vị trí Thư mục gốc</string>
@@ -46,7 +47,7 @@
     <string name="update_language_from_td">Cập nhật các ngôn ngữ từ translationDatabase</string>
     <string name="update_language_from_file">Tải lên các ngôn ngữ từ file</string>
     <string name="change_upload_server">Thay đổi Server Tải lên</string>
-    <string name="app_version">Phiên bản Thu âm BTT</string>
+    <string name="app_version">Phiên bản BTT Recorder</string>
     <string name="language_code_exists">Mã ngôn ngữ đã tồn tại!</string>
     <string name="language_code_length_tip">Mã ngôn ngữ phải có đúng 6 ký tự!</string>
     <string name="language_name">Tên ngôn ngữ: </string>
@@ -59,6 +60,11 @@
     <string name="save">Lưu</string>
     <string name="version">Phiên bản</string>
     <string name="label_skip">Bỏ qua</string>
+    <string name="saving">Đang lưu</string>
+    <string name="writing_changes">Đang cập nhật thay đổi, vui lòng đợi...</string>
+    <string name="inserting_recording">Đang thêm bản ghi âm</string>
+    <string name="audio_player_error">Không thể khởi tạo bộ phát âm thanh</string>
+    <string name="restart_device">Nếu vấn đề này còn tiếp diễn, hãy khởi động lại thiết bị của bạn.</string>
     <string name="chapter_title">Chương</string>
     <string name="chunk_title">Đoạn</string>
     <string name="title_verse">Câu</string>
@@ -77,7 +83,7 @@
     <string name="available_users">Người dùng có sẵn</string>
     <string name="is_this_ok_txt">Bản này ổn chứ?</string>
     <string name="permissions_denied_title">Yêu cầu quyền truy cập</string>
-    <string name="permissions_denied_message">Vui lòng cho phép quyền truy cập để sử dụng Thu âm BTT</string>
+    <string name="permissions_denied_message">Vui lòng cho phép quyền truy cập để sử dụng BTT Recorder</string>
     <string name="open_permissions">Mở Cài đặt Quyền truy cập</string>
     <string name="project_exists">Dự án đã tồn tại!</string>
     <string name="project_exists_message">Dự án đã có bằng ngôn ngữ, sách hoặc phiên bản đó.\nNếu bạn muốn chuyển đổi chế độ ghi âm, vui lòng xóa dự án trước khi tạo lại nó.</string>
