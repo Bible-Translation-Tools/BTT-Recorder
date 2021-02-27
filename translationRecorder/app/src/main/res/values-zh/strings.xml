@@ -33,7 +33,7 @@
     <string name="compile_chapters_message">把所有单元编成一章音频？</string>
     <string name="recompile_chapters_message">重新编译一章将重写当前音频并重置检查级别。</string>
     <string name="compiling_chapter">编译章节</string>
-    <string name="delete_chapter_recording">Delete Chapter Recording?</string>
+    <string name="delete_chapter_recording">删除章节录制吗？</string>
     <string name="source_audio">源音频</string>
     <string name="select_source_language">选择源语言</string>
     <string name="select_source_location">选择源位置</string>
@@ -60,10 +60,10 @@
     <string name="save">保存</string>
     <string name="version">版本</string>
     <string name="label_skip">跳过</string>
-    <string name="saving">Saving</string>
-    <string name="writing_changes">Writing changes to file, please wait...</string>
-    <string name="inserting_recording">Inserting recording</string>
-    <string name="audio_player_error">Could not initialize the audio player</string>
+    <string name="saving">保存中</string>
+    <string name="writing_changes">正在写入文件更改，请稍候...</string>
+    <string name="inserting_recording">插入录音</string>
+    <string name="audio_player_error">无法初始化音频播放器</string>
     <string name="restart_device">如果仍然存在问题，请尝试重启您的设备。</string>
     <string name="chapter_title">章节</string>
     <string name="chunk_title">段落</string>
