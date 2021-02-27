@@ -2,11 +2,11 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">使用条款</string>
-    <string name="terms">若使用此应用程序，你同意信条和翻译指南，并根据署名-相同方式共享 4.0 国际许可条款发布你的作品。</string>
+    <string name="terms">若使用此应用程序，您同意信条和翻译指南，并根据署名-相同方式共享 4.0 国际许可条款发布您的作品。</string>
     <string name="view_license_agreement">许可协议</string>
     <string name="license_deny">不，谢谢</string>
     <string name="license_accept">我同意</string>
-    <string name="view_statement_of_faith">信条</string>
+    <string name="view_statement_of_faith">信仰声明</string>
     <string name="view_translation_guidelines">翻译指南</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2>你有权：</h2>
