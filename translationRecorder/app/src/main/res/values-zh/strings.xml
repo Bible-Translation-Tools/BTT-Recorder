@@ -64,7 +64,7 @@
     <string name="writing_changes">Writing changes to file, please wait...</string>
     <string name="inserting_recording">Inserting recording</string>
     <string name="audio_player_error">Could not initialize the audio player</string>
-    <string name="restart_device">If this issue continues, try restarting your device.</string>
+    <string name="restart_device">如果仍然存在问题，请尝试重启您的设备。</string>
     <string name="chapter_title">章节</string>
     <string name="chunk_title">段落</string>
     <string name="title_verse">经句</string>
