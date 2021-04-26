@@ -26,14 +26,14 @@
     <string name="upload_step_three">步骤 3/3: 上传</string>
     <string name="packaging_files">打包要导出的文件</string>
     <string name="delete_project">删除项目</string>
-    <string name="confirm_delete_project_alt">删除此项目将会删除所有关联的经句和段落录制。\n\n你确定吗?</string>
+    <string name="confirm_delete_project_alt">删除此项目将会删除所有关联的节和段落录制。\n\n你确定吗?</string>
     <string name="target_language">目标语言</string>
     <string name="set_checking_level">设置检查级别</string>
     <string name="warning">警告</string>
     <string name="compile_chapters_message">把所有单元编成一章音频？</string>
     <string name="recompile_chapters_message">重新编译一章将重写当前音频并重置检查级别。</string>
     <string name="compiling_chapter">编译章</string>
-    <string name="delete_chapter_recording">删除章节录制吗？</string>
+    <string name="delete_chapter_recording">删除章录制吗？</string>
     <string name="source_audio">源音频</string>
     <string name="select_source_language">选择源语言</string>
     <string name="select_source_location">选择源位置</string>
@@ -65,9 +65,9 @@
     <string name="inserting_recording">插入录音</string>
     <string name="audio_player_error">无法初始化音频播放器</string>
     <string name="restart_device">如果仍然存在问题，请尝试重启您的设备。</string>
-    <string name="chapter_title">章节</string>
+    <string name="chapter_title">章</string>
     <string name="chunk_title">段落</string>
-    <string name="title_verse">经句</string>
+    <string name="title_verse">节</string>
     <!-- DESCRIPTIONS -->
     <!-- SETTINGS (Values) -->
     <!-- SETTINGS (Summaries) -->
