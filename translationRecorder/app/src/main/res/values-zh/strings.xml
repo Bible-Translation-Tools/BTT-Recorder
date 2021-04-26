@@ -16,7 +16,7 @@
     <string name="delete_take">删除记录</string>
     <string name="rate_take">给这个评分</string>
     <string name="label_take_detailed">记录 <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
-    <string name="label_chapter_title_detailed">章节 <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">章 <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">项目</string>
     <string name="project_upload">项目上传</string>
     <string name="project_uploaded">项目上传成功</string>
@@ -32,7 +32,7 @@
     <string name="warning">警告</string>
     <string name="compile_chapters_message">把所有单元编成一章音频？</string>
     <string name="recompile_chapters_message">重新编译一章将重写当前音频并重置检查级别。</string>
-    <string name="compiling_chapter">编译章节</string>
+    <string name="compiling_chapter">编译章</string>
     <string name="delete_chapter_recording">删除章节录制吗？</string>
     <string name="source_audio">源音频</string>
     <string name="select_source_language">选择源语言</string>
