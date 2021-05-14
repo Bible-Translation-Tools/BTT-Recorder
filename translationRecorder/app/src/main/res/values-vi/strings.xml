@@ -46,7 +46,7 @@
     <string name="add_temp_language">Thêm ngôn ngữ tạm</string>
     <string name="update_language_from_td">Cập nhật các ngôn ngữ từ translationDatabase</string>
     <string name="update_language_from_file">Tải lên các ngôn ngữ từ file</string>
-    <string name="change_upload_server">Thay đổi Server Tải lên</string>
+    <string name="change_upload_server">Thay đổi Server tải lên</string>
     <string name="app_version">Phiên bản BTT Recorder</string>
     <string name="language_code_exists">Mã ngôn ngữ đã tồn tại!</string>
     <string name="language_code_length_tip">Mã ngôn ngữ phải có đúng 6 ký tự!</string>
