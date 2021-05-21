@@ -14,6 +14,7 @@ import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager;
 import org.wycliffeassociates.translationrecorder.R;
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
@@ -24,6 +25,11 @@ import org.wycliffeassociates.translationrecorder.project.components.Book;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
 import org.wycliffeassociates.translationrecorder.project.components.Mode;
 import org.wycliffeassociates.translationrecorder.project.components.Version;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -262,7 +268,13 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
 
     private Book[] getBooksList(String anthologySlug){
         Book[] books = db.getBooks(anthologySlug);
-        return books;
+        List<Book> bookList = new ArrayList<Book>();
+        for (Book b : books) {
+            String bookName = ResourceUtility.getStringByName("book_" + b.getSlug(),
+                    getResources(), this.getPackageName());
+            bookList.add(new Book(b.getSlug(), bookName, b.getAnthology(), b.getOrder()));
+        }
+        return bookList.toArray(new Book[bookList.size()]);
     }
 
     private Version[] getVersionsList(String anthologySlug){

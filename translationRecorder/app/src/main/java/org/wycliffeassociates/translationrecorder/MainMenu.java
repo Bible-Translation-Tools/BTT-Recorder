@@ -30,6 +30,7 @@ import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
 import org.wycliffeassociates.translationrecorder.project.ProjectSlugs;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
 import org.wycliffeassociates.translationrecorder.project.TakeInfo;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -191,7 +192,7 @@ public class MainMenu extends Activity {
     private void reportCrash(String message) {
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
         String[] stacktraces = GlobalExceptionHandler.getStacktraces(dir);
-        String githubTokenIdentifier = getResources().getString(R.string.github_token);
+        String githubTokenIdentifier = "";//getResources().getString(R.string.github_token);
         String githubUrl = getResources().getString(R.string.github_bug_report_repo);
 
         // TRICKY: make sure the github_oauth2 token has been set
@@ -245,7 +246,8 @@ public class MainMenu extends Activity {
 
             String book = project.getBookSlug();
             if (book.compareTo("") != 0) {
-                book = db.getBookName(book);
+                book = ResourceUtility.getStringByName("book_" + project.getBookSlug(),
+                        getResources(), this.getPackageName());
             }
             bookView.setText(book);
         } else {

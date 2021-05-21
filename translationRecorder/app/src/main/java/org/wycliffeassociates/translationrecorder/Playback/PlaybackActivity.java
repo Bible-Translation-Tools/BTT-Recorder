@@ -55,6 +55,7 @@ import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
 import org.wycliffeassociates.translationrecorder.project.TakeInfo;
 import org.wycliffeassociates.translationrecorder.project.components.User;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 import org.wycliffeassociates.translationrecorder.wav.WavCue;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
 import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
@@ -251,11 +252,13 @@ public class PlaybackActivity extends Activity implements
         );
 
         String chapterLabel = plugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
+        String bookName = ResourceUtility.getStringByName("book_" + mProject.getBookSlug(),
+                getResources(), this.getPackageName());
 
         mFragmentFileBar = FragmentFileBar.newInstance(
                 mProject.getTargetLanguageSlug(),
                 mProject.getVersionSlug(),
-                mProject.getBookSlug(),
+                bookName,
                 chapterLabel,
                 plugin.getChapterName(mChapter),
                 mProject.getLocalizedModeName(this),

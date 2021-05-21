@@ -20,6 +20,7 @@ import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -88,11 +89,11 @@ public class ProjectInfoDialog extends DialogFragment {
         String languageCode = mProject.getTargetLanguageSlug();
         String language = db.getLanguageName(languageCode);
         String bookCode = mProject.getBookSlug();
-        String book = db.getBookName(bookCode);
+        String bookName = ResourceUtility.getStringByName("book_" + bookCode, getResources(), getActivity().getPackageName());
         String translation = mProject.getVersionSlug();
 
-        mTitle.setText(book + " - " + language);
-        mProjectTitle.setText(book + " (" + bookCode + ")");
+        mTitle.setText(bookName + " - " + language);
+        mProjectTitle.setText(bookName + " (" + bookCode + ")");
         mLanguageTitle.setText(language + " (" + languageCode + ")");
         if (translation.equals("ulb")) {
             mTranslationType.setText("Unlocked Literal Bible (" + translation + ")");

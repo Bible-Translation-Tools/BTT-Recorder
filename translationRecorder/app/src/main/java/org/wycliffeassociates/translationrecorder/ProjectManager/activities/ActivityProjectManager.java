@@ -46,7 +46,9 @@ import org.wycliffeassociates.translationrecorder.SplashScreen;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
+import org.wycliffeassociates.translationrecorder.project.components.Book;
 import org.wycliffeassociates.translationrecorder.project.components.User;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 
@@ -238,6 +240,11 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
             }
         }
         if (project != null) {
+            Book book = project.mBook;
+            String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
+                    getResources(), ActivityProjectManager.this.getPackageName());
+            project.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
+
             ProjectAdapter.initializeProjectCard(this, project, db, findViewById(R.id.recent_project));
             return project;
         } else {
@@ -280,6 +287,11 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
             }
         }
         for (Project p : projects) {
+            Book book = p.mBook;
+            String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
+                    getResources(), this.getPackageName());
+            p.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
+
             String projectName = "language " + p.getTargetLanguageSlug()
                     + " book " + p.getBookSlug()
                     + " version " + p.getVersionSlug()

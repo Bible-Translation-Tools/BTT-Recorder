@@ -25,6 +25,7 @@ import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectProgress;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 import org.wycliffeassociates.translationrecorder.widgets.UnitCard;
@@ -93,13 +94,14 @@ public class ActivityUnitList extends AppCompatActivity implements CheckingDialo
 
             // Setup toolbar
             String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-            String book = db.getBookName(mProject.getBookSlug());
+            String bookName = ResourceUtility.getStringByName("book_" + mProject.getBookSlug(),
+                    getResources(), this.getPackageName());
             Toolbar mToolbar = (Toolbar) findViewById(R.id.unit_list_toolbar);
             setSupportActionBar(mToolbar);
             if (getSupportActionBar() != null) {
                 String chapterLabel = chunkPlugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
                 String chapterName = chunkPlugin.getChapterName(mChapterNum);
-                getSupportActionBar().setTitle(language + " - " + book + " - " + chapterLabel + " " + chapterName);
+                getSupportActionBar().setTitle(language + " - " + bookName + " - " + chapterLabel + " " + chapterName);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 getSupportActionBar().setDisplayShowHomeEnabled(true);
             }
