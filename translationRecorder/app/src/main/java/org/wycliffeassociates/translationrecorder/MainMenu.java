@@ -247,7 +247,7 @@ public class MainMenu extends Activity {
             String book = project.getBookSlug();
             if (book.compareTo("") != 0) {
                 book = ResourceUtility.getStringByName("book_" + project.getBookSlug(),
-                        getResources(), this.getPackageName());
+                        getResources(), getPackageName());
             }
             bookView.setText(book);
         } else {

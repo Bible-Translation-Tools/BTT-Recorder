@@ -242,7 +242,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         if (project != null) {
             Book book = project.mBook;
             String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
-                    getResources(), ActivityProjectManager.this.getPackageName());
+                    getResources(), getPackageName());
             project.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
 
             ProjectAdapter.initializeProjectCard(this, project, db, findViewById(R.id.recent_project));
@@ -289,7 +289,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         for (Project p : projects) {
             Book book = p.mBook;
             String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
-                    getResources(), this.getPackageName());
+                    getResources(), getPackageName());
             p.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
 
             String projectName = "language " + p.getTargetLanguageSlug()

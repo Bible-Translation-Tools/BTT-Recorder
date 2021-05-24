@@ -271,7 +271,7 @@ public class ProjectWizardActivity extends AppCompatActivity implements Scrollab
         List<Book> bookList = new ArrayList<Book>();
         for (Book b : books) {
             String bookName = ResourceUtility.getStringByName("book_" + b.getSlug(),
-                    getResources(), this.getPackageName());
+                    getResources(), getPackageName());
             bookList.add(new Book(b.getSlug(), bookName, b.getAnthology(), b.getOrder()));
         }
         return bookList.toArray(new Book[bookList.size()]);

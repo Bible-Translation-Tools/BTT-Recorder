@@ -7,4 +7,10 @@ public class ResourceUtility {
         int resourceId = resources.getIdentifier(name, "string", packageName);
         return resources.getString(resourceId);
     }
+
+    public static String getStringByName(String name, Resources resources,
+                                         String packageName, String resourceType) {
+        int resourceId = resources.getIdentifier(name, resourceType, packageName);
+        return resources.getString(resourceId);
+    }
 }

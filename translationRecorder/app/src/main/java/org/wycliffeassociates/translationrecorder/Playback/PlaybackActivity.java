@@ -253,7 +253,7 @@ public class PlaybackActivity extends Activity implements
 
         String chapterLabel = plugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
         String bookName = ResourceUtility.getStringByName("book_" + mProject.getBookSlug(),
-                getResources(), this.getPackageName());
+                getResources(), getPackageName());
 
         mFragmentFileBar = FragmentFileBar.newInstance(
                 mProject.getTargetLanguageSlug(),
