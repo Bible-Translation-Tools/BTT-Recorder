@@ -1,9 +1,12 @@
 package org.wycliffeassociates.translationrecorder.project.components;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
 /**
  * Created by sarabiaj on 3/28/2017.
@@ -61,10 +64,21 @@ public class Anthology extends ProjectComponent implements Parcelable {
 
     @Override
     public String getLabel() {
+        // get localized string from resources
+        Context ctx = TranslationRecorderApp.getContext();
+        String resource = ResourceUtility.getStringByName(
+                mResource, ctx.getResources(), ctx.getPackageName());
+        String anthSlug = "anthology_" + mSlug;
+        String name = ResourceUtility.getStringByName(
+                anthSlug, ctx.getResources(), ctx.getPackageName());
+
+        resource = (resource == null) ? mResource : resource;
+        name = (name == null)? mName : name;
+
         String label = "";
-        label += Utils.capitalizeFirstLetter(mResource);
+        label += Utils.capitalizeFirstLetter(resource);
         label += ":";
-        String[] resourceLabels = mName.split(" ");
+        String[] resourceLabels = name.split(" ");
         for(String part : resourceLabels) {
             label += " " + Utils.capitalizeFirstLetter(part);
         }
