@@ -89,7 +89,7 @@ public class ActivityChapterList extends AppCompatActivity implements
         mProject = getIntent().getParcelableExtra(Project.PROJECT_EXTRA);
         db = ((TranslationRecorderApp)getApplication()).getDatabase();
         String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-        String book = db.getBookName(mProject.getBookSlug());
+        String book = mProject.getBookName();
         Toolbar mToolbar = (Toolbar) findViewById(R.id.chapter_list_toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {

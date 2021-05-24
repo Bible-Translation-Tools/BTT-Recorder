@@ -191,7 +191,7 @@ public class MainMenu extends Activity {
     private void reportCrash(String message) {
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
         String[] stacktraces = GlobalExceptionHandler.getStacktraces(dir);
-        String githubTokenIdentifier = getResources().getString(R.string.github_token);
+        String githubTokenIdentifier = "";// getResources().getString(R.string.github_token);
         String githubUrl = getResources().getString(R.string.github_bug_report_repo);
 
         // TRICKY: make sure the github_oauth2 token has been set
@@ -245,7 +245,7 @@ public class MainMenu extends Activity {
 
             String book = project.getBookSlug();
             if (book.compareTo("") != 0) {
-                book = db.getBookName(book);
+                book = project.getBookName();
             }
             bookView.setText(book);
         } else {
