@@ -25,7 +25,7 @@ import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectProgress;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 import org.wycliffeassociates.translationrecorder.widgets.UnitCard;
@@ -94,8 +94,9 @@ public class ActivityUnitList extends AppCompatActivity implements CheckingDialo
 
             // Setup toolbar
             String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-            String bookName = ResourceUtility.getStringByName("book_" + mProject.getBookSlug(),
-                    getResources(), getPackageName());
+            StringLocalization localization = new StringLocalization(getResources());
+            String bookName = localization.getBookName(
+                    mProject.getBookSlug(), mProject.getAnthologySlug(), getPackageName());
             Toolbar mToolbar = (Toolbar) findViewById(R.id.unit_list_toolbar);
             setSupportActionBar(mToolbar);
             if (getSupportActionBar() != null) {

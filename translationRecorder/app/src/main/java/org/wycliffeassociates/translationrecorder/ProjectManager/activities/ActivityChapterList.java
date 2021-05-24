@@ -26,7 +26,7 @@ import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
 import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
@@ -90,8 +90,10 @@ public class ActivityChapterList extends AppCompatActivity implements
         mProject = getIntent().getParcelableExtra(Project.PROJECT_EXTRA);
         db = ((TranslationRecorderApp)getApplication()).getDatabase();
         String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-        String bookName = ResourceUtility.getStringByName("book_" + mProject.getBookSlug(),
-                getResources(), getPackageName());
+        StringLocalization localization = new StringLocalization(getResources());
+        String bookName = localization.getBookName(
+                mProject.getBookSlug(), mProject.getAnthologySlug(), getPackageName());
+
         Toolbar mToolbar = (Toolbar) findViewById(R.id.chapter_list_toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {

@@ -20,7 +20,7 @@ import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -89,7 +89,9 @@ public class ProjectInfoDialog extends DialogFragment {
         String languageCode = mProject.getTargetLanguageSlug();
         String language = db.getLanguageName(languageCode);
         String bookCode = mProject.getBookSlug();
-        String bookName = ResourceUtility.getStringByName("book_" + bookCode, getResources(), getActivity().getPackageName());
+        StringLocalization localization = new StringLocalization(getResources());
+        String bookName = localization.getBookName(
+                bookCode, mProject.getAnthologySlug(), getActivity().getPackageName());
         String translation = mProject.getVersionSlug();
 
         mTitle.setText(bookName + " - " + language);

@@ -48,7 +48,7 @@ import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
 import org.wycliffeassociates.translationrecorder.project.components.Book;
 import org.wycliffeassociates.translationrecorder.project.components.User;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 import org.wycliffeassociates.translationrecorder.utilities.Task;
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
 
@@ -241,8 +241,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         }
         if (project != null) {
             Book book = project.mBook;
-            String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
-                    getResources(), getPackageName());
+            StringLocalization localization = new StringLocalization(getResources());
+            String bookName = localization.getBookName(book.getSlug(), book.getAnthology(), getPackageName());
             project.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
 
             ProjectAdapter.initializeProjectCard(this, project, db, findViewById(R.id.recent_project));
@@ -278,6 +278,7 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
 
     private void populateProjectList(Project recent) {
         List<Project> projects = db.getAllProjects();
+        StringLocalization localization = new StringLocalization(getResources());
         if (recent != null) {
             for (int i = 0; i < projects.size(); i++) {
                 if (recent.equals(projects.get(i))) {
@@ -288,8 +289,8 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
         }
         for (Project p : projects) {
             Book book = p.mBook;
-            String bookName = ResourceUtility.getStringByName("book_" + book.getSlug(),
-                    getResources(), getPackageName());
+            String bookName = localization.getBookName(
+                    book.getSlug(), book.getAnthology(), getPackageName());
             p.setBook(new Book(book.getSlug(), bookName, book.getAnthology(), book.getOrder()));
 
             String projectName = "language " + p.getTargetLanguageSlug()

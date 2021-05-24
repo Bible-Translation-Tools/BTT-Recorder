@@ -21,7 +21,7 @@ import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
 import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 
 import java.io.IOException;
 
@@ -153,7 +153,9 @@ public class FragmentRecordingFileBar extends Fragment {
         mLanguageView.postInvalidate();
 
         String bookCode = mProject.getBookSlug();
-        String bookName = ResourceUtility.getStringByName("book_" + bookCode, getResources(), getActivity().getPackageName());
+        StringLocalization localization = new StringLocalization(getResources());
+        String bookName = localization.getBookName(
+                bookCode, mProject.getAnthologySlug(), getActivity().getPackageName());
         mBookView.setText(bookName);
         mBookView.postInvalidate();
 

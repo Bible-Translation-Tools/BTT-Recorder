@@ -30,7 +30,7 @@ import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
 import org.wycliffeassociates.translationrecorder.project.ProjectSlugs;
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
 import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
+import org.wycliffeassociates.translationrecorder.utilities.StringLocalization;
 
 import java.io.File;
 import java.io.IOException;
@@ -246,8 +246,8 @@ public class MainMenu extends Activity {
 
             String book = project.getBookSlug();
             if (book.compareTo("") != 0) {
-                book = ResourceUtility.getStringByName("book_" + project.getBookSlug(),
-                        getResources(), getPackageName());
+                StringLocalization localization = new StringLocalization(getResources());
+                book = localization.getBookName(book, project.getAnthologySlug(), getPackageName());
             }
             bookView.setText(book);
         } else {
