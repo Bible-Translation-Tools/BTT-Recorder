@@ -111,6 +111,9 @@ public class Book extends ProjectComponent implements Parcelable {
         Context ctx = TranslationRecorderApp.getContext();
         String localizationSlug = (anthology.equals("obs")) ? "obs_book_" : "book_";
         return ResourceUtility.getStringByName(
-                localizationSlug + slug, ctx.getResources(), ctx.getPackageName());
+                localizationSlug + slug,
+                ctx.getResources(),
+                ctx.getPackageName()
+        );
     }
 }

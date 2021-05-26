@@ -67,10 +67,16 @@ public class Anthology extends ProjectComponent implements Parcelable {
         // get localized string from resources
         Context ctx = TranslationRecorderApp.getContext();
         String resource = ResourceUtility.getStringByName(
-                mResource, ctx.getResources(), ctx.getPackageName());
+                mResource,
+                ctx.getResources(),
+                ctx.getPackageName()
+        );
         String anthSlug = "anthology_" + mSlug;
         String name = ResourceUtility.getStringByName(
-                anthSlug, ctx.getResources(), ctx.getPackageName());
+                anthSlug,
+                ctx.getResources(),
+                ctx.getPackageName()
+        );
 
         resource = (resource == null) ? mResource : resource;
         name = (name == null)? mName : name;
