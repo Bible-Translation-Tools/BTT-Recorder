@@ -34,7 +34,8 @@ public class Book extends ProjectComponent implements Parcelable {
         mAnthology = anthology;
         mChunks = chunks;
         mOrder = order;
-        mName = getLocalizedName(slug, anthology);
+        String localizedName = getLocalizedName(slug, anthology);
+        mName = (localizedName != null) ? localizedName : name;
     }
 
     public Book(String slug, String name, String anthology, int order){
@@ -44,7 +45,8 @@ public class Book extends ProjectComponent implements Parcelable {
         mAnthology = anthology;
         mChunks = null;
         mOrder = order;
-        mName = getLocalizedName(slug, anthology);
+        String localizedName = getLocalizedName(slug, anthology);
+        mName = (localizedName != null) ? localizedName : name;
     }
 
     public int getNumChapters() {
