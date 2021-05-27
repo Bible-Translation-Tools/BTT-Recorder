@@ -151,8 +151,7 @@ public class FragmentRecordingFileBar extends Fragment {
         mLanguageView.setText(languageCode.toUpperCase());
         mLanguageView.postInvalidate();
 
-        String bookCode = mProject.getBookSlug();
-        String bookName = db.getBookName(bookCode);
+        String bookName = mProject.getBookName();
         mBookView.setText(bookName);
         mBookView.postInvalidate();
 

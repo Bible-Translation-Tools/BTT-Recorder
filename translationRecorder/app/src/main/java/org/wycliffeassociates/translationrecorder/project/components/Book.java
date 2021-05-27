@@ -1,9 +1,12 @@
 package org.wycliffeassociates.translationrecorder.project.components;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
 import java.util.ArrayList;
 
@@ -31,14 +34,19 @@ public class Book extends ProjectComponent implements Parcelable {
         mAnthology = anthology;
         mChunks = chunks;
         mOrder = order;
+        String localizedName = getLocalizedName(slug, anthology);
+        mName = (localizedName != null) ? localizedName : name;
     }
 
     public Book(String slug, String name, String anthology, int order){
         super(slug, name);
+        // get localized name from resources
         mNumChapters = 0;
         mAnthology = anthology;
         mChunks = null;
         mOrder = order;
+        String localizedName = getLocalizedName(slug, anthology);
+        mName = (localizedName != null) ? localizedName : name;
     }
 
     public int getNumChapters() {
@@ -99,5 +107,15 @@ public class Book extends ProjectComponent implements Parcelable {
         super(in);
         mAnthology = in.readString();
         mOrder = in.readInt();
+    }
+
+    private String getLocalizedName(String slug, String anthology) {
+        Context ctx = TranslationRecorderApp.getContext();
+        String localizationSlug = (anthology.equals("obs")) ? "obs_book_" : "book_";
+        return ResourceUtility.getStringByName(
+                localizationSlug + slug,
+                ctx.getResources(),
+                ctx.getPackageName()
+        );
     }
 }
