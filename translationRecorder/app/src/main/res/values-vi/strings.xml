@@ -30,7 +30,7 @@
     <string name="target_language">Ngôn ngữ đích</string>
     <string name="set_checking_level">Đặt mức kiểm tra</string>
     <string name="warning">Cảnh báo</string>
-    <string name="compile_chapters_message">Biên soạn tất cả đơn vị thành một bản thu âm của một Chương?</string>
+    <string name="compile_chapters_message">Biên soạn tất cả đơn vị thành một bản thu âm dạng Chương?</string>
     <string name="recompile_chapters_message">Biên soạn lại một Chương sẽ ghi đè lên bản ghi âm hiện tại và đặt lại mức kiểm tra.</string>
     <string name="compiling_chapter">Đang biên soạn Chương</string>
     <string name="delete_chapter_recording">Xóa bản Ghi âm Chương?</string>
@@ -44,7 +44,7 @@
     <string name="app_settings">Cài đặt Thu âm BTT</string>
     <string name="source_language">Ngôn ngữ gốc</string>
     <string name="add_temp_language">Thêm ngôn ngữ tạm</string>
-    <string name="update_language_from_td">Cập nhật các ngôn ngữ từ translationDatabase</string>
+    <string name="update_language_from_td">Cập nhật các ngôn ngữ từ Kho dữ liệu Dịch thuật</string>
     <string name="update_language_from_file">Tải lên các ngôn ngữ từ file</string>
     <string name="change_upload_server">Thay đổi Server tải lên</string>
     <string name="app_version">Phiên bản BTT Recorder</string>
