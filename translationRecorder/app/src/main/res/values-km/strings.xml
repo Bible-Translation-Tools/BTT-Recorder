@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">BTT Recorder</string>
+    <string name="app_name">a;ldlafdadlfdn</string>
     <string name="settings_menu">Settings</string>
     <string name="logout_menu">Logout</string>
     <string name="help_menu">Help</string>
@@ -15,7 +15,7 @@
     <string name="no">No</string>
     <string name="delete_take">Delete take?</string>
     <string name="rate_take">Rate this take</string>
-    <string name="label_take_detailed">Take <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="label_take_detailed">ហ្វ្រេមទី <xliff:g id="current_frame" example="2">%1$s</xliff:g> នៃ <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
     <string name="label_chapter_title_detailed">Chapter <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">Project</string>
     <string name="project_upload">Project upload</string>
