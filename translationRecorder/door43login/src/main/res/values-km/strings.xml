@@ -47,14 +47,10 @@
   <br/><br/><strong>Clear</strong> - Strives for the highest level of comprehension by hearers.
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
+    <string name="statement_of_faith"><![CDATA[<h1>សេចក្តីថ្លែងការណ៍នៃជំនឿ</h1>
 <p>
-  The divine inspiration and consequent authority of the whole canonical Scriptures.
-  <br/><br/>The doctrine of the Trinity—God is one, existing in three persons, the Father, the Son and the Holy Spirit.
-  <br/><br/>The fall of man, his consequent moral depravity, and his need for regeneration.
-  <br/><br/>The atonement through the substitutionary death of Christ.
-  <br/><br/>The doctrine of justification by faith.
-  <br/><br/>The resurrection of the body, in the case of the just and the unjust.
-  <br/><br/>The eternal life of the saved and the eternal punishment of the lost.
+  ព្រះគម្ពីរទាំងមូលត្រូវបានបំផុសគំនិតដោយព្រះ និងមានអំណាច។
+  <br/><br/>​មានព្រះតែមួយ ហើយទ្រង់ជាបុគ្គលបីនាក់ គឺព្រះបិតា ព្រះរាជបុត្រ និងព្រះវិញ្ញាណដ៏វិសុទ្ធ។  <br/><br/>ដោយសារតែការធ្លាក់ចុះនៃមនុស្សជាតិ មនុស្សទាំងអស់មានចំណង់ធ្វើអំពើបាប ហើយយើងទាំងអស់ត្រូវការសេចក្តីសង្គ្រោះ
+  <br/><br/>​ការសុគតរបស់ព្រះគ្រិស្តជាសេចក្តីជំនួសសម្រាប់អ្នកមានបាប​ ។  <br/><br/>ដោយព្រះគុណ តាមរយៈជំនឿ មនុស្សទទួលសេចក្តីសង្គ្រោះដែលជាអំណោយឥត់គិតថ្លៃ ដោយសារការសុគត និងរស់ឡើងវិញនៃព្រះយេស៊ូ។  <br/><br/>​មនុស្សទាំងអស់នឹងរស់ឡើងវិញ។  អ្នកដែលបានទទួលសេចក្តីសង្គ្រោះនឹងទទួលជីវិតអស់កល្បជានិច្ច ហើយអ្នកដែលមិនទទួលសេចក្តីសង្គ្រោះនឹងទទួលការដាក់ទណ្ឌកម្មអស់កល្បជានិច្ច។  <br/><br/>The eternal life of the saved and the eternal punishment of the lost.
 </p>]]></string>
 </resources>
