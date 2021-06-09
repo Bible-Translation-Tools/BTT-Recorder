@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <!-- The terms that users must agree with in order to use the app -->
-    <string name="terms_title">Terms of Use</string>
+    <string name="terms_title">លក្ខខណ្ឌប្រើប្រាស់</string>
     <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
     <string name="view_license_agreement">License Agreement</string>
     <string name="license_deny">No Thanks</string>
     <string name="license_accept">I Agree</string>
-    <string name="view_statement_of_faith">Statement of Faith</string>
+    <string name="view_statement_of_faith">សេចក្តីថ្លែងការណ៍នៃជំនឿ</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2>You are free to:</h2>
