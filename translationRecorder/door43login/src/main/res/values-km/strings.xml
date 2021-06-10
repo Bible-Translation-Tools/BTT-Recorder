@@ -7,7 +7,7 @@
     <string name="license_deny">ទេ អរគុណ</string>
     <string name="license_accept">ខ្ញុំយល់ព្រមទទួលយក</string>
     <string name="view_statement_of_faith">សេចក្តីថ្លែងការណ៍នៃជំនឿ</string>
-    <string name="view_translation_guidelines">Translation Guidelines</string>
+    <string name="view_translation_guidelines">សេចក្តីណែនាំអំពីការបកប្រែ</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2>You are free to:</h2>
 <p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
