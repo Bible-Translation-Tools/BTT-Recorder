@@ -4,24 +4,24 @@
     <string name="settings_menu">ការ​កំណត់</string>
     <string name="logout_menu">ចេញ</string>
     <string name="help_menu">ជំនួយ</string>
-    <string name="project_management">Project Management</string>
-    <string name="new_project">New Project</string>
-    <string name="choose_target_language">Choose Target Language</string>
-    <string name="choose_project">Choose a Project</string>
-    <string name="choose_book">Choose a Book</string>
-    <string name="choose_translation_type">Choose Translation Type</string>
-    <string name="choose_mode">Choose a Mode</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="delete_take">Delete take?</string>
-    <string name="rate_take">Rate this take</string>
+    <string name="project_management">ការគ្រប់គ្រងគម្រោង</string>
+    <string name="new_project">គម្រោង​ថ្មី</string>
+    <string name="choose_target_language">ជ្រើសយកភាសាគោលដៅ</string>
+    <string name="choose_project">ជ្រើសរើសគម្រោង</string>
+    <string name="choose_book">ជ្រើសរើសកណ្ឌ</string>
+    <string name="choose_translation_type">ជ្រើស​យក​បែប​បកប្រែ</string>
+    <string name="choose_mode">ជ្រើស​យក​របៀប​</string>
+    <string name="yes">បាទ/ចាស</string>
+    <string name="no">ទេ</string>
+    <string name="delete_take">លុប​ចំណុច​យក​នេះ</string>
+    <string name="rate_take">វាយ​តម្លៃចំណុច​យក​នេះ</string>
     <string name="label_take_detailed">ហ្វ្រេមទី <xliff:g id="current_frame" example="2">%1$s</xliff:g> នៃ <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
-    <string name="label_chapter_title_detailed">Chapter <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
-    <string name="project">Project</string>
-    <string name="project_upload">Project upload</string>
-    <string name="project_uploaded">Project successfully uploaded</string>
-    <string name="project_upload_failed">Project upload failed: <xliff:g example="error" id="message">%1$s</xliff:g></string>
-    <string name="upload_step_one">Step 1/3: Generating manifest file</string>
+    <string name="label_chapter_title_detailed">ជំពូក <xliff:g id="chapter" example="1. The Creation"> %1$s </xliff:g></string>
+    <string name="project">គម្រោង</string>
+    <string name="project_upload">អាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោង</string>
+    <string name="project_uploaded">បានអាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោងជាស្ថាពរហើយ</string>
+    <string name="project_upload_failed">ការ​អាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារមេនីហ្វេស (និ​វេទនប័ណ្ណ, បញ្ជី)</string>
     <string name="upload_step_two">Step 2/3: Packaging files to export</string>
     <string name="upload_step_three">Step 3/3: Uploading</string>
     <string name="packaging_files">Packaging files to export</string>
