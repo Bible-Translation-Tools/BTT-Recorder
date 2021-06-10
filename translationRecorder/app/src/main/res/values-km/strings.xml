@@ -22,15 +22,15 @@
     <string name="project_uploaded">បានអាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោងជាស្ថាពរហើយ</string>
     <string name="project_upload_failed">ការ​អាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារមេនីហ្វេស (និ​វេទនប័ណ្ណ, បញ្ជី)</string>
-    <string name="upload_step_two">Step 2/3: Packaging files to export</string>
+    <string name="upload_step_two">ដំណាក់​ទី ២/៣ ៖ ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
     <string name="upload_step_three">Step 3/3: Uploading</string>
-    <string name="packaging_files">Packaging files to export</string>
-    <string name="delete_project">Delete Project</string>
-    <string name="confirm_delete_project_alt">Deleting this project will remove all associated verse and chunk recordings.\n\nAre you sure?</string>
-    <string name="target_language">Target Language</string>
-    <string name="set_checking_level">Set Checking Level</string>
-    <string name="warning">Warning</string>
-    <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
+    <string name="packaging_files">ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
+    <string name="delete_project">លុបគម្រោង</string>
+    <string name="confirm_delete_project_alt">លុប​គម្រោង​នេះ​ចេញ​​នឹង​​​ឲ្យ​រលុប​បាត់​​​វគ្គ និងកំណាត់​​សម្លេង​​​ថត​រួច​​ហើយ ដែល​​​​ជាប់​ទាក់​ទង​នឹង​គម្រោងនេះ​ដែរ​។ \n\nតើ​អ្នក​​ច្បាស់​​ហើយ​ឬ?</string>
+    <string name="target_language">ភាសាគោលដៅ</string>
+    <string name="set_checking_level">ដាក់​កម្រិត​ត្រួត​ពិនិត្យ​</string>
+    <string name="warning">ការព្រមាន</string>
+    <string name="compile_chapters_message">ចងក្រង​​បំណែក​ទាំងអស់​​ឲ្យ​ទៅជា​​សម្លេងមួយ​​ជំពូក​?</string>
     <string name="recompile_chapters_message">Re-compiling a chapter will over-write the current audio and reset the checking level.</string>
     <string name="compiling_chapter">Compiling Chapter</string>
     <string name="delete_chapter_recording">Delete Chapter Recording?</string>
