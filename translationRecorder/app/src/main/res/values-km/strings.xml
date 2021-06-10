@@ -2,8 +2,8 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="app_name">a;ldlafdadlfdn</string>
     <string name="settings_menu">ការ​កំណត់</string>
-    <string name="logout_menu">Logout</string>
-    <string name="help_menu">Help</string>
+    <string name="logout_menu">ចេញ</string>
+    <string name="help_menu">ជំនួយ</string>
     <string name="project_management">Project Management</string>
     <string name="new_project">New Project</string>
     <string name="choose_target_language">Choose Target Language</string>
