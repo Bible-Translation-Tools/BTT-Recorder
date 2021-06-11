@@ -23,7 +23,7 @@
     <string name="project_upload_failed">ការ​អាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារមេនីហ្វេស (និ​វេទនប័ណ្ណ, បញ្ជី)</string>
     <string name="upload_step_two">ដំណាក់​ទី ២/៣ ៖ ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
-    <string name="upload_step_three">Step 3/3: Uploading</string>
+    <string name="upload_step_three">ដំណាក់​ទី ៣/៣ ៖ អាប់ឡូដ (បង្ហោះ)</string>
     <string name="packaging_files">ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
     <string name="delete_project">លុបគម្រោង</string>
     <string name="confirm_delete_project_alt">លុប​គម្រោង​នេះ​ចេញ​​នឹង​​​ឲ្យ​រលុប​បាត់​​​វគ្គ និងកំណាត់​​សម្លេង​​​ថត​រួច​​ហើយ ដែល​​​​ជាប់​ទាក់​ទង​នឹង​គម្រោងនេះ​ដែរ​។ \n\nតើ​អ្នក​​ច្បាស់​​ហើយ​ឬ?</string>
