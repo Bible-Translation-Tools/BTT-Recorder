@@ -7,7 +7,7 @@
     <string name="license_deny">ទេ អរគុណ</string>
     <string name="license_accept">ខ្ញុំយល់ព្រមទទួលយក</string>
     <string name="view_statement_of_faith">សេចក្តីថ្លែងការណ៍នៃជំនឿ</string>
-    <string name="view_translation_guidelines">សេចក្តីណែនាំអំពីការបកប្រែ</string>
+    <string name="view_translation_guidelines">គោលការណែនាំអំពីការបកប្រែ​</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2>អ្នកមានសិទ្ធិ:</h2>
 <p>ចែករំលែក, ចម្លង, និងចែកចាយឯកសារតាមប្រព័ន្ធឃោសនាផ្សព្វផ្សាយសាធារណៈ ឬទម្រង់ណាមួយដែលមានជាអាទិ៍ៈ យកលំនាំតាម, កាត់តចងក្រង, ផ្លាស់ប្ដូរទ្រង់ទ្រាយ, និងបន្ថែមខ្លឹមសារលើឯកសារនេះសម្រាប់គោលបំណងណាមួយ សូម្បីតែសម្រាប់គោលបំណងពាណិជ្ជកម្មក៏បាន។ អ្នកផ្តល់អាជ្ញាបណ្ណមិនអាចដកហូតសិទ្ធិសេរីភាពទាំងនេះបានឡើយ ដរាបណាអ្នកអនុវត្តតាមលក្ខខណ្ឌនៃអាជ្ញាបណ្ណនេះ។</p>
