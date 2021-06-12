@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">អង្គ​ការ BTT Recorder</string>
+    <string name="app_name">ម៉ាស៊ីនថតសំឡេង BTT</string>
     <string name="settings_menu">ការ​កំណត់</string>
     <string name="logout_menu">ចេញ</string>
     <string name="help_menu">ជំនួយ</string>
@@ -34,13 +34,13 @@
     <string name="recompile_chapters_message">ការចងក្រងជំពូកឡើងវិញនឹងសរសេរ​ជាន់​លើ​សំឡេងថ្មីៗ ហើយដាក់​កម្រិត​ត្រួត​ពិនិត្យ​សា​ឡើងវិញ។</string>
     <string name="compiling_chapter">ការចងក្រងជំពូក</string>
     <string name="delete_chapter_recording">លុប​ជំពូក​សំឡេង?</string>
-    <string name="source_audio">សំឡេងប្រភព</string>
-    <string name="select_source_language">ជ្រើស​យក​សំឡេងប្រភព</string>
-    <string name="select_source_location">ជ្រើស​យក​​ទីតាំង​ប្រភព</string>
-    <string name="source_audio_not_found">សំឡេងប្រភពមិនអាចរកឃើញនៅក្នុងទីតាំងលំនាំដើមទេ។ ប្រសិនបើអ្នកចង់យកសំឡេង​ប្រភព​ទៅ​ប្រើជាមួយគម្រោងរបស់អ្នក សូមជ្រើសយក​ភាសាប្រភព ហើយបន្ទាប់មក រកថតឯកសារ​សំឡេងប្រភពដែលត្រូវគ្នា នៅលើឧបករណ៍ឬកាតអេសឌីរបស់អ្នក ដោយប្រើប៊ូតុងខាងក្រោម។</string>
-    <string name="source_audio_location">ទីតាំង​សំឡេង​ប្រភព</string>
-    <string name="source_audio_language">ភាសាសំឡេង​ប្រភព</string>
-    <string name="choose_source_language">ជ្រើសយកភាសាប្រភព</string>
+    <string name="source_audio">សំឡេងប្រភពដើម</string>
+    <string name="select_source_language">ជ្រើស​យក​សំឡេងប្រភពដើម</string>
+    <string name="select_source_location">ជ្រើស​យក​​ទីតាំង​ប្រភពដើម</string>
+    <string name="source_audio_not_found">សំឡេងប្រភពដើមមិនអាចរកឃើញនៅក្នុងទីតាំងលំនាំដើមទេ។ ប្រសិនបើអ្នកចង់យកសំឡេង​ប្រភពដើម​ទៅ​ប្រើជាមួយគម្រោងរបស់អ្នក សូមជ្រើសយក​ភាសាប្រភពដើម ហើយបន្ទាប់មក រកថតឯកសារ​សំឡេងប្រភពដើមដែលត្រូវគ្នា នៅលើឧបករណ៍ឬកាតអេសឌីរបស់អ្នក ដោយប្រើប៊ូតុងខាងក្រោម។</string>
+    <string name="source_audio_location">ទីតាំង​សំឡេង​ប្រភពដើម</string>
+    <string name="source_audio_language">ភាសាសំឡេង​ប្រភពដើម</string>
+    <string name="choose_source_language">ជ្រើសយកភាសាប្រភពដើម</string>
     <string name="app_settings">BTT Recorder Settings</string>
     <string name="source_language">Source Language</string>
     <string name="add_temp_language">Add Temporary Language</string>
