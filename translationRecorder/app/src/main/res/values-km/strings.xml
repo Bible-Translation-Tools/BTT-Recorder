@@ -60,7 +60,7 @@
     <string name="save">រក្សាទុក</string>
     <string name="version">កំណែ</string>
     <string name="label_skip">រំលង</string>
-    <string name="saving">Saving</string>
+    <string name="saving">រក្សាទុក</string>
     <string name="writing_changes">Writing changes to file, please wait...</string>
     <string name="inserting_recording">Inserting recording</string>
     <string name="audio_player_error">Could not initialize the audio player</string>
