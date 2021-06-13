@@ -61,10 +61,10 @@
     <string name="version">កំណែ</string>
     <string name="label_skip">រំលង</string>
     <string name="saving">រក្សាទុក</string>
-    <string name="writing_changes">Writing changes to file, please wait...</string>
-    <string name="inserting_recording">Inserting recording</string>
-    <string name="audio_player_error">Could not initialize the audio player</string>
-    <string name="restart_device">If this issue continues, try restarting your device.</string>
+    <string name="writing_changes">កំពុងសរសេរការផ្លាស់ប្តូរឯកសារ សូមរង់ចាំ ...</string>
+    <string name="inserting_recording">កំពុង​បញ្ចូលការថត​សំឡេង</string>
+    <string name="audio_player_error">មិនអាចចាប់ផ្តើមកម្មវិធីចាក់​សំឡេងបានទេ</string>
+    <string name="restart_device">ប្រសិនបើនៅតែមាន​បញ្ហានេះ សាកចាប់ផ្តើមឧបករណ៍ឡើងវិញ។</string>
     <string name="chapter_title">Chapter</string>
     <string name="chunk_title">Chunk</string>
     <string name="title_verse">Verse</string>
