@@ -21,7 +21,7 @@
     <string name="project_upload">អាប់ឡូដ (បង្ហោះ) គម្រោង</string>
     <string name="project_uploaded">បានអាប់ឡូដ (បង្ហោះ) គម្រោងជាស្ថាពរហើយ</string>
     <string name="project_upload_failed">ការ​អាប់ឡូដ (បង្ហោះ) គម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
-    <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារមេនីហ្វេស (និ​វេទនប័ណ្ណ, បញ្ជី)</string>
+    <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារបញ្ជី (manifest file)</string>
     <string name="upload_step_two">ដំណាក់​ទី ២/៣ ៖ ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
     <string name="upload_step_three">ដំណាក់​ទី ៣/៣ ៖ អាប់ឡូដ (បង្ហោះ)</string>
     <string name="packaging_files">ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
@@ -65,20 +65,20 @@
     <string name="inserting_recording">កំពុង​បញ្ចូលការថត​សំឡេង</string>
     <string name="audio_player_error">មិនអាចចាប់ផ្តើមកម្មវិធីចាក់​សំឡេងបានទេ</string>
     <string name="restart_device">ប្រសិនបើនៅតែមាន​បញ្ហានេះ សាកចាប់ផ្តើមឧបករណ៍ឡើងវិញ។</string>
-    <string name="chapter_title">Chapter</string>
-    <string name="chunk_title">Chunk</string>
-    <string name="title_verse">Verse</string>
+    <string name="chapter_title">ជំពូក</string>
+    <string name="chunk_title">កំណាត់</string>
+    <string name="title_verse">ខ</string>
     <!-- DESCRIPTIONS -->
     <!-- SETTINGS (Values) -->
     <!-- SETTINGS (Summaries) -->
-    <string name="unit">Unit</string>
-    <string name="translation_type">Translation Type</string>
+    <string name="unit">ដុំ</string>
+    <string name="translation_type">ប្រភេទបកប្រែ</string>
     <!-- LOGIN -->
-    <string name="record_name">What is your name?</string>
-    <string name="privacy">If you are concerned for your privacy or safety, please use a nickname or pseudonym</string>
-    <string name="txt_record"><u>Record</u></string>
-    <string name="txt_btn_redo">Redo</string>
-    <string name="txt_btn_yes">Yes</string>
+    <string name="record_name">តើអ្នកឈ្មោះអ្វី?</string>
+    <string name="privacy">ប្រសិនបើអ្នកព្រួយបារម្ភអំពីភាពឯកជនឬសុវត្ថិភាពរបស់អ្នក សូមប្រើ​សម្មតិនាមឬ​សហស្សនាម</string>
+    <string name="txt_record"><u>ចាប់ថត</u></string>
+    <string name="txt_btn_redo">ធ្វើឡើងវិញ</string>
+    <string name="txt_btn_yes">បាទ/ចាស</string>
     <string name="new_user"><u>New User</u></string>
     <string name="available_users">Available Users</string>
     <string name="is_this_ok_txt">Is this ok?</string>
