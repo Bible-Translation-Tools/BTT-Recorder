@@ -98,10 +98,10 @@
     <string name="title_cancel">取消</string>
     <string name="please_wait">请等待</string>
     <!--Anthologies-->
-    <string name="bible">Bible</string>
-    <string name="bible_stories">Bible Stories</string>
-    <string name="anthology_nt">New Testament</string>
-    <string name="anthology_ot">Old Testament</string>
+    <string name="bible">圣经</string>
+    <string name="bible_stories">圣经故事</string>
+    <string name="anthology_nt">新约</string>
+    <string name="anthology_ot">旧约</string>
     <string name="anthology_obs">Open Bible Stories</string>
     <!--Book names-->
     <string name="book_gen">Genesis</string>
