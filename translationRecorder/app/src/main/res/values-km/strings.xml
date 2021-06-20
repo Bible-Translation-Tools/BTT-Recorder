@@ -6,8 +6,8 @@
     <string name="help_menu">ជំនួយ</string>
     <string name="project_management">ការគ្រប់គ្រងគម្រោង</string>
     <string name="new_project">គម្រោង​ថ្មី</string>
-    <string name="choose_target_language">ជ្រើសយកភាសាគោលដៅ</string>
-    <string name="choose_project">ជ្រើសយកគម្រោងមួយ</string>
+    <string name="choose_target_language">ជ្រើសរើសភាសាគោលដៅ</string>
+    <string name="choose_project">ជ្រើសរើសគម្រោងមួយ</string>
     <string name="choose_book">ជ្រើសយកកណ្ឌ​មួយ</string>
     <string name="choose_translation_type">ជ្រើស​យក​ប្រភេទបកប្រែ</string>
     <string name="choose_mode">ជ្រើស​យក​របៀប​​មួយ</string>
