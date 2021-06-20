@@ -100,8 +100,8 @@
     <!--Anthologies-->
     <string name="bible">ព្រះគម្ពីរ</string>
     <string name="bible_stories">រឿង​ទាំងឡាយ​នៃ​ព្រះគម្ពីរ</string>
-    <string name="anthology_nt">សម្ព័ន្ធ​មេត្រី​ថ្មី</string>
-    <string name="anthology_ot">សម្ព័ន្ធ​មេត្រី​ចាស់</string>
+    <string name="anthology_nt">សញ្ញា​ថ្មី</string>
+    <string name="anthology_ot">សញ្ញា​ចាស់</string>
     <string name="anthology_obs">រឿង​​បើកចំហ​​នៃ​ព្រះគម្ពីរ</string>
     <!--Book names-->
     <string name="book_gen">លោកុ‌ប្បត្តិ</string>
