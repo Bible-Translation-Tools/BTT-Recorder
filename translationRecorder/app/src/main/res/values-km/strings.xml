@@ -8,9 +8,9 @@
     <string name="new_project">គម្រោង​ថ្មី</string>
     <string name="choose_target_language">ជ្រើសរើសភាសាគោលដៅ</string>
     <string name="choose_project">ជ្រើសរើសគម្រោងមួយ</string>
-    <string name="choose_book">ជ្រើសយកកណ្ឌ​មួយ</string>
-    <string name="choose_translation_type">ជ្រើស​យក​ប្រភេទបកប្រែ</string>
-    <string name="choose_mode">ជ្រើស​យក​របៀប​​មួយ</string>
+    <string name="choose_book">ជ្រើសរើសកណ្ឌ​គម្ពីរមួយ</string>
+    <string name="choose_translation_type">ជ្រើស​រើសប្រភេទបកប្រែ</string>
+    <string name="choose_mode">ជ្រើស​រើស​របៀប​​មួយ</string>
     <string name="yes">បាទ/ចាស</string>
     <string name="no">ទេ</string>
     <string name="delete_take">លុប​ចំណុច​ថតនេះ?</string>
@@ -18,17 +18,17 @@
     <string name="label_take_detailed">ចំណុច​ថត​ទី <xliff:g id="current_frame" example="2">%1$s</xliff:g> នៃ <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
     <string name="label_chapter_title_detailed">ជំពូក <xliff:g id="chapter" example="1. The Creation"> %1$s </xliff:g></string>
     <string name="project">គម្រោង</string>
-    <string name="project_upload">អាប់ឡូដ (បង្ហោះ) គម្រោង</string>
-    <string name="project_uploaded">បានអាប់ឡូដ (បង្ហោះ) គម្រោងជាស្ថាពរហើយ</string>
-    <string name="project_upload_failed">ការ​អាប់ឡូដ (បង្ហោះ) គម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
-    <string name="upload_step_one">ដំណាក់​ទី ១/៣ ៖ បង្កើតឯកសារបញ្ជី (manifest file)</string>
-    <string name="upload_step_two">ដំណាក់​ទី ២/៣ ៖ ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
-    <string name="upload_step_three">ដំណាក់​ទី ៣/៣ ៖ អាប់ឡូដ (បង្ហោះ)</string>
+    <string name="project_upload">អាប់ឡូដគម្រោង</string>
+    <string name="project_uploaded">បានអាប់ឡូដគម្រោងជាស្ថាពរហើយ</string>
+    <string name="project_upload_failed">ការ​អាប់ឡូដគម្រោង​មិន​​បាន​សម្រេច៖ <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="upload_step_one">ជំហាន​ទី ១ ក្នុង​ ៣ ៖ បង្កើតឯកសារព័ត៌មានលម្អិតកម្មវិធី</string>
+    <string name="upload_step_two">ជំហាន​ទី ២ ក្នុង ៣ ៖ ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
+    <string name="upload_step_three">ជំហានទី ៣ ក្មុង ៣ ៖ ការអាប់ឡូដ</string>
     <string name="packaging_files">ការ​ប្រមូល​ខ្ចប់​ឯកសារ​ដើម្បី​នាំ​ចេញ</string>
     <string name="delete_project">លុបគម្រោង</string>
-    <string name="confirm_delete_project_alt">លុប​គម្រោង​នេះ​ចេញ​​នឹង​​​ឲ្យ​រលុប​បាត់​​​វគ្គ និងកំណាត់​​សំឡេងថត​រួច​​ហើយ ដែល​​​​ជាប់​ទាក់​ទង​នឹង​គម្រោងនេះ​ដែរ​។ \n\nតើ​អ្នក​​ច្បាស់​​ហើយ​ឬ?</string>
+    <string name="confirm_delete_project_alt">ការលុប​គម្រោង​នេះ​​​នឹងធ្វើ​​​ឲ្យ​រលុប​បាត់​​​ខ និងកំណាត់​​សំឡេងថត​ដែល​​​​ជាប់ពាក់ព័ន្ធគ្នា​។ \n\nតើ​អ្នក​​ច្បាស់​​ហើយ​ឬ?</string>
     <string name="target_language">ភាសាគោលដៅ</string>
-    <string name="set_checking_level">ដាក់​កម្រិត​ត្រួត​ពិនិត្យ​</string>
+    <string name="set_checking_level">កំណត់​កម្រិត​ត្រួត​ពិនិត្យ​</string>
     <string name="warning">ការព្រមាន</string>
     <string name="compile_chapters_message">ចងក្រង​​បំណែក​ទាំងអស់​​ឲ្យ​ទៅជា​​សម្លេងមួយ​​ជំពូក​?</string>
     <string name="recompile_chapters_message">ការចងក្រងជំពូកឡើងវិញនឹងសរសេរ​ជាន់​លើ​សំឡេងថ្មីៗ ហើយដាក់​កម្រិត​ត្រួត​ពិនិត្យ​សា​ឡើងវិញ។</string>
@@ -80,7 +80,7 @@
     <string name="txt_btn_redo">ធ្វើឡើងវិញ</string>
     <string name="txt_btn_yes">បាទ/ចាស</string>
     <string name="new_user"><u> អ្នកប្រើថ្មី </u></string>
-    <string name="available_users">អ្នកប្រើដែលមាន</string>
+    <string name="available_users">អ្នកប្រើស្រាប់</string>
     <string name="is_this_ok_txt">មិនអីទេឬ?</string>
     <string name="permissions_denied_title">ត្រូវការការអនុញ្ញាត</string>
     <string name="permissions_denied_message">សូមបើកការអនុញ្ញាតឱ្យប្រើម៉ាស៊ីនថតសំឡេង BTT</string>
