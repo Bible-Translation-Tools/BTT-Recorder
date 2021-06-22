@@ -126,11 +126,11 @@
     <string name="book_pro">箴言</string>
     <string name="book_ecc">传道书</string>
     <string name="book_sng">雅歌</string>
-    <string name="book_isa">Isaiah</string>
-    <string name="book_jer">Jeremiah</string>
-    <string name="book_lam">Lamentations</string>
-    <string name="book_ezk">Ezekiel</string>
-    <string name="book_dan">Daniel</string>
+    <string name="book_isa">以赛亚书</string>
+    <string name="book_jer">耶利米书</string>
+    <string name="book_lam">耶利米哀歌</string>
+    <string name="book_ezk">以西结书</string>
+    <string name="book_dan">但以理</string>
     <string name="book_hos">Hosea</string>
     <string name="book_jol">Joel</string>
     <string name="book_amo">Amos</string>
