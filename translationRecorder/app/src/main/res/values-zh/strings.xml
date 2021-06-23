@@ -131,11 +131,11 @@
     <string name="book_lam">耶利米哀歌</string>
     <string name="book_ezk">以西结书</string>
     <string name="book_dan">但以理</string>
-    <string name="book_hos">Hosea</string>
-    <string name="book_jol">Joel</string>
-    <string name="book_amo">Amos</string>
-    <string name="book_oba">Obadiah</string>
-    <string name="book_jon">Jonah</string>
+    <string name="book_hos">何西阿书</string>
+    <string name="book_jol">约珥书</string>
+    <string name="book_amo">阿摩司书</string>
+    <string name="book_oba">俄巴底亚书</string>
+    <string name="book_jon">约拿书</string>
     <string name="book_mic">Micah</string>
     <string name="book_nam">Nahum</string>
     <string name="book_hab">Habakkuk</string>
