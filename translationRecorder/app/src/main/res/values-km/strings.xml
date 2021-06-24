@@ -62,7 +62,7 @@
     <string name="label_skip">រំលង</string>
     <string name="saving">រក្សាទុក</string>
     <string name="writing_changes">កំពុងសរសេរការផ្លាស់ប្តូរសម្រាប់ឯកសារ សូមរង់ចាំ...</string>
-    <string name="inserting_recording">កំពុង​បញ្ចូលការថត​សំឡេង</string>
+    <string name="inserting_recording">កំពុង​បញ្ចូលកសំឡេងថត</string>
     <string name="audio_player_error">មិនអាចចាប់ផ្តើមកម្មវិធីចាក់​សំឡេងបានទេ</string>
     <string name="restart_device">ប្រសិនបើនៅតែមាន​បញ្ហានេះ សាកចាប់ផ្តើមឧបករណ៍ឡើងវិញ។</string>
     <string name="chapter_title">ជំពូក</string>
