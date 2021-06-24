@@ -98,10 +98,10 @@
     <string name="title_cancel">Cancela</string>
     <string name="please_wait">Por favor espere</string>
     <!--Anthologies-->
-    <string name="bible">Bible</string>
-    <string name="bible_stories">Bible Stories</string>
-    <string name="anthology_nt">New Testament</string>
-    <string name="anthology_ot">Old Testament</string>
+    <string name="bible">Biblia</string>
+    <string name="bible_stories">Historias Bíblicas</string>
+    <string name="anthology_nt">Nuevo Testamento</string>
+    <string name="anthology_ot">Antiguo Testamento</string>
     <string name="anthology_obs">Historias Bíblicas Libres</string>
     <!--Book names-->
     <string name="book_gen">Génesis</string>
