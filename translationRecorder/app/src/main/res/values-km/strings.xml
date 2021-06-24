@@ -83,10 +83,10 @@
     <string name="available_users">អ្នកប្រើស្រាប់</string>
     <string name="is_this_ok_txt">មិនអីទេឬ?</string>
     <string name="permissions_denied_title">ត្រូវការការអនុញ្ញាត</string>
-    <string name="permissions_denied_message">សូមបើកការអនុញ្ញាតឱ្យប្រើម៉ាស៊ីនថតសំឡេង BTT</string>
+    <string name="permissions_denied_message">សូមបើកការអនុញ្ញាតដើម្បីអាចប្រើម៉ាស៊ីនថតសំឡេង BTT</string>
     <string name="open_permissions">បើកកំណត់ការអនុញ្ញាត</string>
     <string name="project_exists">គម្រោងមានរួចហើយ!</string>
-    <string name="project_exists_message">គម្រោងសម្រាប់ភាសា សៀវភៅ និងកំណែនោះ មានរួចហើយ។ \nប្រសិនបើអ្នកចង់ប្តូររបៀបថតសម្លេង សូមលុបគំរោងសិន មុននឹង​បង្កើតវាសា​ជា​ថ្មី។</string>
+    <string name="project_exists_message">គម្រោងសម្រាប់ភាសា សៀវភៅ និងជំនាន់នោះ មានរួចហើយ។ \nប្រសិនបើអ្នកចង់ប្តូររបៀបថតសំឡេង សូមលុបគំរោងសិន មុននឹង​បង្កើតវាសា​ជា​ថ្មី។</string>
     <string name="no_source_audio">គ្មានសំឡេងប្រភពដើមទេ</string>
     <string name="left_title">ឆ្វេង</string>
     <string name="resyncing_database">សមកាលមូលដ្ឋានទិន្នន័យឡើងវិញ</string>
@@ -102,7 +102,7 @@
     <string name="bible_stories">រឿង​ទាំងឡាយ​នៃ​ព្រះគម្ពីរ</string>
     <string name="anthology_nt">សញ្ញា​ថ្មី</string>
     <string name="anthology_ot">សញ្ញា​ចាស់</string>
-    <string name="anthology_obs">រឿង​​បើកចំហ​​នៃ​ព្រះគម្ពីរ</string>
+    <string name="anthology_obs">បើករឿង​​​​នៃ​ព្រះគម្ពីរ</string>
     <!--Book names-->
     <string name="book_gen">លោកុ‌ប្បត្តិ</string>
     <string name="book_exo">និក្ខមនំ</string>
@@ -175,9 +175,9 @@
     <string name="obs_book_3">៣. មហាជំនន់</string>
     <string name="obs_book_4">៤. ​សម្ពន្ធ‌មេត្រីរបស់​ព្រះ‌ជាម្ចាស់​​ជា​មួយ​លោកអប្រាហាំ</string>
     <string name="obs_book_5">៥. បុត្រានៃការសន្យា</string>
-    <string name="obs_book_6">៦. ព្រះជាម្ចាស់ប្រទានអ៊ីសាក</string>
+    <string name="obs_book_6">៦. ព្រះជាម្ចាស់ប្រទានដល់អ៊ីសាក</string>
     <string name="obs_book_7">៧. ព្រះ​ជាម្ចាស់​ប្រទានពរដល់យ៉ាកុប</string>
-    <string name="obs_book_8">៨. ព្រះ​ជាម្ចាស់​ជួយសង្រ្គោះលោក​យ៉ូសែបនិងគ្រួសាររបស់គាត់</string>
+    <string name="obs_book_8">៨. ព្រះ​ជាម្ចាស់​សង្រ្គោះលោក​យ៉ូសែបនិងគ្រួសាររបស់គាត់</string>
     <string name="obs_book_9">៩. ព្រះជាម្ចាស់ត្រាស់ហៅលោកម៉ូសេ</string>
     <string name="obs_book_10">១០. គ្រោះកាចទាំង​ដប់</string>
     <string name="obs_book_11">១១. បុណ្យរំលង</string>
@@ -195,15 +195,15 @@
     <string name="obs_book_23">២៣. កំណើតព្រះយេស៊ូ</string>
     <string name="obs_book_24">២៤. លោកយ៉ូហានធ្វើពិធីជ្រមុជទឹកអោយព្រះយេស៊ូ</string>
     <string name="obs_book_25">២៥. មារ​សាតាំងល្បួងព្រះយេស៊ូ</string>
-    <string name="obs_book_26">២៦. ព្រះ​​យេស៊ូ​ចាប់​ផ្ដើម​ផ្សាយ​ដំណឹង​ល្អ</string>
+    <string name="obs_book_26">២៦. ព្រះ​​យេស៊ូ​ចាប់​ផ្ដើម​កិច្ចបម្រើរបស់ទ្រង់</string>
     <string name="obs_book_27">២៧. រឿង​អ្នក​ស្រុក​សាម៉ារី​មាន​ចិត្ត​សប្បុរស</string>
-    <string name="obs_book_28">២៨. អ្នក​គ្រប់គ្រង​ក្មេង​ជា​អ្នក​មាន</string>
+    <string name="obs_book_28">២៨. អ្នក​គ្រប់គ្រង​ដែលជា​អ្នក​មានវ័យក្មេង</string>
     <string name="obs_book_29">២៩. រឿងរបស់អ្នកបម្រើដែលមិន​អត់ទោស</string>
     <string name="obs_book_30">៣០. ព្រះយេស៊ូប្រទាន​នំប៉័ង​ឱ្យ​មនុស្សប្រាំពាន់នាក់​បរិភោគ</string>
     <string name="obs_book_31">៣១. ព្រះយេស៊ូវយាងលើទឹក</string>
-    <string name="obs_book_32">៣២. ព្រះយេស៊ូវព្យាប្រោស​បុរស​អារក្សចូល និងស្ត្រី​មាន​ជំងឺ</string>
-    <string name="obs_book_33">៣៣. រឿងអំពីអ្នក​ព្រោះ​ពូជ</string>
-    <string name="obs_book_34">៣៤. ព្រះយេស៊ូបង្រៀន​អំពី​ប្រស្នា​ផ្សេងទៀត</string>
+    <string name="obs_book_32">៣២. ព្រះយេស៊ូវប្រោសព្យាបាល​បុរស​អារក្សចូល និងស្ត្រី​មាន​ជំងឺ</string>
+    <string name="obs_book_33">៣៣. រឿងអំពីកសិករ</string>
+    <string name="obs_book_34">៣៤. ព្រះយេស៊ូបង្រៀន​អំពី​រឿង​ផ្សេងៗ</string>
     <string name="obs_book_35">៣៥. រឿងរបស់ព្រះវរបិតាដែលមេត្តា​ករុណា</string>
     <string name="obs_book_36">៣៦. ការផ្លាស់ប្រែព្រះកាយ​</string>
     <string name="obs_book_37">37. Jesus Raises Lazarus from the Dead</string>
