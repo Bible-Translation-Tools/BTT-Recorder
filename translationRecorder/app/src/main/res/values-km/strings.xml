@@ -44,7 +44,7 @@
     <string name="app_settings">ការ​កំណត់ម៉ាស៊ីនថតសំឡេង BTT</string>
     <string name="source_language">ភាសាប្រភពដើម</string>
     <string name="add_temp_language">បន្ថែម​ភាសា​បណ្ដោះ​អាសន្ន</string>
-    <string name="update_language_from_td">ធ្វើបច្ចុប្បន្នភាពភាសាពីមូលដ្ឋានទិន្នន័យបកប្រែ</string>
+    <string name="update_language_from_td">Update Languages From translationDatabase</string>
     <string name="update_language_from_file">ធ្វើបច្ចុប្បន្នភាពភាសាពីឯកសារ</string>
     <string name="change_upload_server">ផ្លាស់ប្តូរម៉ាស៊ីនអាប់ឡូដ</string>
     <string name="app_version">ជំនាន់​ម៉ាស៊ីនថតសំឡេង BTT</string>
