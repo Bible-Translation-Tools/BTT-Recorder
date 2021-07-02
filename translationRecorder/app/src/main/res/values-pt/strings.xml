@@ -44,7 +44,7 @@
     <string name="app_settings">BTT Recorder Settings</string>
     <string name="source_language">Source Language</string>
     <string name="add_temp_language">Add Temporary Language</string>
-    <string name="update_language_from_td">Update Languages From Translation Database</string>
+    <string name="update_language_from_td">Update Languages From translationDatabase</string>
     <string name="update_language_from_file">Update Languages From file</string>
     <string name="change_upload_server">Change Upload Server</string>
     <string name="app_version">BTT Recorder Version</string>
