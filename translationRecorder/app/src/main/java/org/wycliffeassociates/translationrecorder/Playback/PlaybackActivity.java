@@ -255,7 +255,7 @@ public class PlaybackActivity extends Activity implements
         mFragmentFileBar = FragmentFileBar.newInstance(
                 mProject.getTargetLanguageSlug(),
                 mProject.getVersionSlug(),
-                mProject.getBookSlug(),
+                mProject.getBookName(),
                 chapterLabel,
                 plugin.getChapterName(mChapter),
                 mProject.getLocalizedModeName(this),

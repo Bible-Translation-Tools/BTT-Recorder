@@ -93,7 +93,7 @@ public class ActivityUnitList extends AppCompatActivity implements CheckingDialo
 
             // Setup toolbar
             String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-            String book = db.getBookName(mProject.getBookSlug());
+            String book = mProject.getBookName();
             Toolbar mToolbar = (Toolbar) findViewById(R.id.unit_list_toolbar);
             setSupportActionBar(mToolbar);
             if (getSupportActionBar() != null) {
