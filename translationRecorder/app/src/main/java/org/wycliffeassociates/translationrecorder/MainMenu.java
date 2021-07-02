@@ -245,7 +245,7 @@ public class MainMenu extends Activity {
 
             String book = project.getBookSlug();
             if (book.compareTo("") != 0) {
-                book = db.getBookName(book);
+                book = project.getBookName();
             }
             bookView.setText(book);
         } else {

@@ -88,7 +88,7 @@ public class ProjectInfoDialog extends DialogFragment {
         String languageCode = mProject.getTargetLanguageSlug();
         String language = db.getLanguageName(languageCode);
         String bookCode = mProject.getBookSlug();
-        String book = db.getBookName(bookCode);
+        String book = mProject.getBookName();
         String translation = mProject.getVersionSlug();
 
         mTitle.setText(book + " - " + language);
