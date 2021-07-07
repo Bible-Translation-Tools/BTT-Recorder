@@ -44,7 +44,7 @@
     <string name="app_settings">Configuración de BTT Recorder</string>
     <string name="source_language">Lenguaje fuente</string>
     <string name="add_temp_language">Añadir lenguaje temporal</string>
-    <string name="update_language_from_td">Update Languages From translationDatabase</string>
+    <string name="update_language_from_td">Actualizar idiomas de la base de datos de traducción</string>
     <string name="update_language_from_file">Actualizar Idiomas desde archivo</string>
     <string name="change_upload_server">Cambiar el servidor de subida</string>
     <string name="app_version">Versión de BTT Grabadora</string>
