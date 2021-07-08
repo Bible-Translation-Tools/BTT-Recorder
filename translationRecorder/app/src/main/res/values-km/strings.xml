@@ -103,6 +103,10 @@
     <string name="anthology_nt">សញ្ញា​ថ្មី</string>
     <string name="anthology_ot">សញ្ញា​ចាស់</string>
     <string name="anthology_obs">បើករឿង​​​​នៃ​ព្រះគម្ពីរ</string>
+    <!--Resource names-->
+    <string name="ulb">Unlock Literal Bible</string>
+    <string name="udb">Unlock Dynamic Bible</string>
+    <string name="reg">Regular</string>
     <!--Book names-->
     <string name="book_gen">លោកុ‌ប្បត្តិ</string>
     <string name="book_exo">និក្ខមនំ</string>
