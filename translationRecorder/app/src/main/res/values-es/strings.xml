@@ -104,9 +104,9 @@
     <string name="anthology_ot">Antiguo Testamento</string>
     <string name="anthology_obs">Historias Bíblicas Libres</string>
     <!--Resource names-->
-    <string name="ulb">Unlock Literal Bible</string>
-    <string name="udb">Unlock Dynamic Bible</string>
-    <string name="reg">Regular</string>
+    <string name="ulb" comment="ULB&#10;Bible Version">Unlock Literal Bible</string>
+    <string name="udb" comment="UDB&#10;Bible Version">Unlock Dynamic Bible</string>
+    <string name="reg" comment="REG&#10;Bible Version">Regular</string>
     <!--Book names-->
     <string name="book_gen">Génesis</string>
     <string name="book_exo">Éxodo</string>
