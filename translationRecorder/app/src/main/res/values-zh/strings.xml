@@ -104,8 +104,8 @@
     <string name="anthology_ot">旧约</string>
     <string name="anthology_obs">打开圣经故事</string>
     <!--Resource names-->
-    <string name="ulb">Unlocked Literal Bible</string>
-    <string name="udb">Unlocked Dynamic Bible</string>
+    <string name="ulb" comment="ULB&#10;Bible version">Unlocked Literal Bible</string>
+    <string name="udb" comment="UDB&#10;Bible version">Unlocked Dynamic Bible</string>
     <string name="reg">Regular</string>
     <!--Book names-->
     <string name="book_gen">创世纪</string>
