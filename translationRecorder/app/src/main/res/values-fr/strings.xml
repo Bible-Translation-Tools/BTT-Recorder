@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <string name="app_name">Enregistreur BTT</string>
-    <string name="settings_menu">Settings</string>
-    <string name="logout_menu">Logout</string>
-    <string name="help_menu">Help</string>
+    <string name="settings_menu">Réglages</string>
+    <string name="logout_menu">Déconnexion</string>
+    <string name="help_menu">Aide</string>
     <string name="project_management">Project Management</string>
     <string name="new_project">New Project</string>
     <string name="choose_target_language">Choose Target Language</string>
