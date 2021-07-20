@@ -4,7 +4,7 @@
     <string name="settings_menu">Réglages</string>
     <string name="logout_menu">Déconnexion</string>
     <string name="help_menu">Aide</string>
-    <string name="project_management">Project Management</string>
+    <string name="project_management">Projets</string>
     <string name="new_project">New Project</string>
     <string name="choose_target_language">Choose Target Language</string>
     <string name="choose_project">Choose a Project</string>
