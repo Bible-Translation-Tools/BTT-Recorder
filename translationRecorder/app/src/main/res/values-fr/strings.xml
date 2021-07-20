@@ -4,15 +4,15 @@
     <string name="settings_menu">Réglages</string>
     <string name="logout_menu">Déconnexion</string>
     <string name="help_menu">Aide</string>
-    <string name="project_management">Projets</string>
-    <string name="new_project">New Project</string>
-    <string name="choose_target_language">Choose Target Language</string>
-    <string name="choose_project">Choose a Project</string>
-    <string name="choose_book">Choose a Book</string>
-    <string name="choose_translation_type">Choose Translation Type</string>
-    <string name="choose_mode">Choose a Mode</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
+    <string name="project_management">Gestion du projet</string>
+    <string name="new_project">Nouveau projet</string>
+    <string name="choose_target_language">Choisir la langue cible</string>
+    <string name="choose_project">Choisir un projet</string>
+    <string name="choose_book">Choisir un livre</string>
+    <string name="choose_translation_type">Choisir un genre de traduction</string>
+    <string name="choose_mode">Choisir un mode </string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
     <string name="delete_take">Delete take?</string>
     <string name="rate_take">Rate this take</string>
     <string name="label_take_detailed">Take <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
