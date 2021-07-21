@@ -13,9 +13,9 @@
     <string name="choose_mode">Choisir un mode </string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>
-    <string name="delete_take">Delete take?</string>
-    <string name="rate_take">Rate this take</string>
-    <string name="label_take_detailed">Take <xliff:g example="1" id="current">%1$s</xliff:g> of <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="delete_take">Supprimer la prise d\'enregistrement?</string>
+    <string name="rate_take">Evaluer cette prise d\'enregistrement</string>
+    <string name="label_take_detailed">Prise d\'enregistrement <xliff:g example="1" id="current">%1$s</xliff:g> de <xliff:g example="2" id="total">%2$s</xliff:g></string>
     <string name="label_chapter_title_detailed">Chapitre <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">Projet</string>
     <string name="project_upload">Téléchargement du projet</string>
