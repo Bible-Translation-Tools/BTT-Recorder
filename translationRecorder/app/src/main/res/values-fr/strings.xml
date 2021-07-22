@@ -35,7 +35,7 @@
     <string name="compiling_chapter">Compiler le chapitre</string>
     <string name="delete_chapter_recording">Supprimer l\'enregistrement du chapitre ?</string>
     <string name="source_audio">Audio source</string>
-    <string name="select_source_language">Sélectionner une Langue</string>
+    <string name="select_source_language">Sélectionner une Langue source</string>
     <string name="select_source_location">Sélectionnez l\'emplacement de la source</string>
     <string name="source_audio_not_found">L\'audio source est introuvable dans l\'emplacement par défaut. Si vous souhaitez utiliser audio Source avec votre projet, veuillez sélectionner une langue source et ensuite trouver le dossier audio source correspondant sur votre appareil ou carte SD en utilisant les boutons ci-dessous.</string>
     <string name="source_audio_location">Emplacement de la source audio</string>
