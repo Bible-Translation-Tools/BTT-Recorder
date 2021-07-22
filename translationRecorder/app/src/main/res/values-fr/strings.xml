@@ -28,8 +28,8 @@
     <string name="delete_project">Delete Project</string>
     <string name="confirm_delete_project_alt">Deleting this project will remove all associated verse and chunk recordings.\n\nAre you sure?</string>
     <string name="target_language">Target Language</string>
-    <string name="set_checking_level">Set Checking Level</string>
-    <string name="warning">Warning</string>
+    <string name="set_checking_level">Régler le niveau de vérification</string>
+    <string name="warning">Avertissement</string>
     <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
     <string name="recompile_chapters_message">Re-compiling a chapter will over-write the current audio and reset the checking level.</string>
     <string name="compiling_chapter">Compiling Chapter</string>
@@ -74,7 +74,7 @@
     <string name="unit">Unit</string>
     <string name="translation_type">Translation Type</string>
     <!-- LOGIN -->
-    <string name="record_name">What is your name?</string>
+    <string name="record_name">Quel est votre nom ?</string>
     <string name="privacy">If you are concerned for your privacy or safety, please use a nickname or pseudonym</string>
     <string name="txt_record"><u>Record</u></string>
     <string name="txt_btn_redo">Redo</string>
