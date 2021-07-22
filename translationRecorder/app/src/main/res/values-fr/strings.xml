@@ -21,10 +21,10 @@
     <string name="project_upload">Téléchargement du projet</string>
     <string name="project_uploaded">Projet téléchargé avec succès</string>
     <string name="project_upload_failed">Echec du téléchargement du projet: <xliff:g example="error" id="message">%1$s</xliff:g></string>
-    <string name="upload_step_one">Step 1/3: Generating manifest file</string>
-    <string name="upload_step_two">Step 2/3: Packaging files to export</string>
+    <string name="upload_step_one">Etape 1/3 : Générer le fichier manifeste</string>
+    <string name="upload_step_two">Étape 2/3 : empaqueter les fichiers à exporter</string>
     <string name="upload_step_three">Étape 3/3 : Téléchargement</string>
-    <string name="packaging_files">Packaging files to export</string>
+    <string name="packaging_files">Empaqueter les fichiers à exporter</string>
     <string name="delete_project">Supprimer le projet</string>
     <string name="confirm_delete_project_alt">Supprimer ce projet supprimera tous les enregistrements de verset et de morceaux associés.\n\nÊtes-vous sûr(e) ?</string>
     <string name="target_language">Langue cible</string>
