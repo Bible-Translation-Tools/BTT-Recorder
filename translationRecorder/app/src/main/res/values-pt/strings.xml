@@ -44,7 +44,7 @@
     <string name="app_settings">BTT Recorder Settings</string>
     <string name="source_language">Source Language</string>
     <string name="add_temp_language">Add Temporary Language</string>
-    <string name="update_language_from_td">Update Languages From Translation Database</string>
+    <string name="update_language_from_td">Update Languages From translationDatabase</string>
     <string name="update_language_from_file">Update Languages From file</string>
     <string name="change_upload_server">Change Upload Server</string>
     <string name="app_version">BTT Recorder Version</string>
@@ -103,6 +103,10 @@
     <string name="anthology_nt">New Testament</string>
     <string name="anthology_ot">Old Testament</string>
     <string name="anthology_obs">Open Bible Stories</string>
+    <!--Resource names-->
+    <string name="ulb" comment="ULB&#10;Bible version">Unlocked Literal Bible</string>
+    <string name="udb" comment="UDB&#10;Bible version">Unlocked Dynamic Bible</string>
+    <string name="reg">Regular</string>
     <!--Book names-->
     <string name="book_gen">Genesis</string>
     <string name="book_exo">Exodus</string>

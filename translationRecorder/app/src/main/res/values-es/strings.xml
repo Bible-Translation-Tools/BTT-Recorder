@@ -103,6 +103,10 @@
     <string name="anthology_nt">Nuevo Testamento</string>
     <string name="anthology_ot">Antiguo Testamento</string>
     <string name="anthology_obs">Historias Bíblicas Libres</string>
+    <!--Resource names-->
+    <string name="ulb" comment="ULB&#10;Bible version">Biblia Literal Desbloqueada</string>
+    <string name="udb" comment="UDB&#10;Bible version">Biblia Dinámica Desbloqueada</string>
+    <string name="reg">Regular</string>
     <!--Book names-->
     <string name="book_gen">Génesis</string>
     <string name="book_exo">Éxodo</string>
@@ -172,7 +176,7 @@
     <string name="book_rev">Apocalipsis</string>
     <string name="obs_book_1">1. La Creación</string>
     <string name="obs_book_2">2. El Pecado entra en el Mundo</string>
-    <string name="obs_book_3">El Diluvio</string>
+    <string name="obs_book_3">3. El Diluvio</string>
     <string name="obs_book_4">4. El Pacto de Dios con Abraham</string>
     <string name="obs_book_5">5. El Hijo de la Promesa</string>
     <string name="obs_book_6">6. Dios Provee para Isaac</string>
@@ -191,13 +195,13 @@
     <string name="obs_book_19">19. Los Profetas</string>
     <string name="obs_book_20">20. El Exilio y el Regreso</string>
     <string name="obs_book_21">21. Dios Promete el Mesías</string>
-    <string name="obs_book_22">El Nacimiento de Juan</string>
+    <string name="obs_book_22">22. El Nacimiento de Juan</string>
     <string name="obs_book_23">23. El Nacimiento de Jesús</string>
     <string name="obs_book_24">24. Juan Bautiza a Jesús</string>
     <string name="obs_book_25">25. Satanás Tienta a Jesús</string>
     <string name="obs_book_26">26. Jesús Empieza Su Ministerio</string>
     <string name="obs_book_27">27. La Historia del Buen Samaritano</string>
-    <string name="obs_book_28">El Joven Rico</string>
+    <string name="obs_book_28">28. El Joven Rico</string>
     <string name="obs_book_29">29. La Historia del Siervo Despiadado</string>
     <string name="obs_book_30">30. Jesús Alimenta Cinco Mil Personas</string>
     <string name="obs_book_31">31. Jesús Camina Sobre el Agua</string>
@@ -216,7 +220,7 @@
     <string name="obs_book_44">44. Pedro y Juan Sanan a un Mendigo</string>
     <string name="obs_book_45">45. Felipe y el Oficial Etíope</string>
     <string name="obs_book_46">46. Pablo Llega a ser un Cristiano</string>
-    <string name="obs_book_47">47. Pablo y Sílas en Filipos</string>
+    <string name="obs_book_47">47. Pablo y Silas en Filipo</string>
     <string name="obs_book_48">48. Jesús Es el Mesías Prometido</string>
     <string name="obs_book_49">49. El Nuevo Pacto de Dios</string>
     <string name="obs_book_50">50. Jesús Regresa</string>
