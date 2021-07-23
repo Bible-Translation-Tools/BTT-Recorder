@@ -1,9 +1,12 @@
 package org.wycliffeassociates.translationrecorder.project.components;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
+import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
 /**
  * Created by sarabiaj on 3/22/2017.
@@ -20,7 +23,17 @@ public class Version extends ProjectComponent implements Parcelable {
         String label = "";
         label += mSlug.toUpperCase();
         label += ":";
-        String[] resourceLabels = mName.split(" ");
+
+        Context ctx = TranslationRecorderApp.getContext();
+        String name = ResourceUtility.getStringByName(
+                mSlug,
+                ctx.getResources(),
+                ctx.getPackageName()
+        );
+
+        name = (name == null)? mName : name;
+
+        String[] resourceLabels = name.split(" ");
         for(String part : resourceLabels) {
             label += " " + Utils.capitalizeFirstLetter(part);
         }

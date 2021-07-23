@@ -103,6 +103,10 @@
     <string name="anthology_nt">新约</string>
     <string name="anthology_ot">旧约</string>
     <string name="anthology_obs">打开圣经故事</string>
+    <!--Resource names-->
+    <string name="ulb" comment="ULB&#10;Bible version">开放式文字圣经</string>
+    <string name="udb" comment="UDB&#10;Bible version">开放式动态圣经</string>
+    <string name="reg">常规的</string>
     <!--Book names-->
     <string name="book_gen">创世纪</string>
     <string name="book_exo">出埃及记</string>
