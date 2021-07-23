@@ -21,8 +21,8 @@ android {
         applicationId "bible.translationtools.recorder"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 34
-        versionName "1.4.14"
+        versionCode 35
+        versionName "1.4.15"
         versionNameSuffix
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
