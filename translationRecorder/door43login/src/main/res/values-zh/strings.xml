@@ -47,14 +47,14 @@
   <br/><br/><strong>清晰</strong> - 努力获得听众的最高理解水平。
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>信条</h1>
-<p>
-  圣经的神圣启示和权威
-  <br/><br/>三位一体的教义 - 一位神存在三个位格，即父、子和圣灵。
-  <br/><br/>人的堕落，随之而来的道德堕落，以及他对重生的需要。
-  <br/><br/>通过基督的替代性死亡来赎罪。
-  <br/><br/>因信称义的教义。
-  <br/><br/>身体的复活，无论公义的和不义的。
-  <br/><br/>被拯救者的永生和迷失者的永恒惩罚。
-</p>]]></string>
+    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
+<p>We believe:</p>
+<ul>
+    <li>The Bible is divinely inspired by God and has final authority.</li>
+    <li>God is one and exists in three persons: God the Father, God the Son and God the Holy Spirit.</li>
+    <li>Because of the fall of man, all humans are sinful, and in need of salvation.</li>
+    <li>The death of Christ is a substitute for sinners and provides for the cleansing of those who believe.</li>
+    <li>By God’s grace, through faith, man receives salvation as a free gift because of Jesus’ death and resurrection.</li>
+    <li>The resurrection of all—the saved to eternal life and the lost to eternal punishment.</li>
+</ul>]]></string>
 </resources>
