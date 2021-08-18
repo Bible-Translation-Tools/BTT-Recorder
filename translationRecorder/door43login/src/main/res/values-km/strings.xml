@@ -26,30 +26,35 @@
 <p><br/>&#8226; មិនមានការធានាណាមួយដែលត្រូវបានផ្ដល់ឲ្យនោះឡើយ។ អាជ្ញាបណ្ណមិនអាចផ្ដល់ឲ្យអ្នកនូវរាល់ការអនុញ្ញាតប្រើប្រាស់សម្រាប់គោលបំណង់ចាំបាច់ទាំងអស់បានទេ។ ឧទាហរណ៍ៈ សិទ្ធិផ្សេងៗដូចជា ការផ្សាយជាសាធារណៈ ឯកជនភាព ឬសិទ្ធិក្រោមសីលធម៌អាចកម្រិតរបៀបដែលអ្នកប្រើប្រាស់នេះ។</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines"><![CDATA[<h1>គោលការណែនាំអំពីការបកប្រែ</h1>
-<p><em>សេចក្តីថ្លែងការណ៍នៅខាងក្រោមអំពីគោលការណ៍ និងនីតិវិធីដែលគេប្រើក្នុងការបកប្រែ ត្រូវបានយល់ព្រមដោយរាល់អង្គការជាសមាជិក និងរាល់អ្នកចូលរួមគម្រោង<xliff:g id="organization_name">Wycliffe Associates</xliff:g> ។ សកម្មភាពបកប្រែទាំងអស់ត្រូវអនុវត្តតាមគោលការណែនាំទូទៅទាំងនេះ។</em></p>
 <p>
-  <strong>ត្រឹមត្រូវ</strong> - ត្រូវបកប្រែឲ្យបានត្រឹមត្រូវ ដោយពុំមានការកាត់ ប្តូរ ឬ បន្ថែមអត្ថន័យទៅលើអត្ថបទច្បាប់ដើម។ ខ្លឹមសារដែលបានបកប្រែគួរព្យាយាមរក្សាអត្ថន័យនៃអត្ថបទច្បាប់ដើមឲ្យបានល្អតាមដែលអាចធ្វើទៅបានឲ្យដូចអ្នកអានច្បាប់ដើមបានយល់។ 
-  <br/><br/><strong>ច្បាស់</strong> - ត្រូវប្រើរចនាសម្ព័នភាសាណាក៏បានដែលចាំបាច់ដើម្បីទទួលបានការយល់ដឹងកម្រិតខ្ពស់បំផុត។ នេះរួមមានការប្តូទម្រង់អត្ថបទ និងប្រើពាក្យច្រើន ឬតិចតាមតម្រូវការដើម្បីរក្សាអត្ថន័យដើមឲ្យបានត្រឹមត្រូវតាមដែលអាចធ្វើទៅបាន។
-  <br/><br/><strong>ន័យត្រង់</strong> - ត្រូវប្រើពាក្យគន្លឹះដែលមានអត្ថន័យស្មើគ្នានឹងវាក្យសព្ទនៃភាសាច្បាប់ដើមព្រះគម្ពីរ. ត្រូវរក្សាពាក្យដែលពន្យល់ទំនាក់ទំនងរវាងព្រះបិតា និងព្រះរាជបុត្រក្នុងខ្លឹមសារដែលបានបកប្រែ។  បើចាំបាច់អ្នកអាចប្រើលេខយោង ឬឯកសារបន្ថែមផ្សេងទៀតដើម្បីឲ្យអត្ថន័យនៃពាក្យនោះកាន់តែច្បាស់។
-  <br/><br/><strong>ពាក្យអាទិភាព</strong> - ត្រូវប្រើភាសាដើមព្រះគម្ពីរដែលជាពាក្យអាទិភាពខ្ពស់បំផុតសម្រាប់ការបកប្រែខ្លឹមសារព្រះគម្ពីរ។  អាចប្រើខ្លឹមសារព្រះគម្ពីរដែលអាចទុកចិត្តបានក្នុងភាសាផ្សេងៗដើម្បីបញ្ជាក់ និងជាអត្ថបទដើមសម្រាប់ជំនួយ។
-  <br/><br/><strong>បរិសុទ្ធ</strong> - ត្រូវជៀសវាងភាពលំអៀង ផ្នែកនយោបាយ និកាយ មនោគមវិជ្ជា សង្គម វប្បធម៌ ឬទ្រឹស្តី ក្នុងការបកប្រែរបស់អ្នក។
-  <br/><br/><strong>បង្ហាញ</strong> - ត្រូវបង្ហាញអារម្មណ៍ និងឥរិយាបថដែលនៃភាសាច្បាប់ដើម។  បើអាចទៅរួច ត្រូវរក្សាទម្រង់ន័យត្រង់ ក្មុងខ្លឹមសារច្បាប់ដើម រួមទាំងនិទានកថា កំណាព្យ ការដាស់តឿន និងការព្យាករណ៍ ដោយប្រើទម្រង់តែមួយដែលបង្ហាញលក្ខណស្រដៀងគ្នាក្នុងភាសារបស់អ្នក។
-  <br/><br/><strong>ប្រវត្តិសាស្ត្រ</strong> - ត្រូវនិយាយអំពីព្រឹត្តិការណ៍ និងហេតុការណ៍ប្រវត្តិសាស្ត្រឲ្យបានត្រឹមត្រូវ ដោយផ្តល់ព័ត៌មានតាមតម្រូវការដើម្បីនិយាយឲ្យបានត្រឹមត្រូវអំពីអ្វីដែលខ្លួនចង់និយាយទៅកាន់មនុស្សដែលមានបរិបទ និងវប្បធម៌ខុសគ្នាដូចអ្នកទទួលច្បាប់ដើមនៃខ្លឹមសារច្បាប់ដើម។ 
-  <br/><br/><strong>ធម្មជាតិ</strong> - ប្រើទម្រង់ភាសាដែលមានប្រសិទ្ធិភាព ហើយដែលបង្ហាញរបៀបដែលគេប្រើភាសារបស់អ្នកក្នុងបរិបទដូចគ្នា។
-  <br/><br/><strong>សហការ</strong> - បើអាចទៅរួច ត្រូវធ្វើការជាមួយអ្នកគ្រីស្ទានផ្សេងទៀតដែលនិយាយភាសារបស់អ្នក ដើម្បីបកប្រែ ពិនិត្យ ហើយចែកចាយខ្លឹមសារដែលបានបកប្រែ ហើយធានាថាការបកប្រែមានគុណភាពខ្ពស់បំផុត ព្រមទាំងមានសម្រាប់មនុស្សអាចប្រើប្រាស់បានកាន់តែច្រើនកាន់តែប្រសើរ។ 
-  <br/><br/><strong>បន្ត</strong> - លើកទឹកចិត្តគេពិនិត្យឡើងវិញតាមកាលកំណត់ដើម្បីដឹងពេលណាត្រូវធ្វើការកែលម្អ ឬបកប្រែឡើងវិញ។
+      <strong>ត្រឹមត្រូវ</strong> - ការបកប្រែត្រឹមត្រូវ effectively communicate the intended meaning of the original, divinely inspired text. An accurate translation expresses the meaning the author intended for the original audience in the original context.
+      <p>
+        1. To the extent that is possible, nothing is added, misconstrued, or deleted from the original message.
+        <br/>2. It does not recast the meaning of the original text to make it more relevant to the contemporary audience.
+        <br/>3. An accurate translation does not distort the meaning in order to favor a specific interpretive perspective. It should be free from theological, cultural, or personal biases.
+        <br/>4. An accurate translation communicates historical events and facts accurately.
+      <p>
 </p>
-<h1>គ្រប់គ្រង និងកំណត់គុណភាពនៃការបកប្រែ</h1>
-<p>តាមធម្មតា គុណភាពនៃការបកប្រែសំដៅទៅលើភាពស្មើគ្នានៃអត្ថន័យឯកសារច្បាប់ដើម ហើយកម្រិតដែលការបកប្រែអាចត្រូវបានយល់ និងមានប្រសិទ្ធភាពសម្រាប់អ្នកដែលនិយាយភាសាគោលដៅ។ យើងណែនាំការប្រើយុទ្ធសាស្ត្រដែលជំរុញឲ្យមនុស្សក្នុងសហគមន៍ភាសាចូលរួមពិនិត្យទម្រង់ និងគុណភាពនៃការបកប្រែ ហើយអ្នកគ្រីស្ទានក្នុងក្រុមនោះពិនិត្យភាពស្មើគ្នាចំពោះអត្ថន័យនៃការបកប្រែនោះ។ </p>
-<p>ការប្រើជំហានជាក់លាក់ប្រហែលខុសគ្នាឆ្ងាយ អាស្រ័ហលើភាសា និងបរិបទនៃគម្រោងនៃការបកប្រែ។ ជាទូទៅ យើងគិតថាការបកប្រែល្អគឺ គឺជាការបកប្រែមួយដែល៖</p>
 <p>
-  <strong>ត្រឹមត្រូវ</strong> - ស្មើគ្នានឹងអត្ថន័យដែលមាននៅក្នុងអត្ថបទច្បាប់ដើម ដូចដែលកំណត់ដោយមនុស្សក្នុងព្រះវិហេារក្នុងក្រុមមនុស្សនោះ ហើយស្របជាមួយព្រះវិហេារជាសកល និងជាប្រវត្តិសាស្រ្ត ហេតុដូច្នេះហើយ៖
-  <br/><br/><strong>បញ្ជាក់ដោយព្រះវិហារ</strong> - អនុម័តប្រើ ដោយព្រះវិហារ។
+      <strong>ច្បាស់</strong> - Clear translations will use whatever language structures are needed to help readers easily read and understand it.
+      <p>
+        1. A clear translation may use as many or as few terms as necessary to communicate the original meaning as clearly as possible.
+        <br/>2. Making a clear translation does not mean that the translator clarifies something that is ambiguous in the source text.
+        <br/>3. Making a clear translation does not mean that the translator gives the reader a specific interpretation for every passage where meaning is genuinely debated.
+      </p>
 </p>
-<p>បន្ថែមពីនេះ ការបកប្រែល្អគឺការបកប្រែដែលត្រូវបានពិនិត្យដោយមនុស្សដែលនិយាយភាសាក្នុងសហគមន៍ភាសា ហើយគេយល់ស្របថា ការបកប្រែនោះគឺ៖</p>
 <p>
-  <strong>ធម្មជាតិ</strong> - ស្របទៅតាមទម្រង់បច្ចុប្បន្ននៃភាសានោះ និង
-  <br/><br/><strong>ច្បាស់</strong> - ព្យាយាមដើម្បីទទួលបានកម្រិតនៃការយល់ខ្ពស់បំផុតពីអ្នកស្តាប់។
+      <strong>Natural</strong> - Natural translations use language forms that are reflect the way the target language is used in corresponding contexts.
+      <p>
+        1. Natural Bible translations sound like they were produced by an adult native speaker who speaks and/or writes well.
+        <br/>2. A natural Bible translation does not use expressions that are particular to their own culture in order to make the translation appear natural.
+        <br/>3. It is more important for a portion of Scripture to be translated accurately than for it to sound perfectly natural to everyone who reads it.
+      </p>
+</p>
+<p> ​​យើងជឿថាការបកប្រែអាចមានលទ្ធភាពខ្ពស់បំផុតក្នុងការទទួលបានគុណភាពល្អបើអនុវត្តការណែនាំនៅខាងលើ បន្ទាប់មកអនុវត្តអ្វីដែលមាននៅខាងក្រោម៖ </p>
+<p>
+    ​១. ការបកប្រែត្រូវបានសាកល្បងបកប្រែ និងអនុម័តដោយគ្រីស្ទានក្នុងសហគមន៍ភាសា និងអ្នកដឹកនាំក្នុងព្រះវិហារបស់គេ។
+    <br/>​២. ធ្វើការត្រួតពិនិត្យឡើងវិញ និងកែលម្អជាបន្ត។
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
     <string name="statement_of_faith"><![CDATA[<h1>សេចក្តីថ្លែងការណ៍នៃជំនឿ</h1>
