@@ -27,28 +27,28 @@
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines"><![CDATA[<h1>គោលការណែនាំអំពីការបកប្រែ</h1>
 <p>
-      <strong>ត្រឹមត្រូវ</strong> - ការបកប្រែត្រឹមត្រូវ effectively communicate the intended meaning of the original, divinely inspired text. An accurate translation expresses the meaning the author intended for the original audience in the original context.
+      <strong>ត្រឹមត្រូវ</strong> - ការបកប្រែត្រឹមត្រូវរក្សាអត្ថន័យប្រកបដោយប្រសិទ្ធភាពតាមគោលបំណងអត្ថបទច្បាប់ដើមដែលជម្រុញទឹកចិត្ដដោយព្រះជាម្ចាស់។ ការបកប្រែត្រឹមត្រូវបង្ហាញអត្ថន័យដែលអ្នកនិពន្ធចង់ឲ្យអ្នកអានសាសន៍ដើមយល់ និងក្នុងបរិបទដើម។ 
       <p>
-        1. To the extent that is possible, nothing is added, misconstrued, or deleted from the original message.
-        <br/>2. It does not recast the meaning of the original text to make it more relevant to the contemporary audience.
-        <br/>3. An accurate translation does not distort the meaning in order to favor a specific interpretive perspective. It should be free from theological, cultural, or personal biases.
-        <br/>4. An accurate translation communicates historical events and facts accurately.
+        ១. តាមដែលអាចទៅរួច មិនគួរបន្ថែម ប្តូរអត្ថន័យ ឬលុបចេញពីសារច្បាប់ដើម។
+        <br/>២. មិនគួរប្តូរអត្ថន័យអត្ថបទច្បាប់ដើមដើម្បីធ្វើឲ្យផ្សាភ្ជាប់ទៅនឹងអ្នកអានបច្ចុប្បន្ននោះឡើយ។
+        <br/>៣. ការបកប្រែត្រឹមត្រូវមិនគួរបញ្ចេញបញ្ចូលអត្ថន័យដើម្បីគាំទ្រគំនិតបកស្រាយជាក់លាក់ណាមួយឡើយ។ ការបកប្រែមិនគួរមានភាពលម្អៀងផ្នែកសាសនា វប្បធម៌ ឬផ្ទាល់ខ្លួន។ 
+        <br/>៤. ការបកប្រែត្រឹមត្រូវរក្សាព្រឹត្តិការណ៍ និងការពិតតាមប្រវត្តិសាស្ត្រឲ្យបានត្រឹមត្រូវ។
       <p>
 </p>
 <p>
-      <strong>ច្បាស់</strong> - Clear translations will use whatever language structures are needed to help readers easily read and understand it.
+      <strong>ច្បាស់</strong> - ​ការបកប្រែច្បាស់នឹងប្រើសំណង់ឃ្លាភាសាណាដែលចំបាច់ដើម្បីជួដល់អ្នកអានស្រួលអាន និងស្រួលយល់។
       <p>
-        1. A clear translation may use as many or as few terms as necessary to communicate the original meaning as clearly as possible.
-        <br/>2. Making a clear translation does not mean that the translator clarifies something that is ambiguous in the source text.
-        <br/>3. Making a clear translation does not mean that the translator gives the reader a specific interpretation for every passage where meaning is genuinely debated.
+        ១. ការបកប្រែច្បាស់អាចប្រើពាក្យច្រើន ឬតិចតាមតម្រូវការដើម្បីរក្សាអត្ថន័យដើមឲ្យបានច្បាស់តាមដែលអាចធ្វើទៅបាន។
+        <br/>២. ការបកប្រែបានច្បាស់មិនមែនមានន័យថា អ្នកបកប្រែត្រូវបញ្ជាក់អ្វីមួយដែលមិនសូវច្បាស់នៅក្នុងអត្ថបទច្បាប់ដើមនោះឡើយ។
+        <br/>៣. ការបកប្រែបានច្បាស់មិនមែនមានន័យថា អ្នកបកប្រែផ្តល់ការបកស្រាយជាក់លាក់ដល់អ្នកអានសម្រាប់រាល់អត្ថបទណាដែលមានអត្ថន័យត្រូវតស៊ូមតិគ្នាឡើយ។
       </p>
 </p>
 <p>
-      <strong>Natural</strong> - Natural translations use language forms that are reflect the way the target language is used in corresponding contexts.
+      <strong>ធម្មជាតិ</strong> - ការបកប្រែបែបធម្មជាតិប្រើទម្រង់ភាសាដែលបង្ហាញរបៀបដែលភាសាគោលដៅត្រូវបានប្រើក្នុងបរិបទដូចគ្នា។
       <p>
-        1. Natural Bible translations sound like they were produced by an adult native speaker who speaks and/or writes well.
-        <br/>2. A natural Bible translation does not use expressions that are particular to their own culture in order to make the translation appear natural.
-        <br/>3. It is more important for a portion of Scripture to be translated accurately than for it to sound perfectly natural to everyone who reads it.
+        ១. ការបកប្រែព្រះគម្ពីរបែបធម្មជាតិស្តាប់ទៅដូចជាការបកប្រែនោះធ្វើឡើងដោយមនុស្សធំអ្នកនិយាយភាសាដើមដែលចេះនិយាយ និង/ឬសរសេរបានល្អ។
+        <br/>២. ការបកប្រែព្រះគម្ពីរបែបធម្មជាតិមិនប្រើសំណង់ប្រយោគពិសេសក្នុងវប្បធម៌ផ្ទាល់ខ្លួនដើម្បីធ្វើឲ្យការបកប្រែនោះស្តាប់ទៅដូចធម្មជាតិ។
+        <br/>៣. សម្រាប់ផ្នែកណាមួយនៃព្រះគម្ពីរ សំខាន់ត្រូវបកប្រែឲ្យបានត្រឹមត្រូវជាជាងបកប្រែស្តាប់ទៅល្អឥតខ្ចោះតាមបែបធម្មជាតិសម្រាប់មនុស្សទាំងអស់ដែលអានការបកប្រែនោះ។
       </p>
 </p>
 <p> ​​យើងជឿថាការបកប្រែអាចមានលទ្ធភាពខ្ពស់បំផុតក្នុងការទទួលបានគុណភាពល្អបើអនុវត្តការណែនាំនៅខាងលើ បន្ទាប់មកអនុវត្តអ្វីដែលមាននៅខាងក្រោម៖ </p>
