@@ -9,52 +9,63 @@
     <string name="view_statement_of_faith">信仰声明</string>
     <string name="view_translation_guidelines">翻译指南</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license"><![CDATA[<h2>你有权：</h2>
-<p>以任何媒体或格式共享、复制和重新分发这些资料；基于这些资料，从事其他用途的改编、重新混音、转换和构建，甚至商业用途。只要你遵守许可条款，许可方就不以撤销这些权利。</p>
-<h2>根据以下条款：</h2>
-<p>
-    <b>归属</b> - 你必须给予适当的信用，提供许可证的链接，并指明是否进行了更改。你可以以任何合理的方式这样做，但不能以任何方式表明许可方认可你或你的使用；
-    <br/><b>共享</b> - 如果在这些资料的基础上你重新混合，转换，或构建，你必须在原件的许可证下分发你的作品；
-    <br/><b>无附加限制</b> -  你不得应用法律条款或技术措施去限制他人做许可证所允许的任何事情。
-</p>
-<h2>公告：</h2>
-<p>你不必遵守公共领域或有限制的许可领域对你使用资料元素的许可。也不提供任何保证。许可证可能不会授予你所期望的所有权限。例如，其他权利，如公开权、隐私权或道德权利，并可能会限制你使用资料的方式。</p>]]></string>
+    <string name="license"><![CDATA[<h2>知识共享署名-相同方式共享 4.0 国际</h2>
+<h3>免责声明</h3>
+<p>此处包含知识共享署名-相同方式共享 4.0 国际许可证，可在 <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a></p>
+<h4> 许可权免责声明摘要(此声明不替代作品许可权)</h4>
+<br/>
+<h3> 您可以自由地：</h3>
+<br/><b>&#8226; 共享</b> - 在任何媒介以任何形式复制、发行本作品
+<br/><b>&#8226; 演绎</b> - 修改、转换或以本作品为基础进行创作在任何用途下，甚至商业目的
+<p> 只要你遵守许可协议条款，许可人就无法收回你的这些权利</p>
+<h3>惟须遵守下列条件：</h3>
+<br/><b>&#8226; 署名</b> - 您必须给出适当的署名，提供指向本许可协议的链接，同时标明是否（对原始作品）作了修改。您可以用任何合理的方式来署名，但是不得以任何方式暗示许可人为您或您的使用背书。
+<br/><b>&#8226; 相同方式共享</b> - 如果您再混合、转换或者基于本作品进行创作，您必须基于与原先许可协议相同的许可协议 分发您贡献的作品。
+<br/><b>&#8226; 没有附加限制</b> - 您不得适用法律术语或者 技术措施 从而限制其他人做许可协议允许的事情。</p>
+<h3> 声明：</h3>
+<p><br/>&#8226; 您不必因为公共领域的作品要素而遵守许可协议，或者您的使用被可适用的 例外或限制所允许。</p>
+<p><br/>&#8226; 不提供担保。许可协议可能不会给与您意图使用的所必须的所有许可。例如，其他权利比如形象权、隐私权或人格权可能限制您如何使用作品。]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines"><![CDATA[<h1>翻译指南</h1>
-<p><em><xliff:g id="organization_name">Wycliffe Associates</xliff:g>项目的所有成员组织和贡献者签署了以下关于翻译中使用的原则和程序的声明。所有翻译活动都是根据这些共同准则进行的。</em></p>
 <p>
-  <strong>准确</strong> - 准确翻译，不减少、改变或增加原文的意思。翻译的内容应最准确地传达原文的意思，就像原文读者所理解的内容。
-  <br/><br/><strong>清晰</strong> - 使用任何必要的语言结构来达到最高的理解水平。这包括重新安排文本的形式，使用最多或最少的术语最准确地传达原文的意思。
-  <br/><br/><strong>信实</strong> - 使用与原始圣经语言词汇一致的关键术语。有关父神与子神之间关系的术语应保留在翻译内容中，并根据需要在脚注或其他补充资源中加以澄清。
-  <br/><br/><strong>权威</strong> - 使用圣经原文作为翻译圣经内容的最高权威。其他语言的可靠圣经内容可用于澄清和作为中间源文本。
-  <br/><br/><strong>纯净</strong> - 在你的翻译中避免任何政治，宗派，意识形态，社会，文化或神学偏见。
-  <br/><br/><strong>表达</strong> - 传达原文的情感和态度。尽可能保持原文中的文学形式，包括叙述、诗歌、劝诫和预言，并使用你的语言中类似的方式做相应的表达。
-  <br/><br/><strong>历史</strong> - 准确地传达历史事件和事实，根据需要提供附加信息，以便准确地将信息传达给不同文化背景的接收者。
-  <br/><br/><strong>自然</strong> - 使用有效的语言形式以及在相应的背景中使用的语言方式。
-  <br/><br/><strong>协同</strong> - 在允许的情况下，与同一语言的其他信徒一起翻译、检查和分发翻译的内容，确保它是最高质量的，并且适用于最广泛的人群。
-  <br/><br/><strong>持续</strong> - 鼓励定期审查翻译，以确定何时需要修订或新的翻译。
+      <strong>准确的</strong> - 准确的翻译有效地传达了原始的、受神启发的文本的预期含义。准确的翻译会表达出作者在原始文本中对原始读者的意图。
+      <p>
+        1. 在可能的范围内，不从原始信息中添加、误解或删除任何内容。
+        <br/>2. 不重新诠释原文的含义，使其与当代群众更相关连。
+        <br/>3. 准确的翻译不会为了支持特定的解释视角而歪曲意思。它应该没有神学、文化或个人偏见。
+        <br/>4. 准确的翻译要准确地传达历史的事件和事实。
+      <p>
 </p>
-<h1>翻译质量的管理与鉴别</h1>
-<p>译文的质量一般是指译文对原文表述的忠实程度，以及使用者对译文的理解及有效程度。我们建议与同一语言社区的同工们一起检查翻译的形式和表述质量，以及与他们所参与的教会一起检查翻译的忠实性。</p>
-<p>所涉及的具体步骤可能有很大不同，这取决于翻译项目的语言和背景。一般来说，我们认为一个好的翻译是：</p>
 <p>
-  <strong>准确</strong> - 忠实于原文的意图，由该人群中的教会确定，并与教会的全球和历史一致，因此：
-  <br/><br/><strong>经教会确认</strong> - 得到教会的认可和使用。
+      <strong>清晰</strong> - 清晰的翻译将使用任何需要的语言结构来帮助读者轻松阅读和理解。
+      <p>
+        1. 清晰的翻译可以使用或多或或少的字词来尽可能清楚地传达原始含义。
+        <br/>2. 清晰的翻译并不意味着译者要澄清源文本中有歧义的东西。
+        <br/>3. 清晰的翻译并不意味着译者在对每一个史上曾有争议的段落都给予读者一个特定的解释。
+      </p>
 </p>
-<p>此外，一个好的翻译是经由同一语言社区的权威审查，发现是：</p>
 <p>
-  <strong>自然</strong> - 使用当前的语言形式，以及
-  <br/><br/><strong>清晰</strong> - 努力获得听众的最高理解水平。
+      <strong>自然</strong> - 自然翻译中使用的语言形式应该反映出目标语言在信件往来的景况下使用的方式。
+      <p>
+        1. 自然的圣经翻译，在听读的时候，会像是由一位母语说的很好或写得很好的成年人士说写的。
+        <br/>2. 自然的圣经翻译不会为了使翻译显得自然而去用他们自己文化里特定的表达方式。
+        <br/>3. 翻译一段圣经时，其准确度要比让人读的自然度来得更重要。
+      </p>
+</p>
+<p> 我们相信，在应用上述准则后，翻译质量就很可能达到一个高水平。再来就靠以下行动把翻译完结。</p>
+<p>
+     1. 由语言社区的信徒和他们的教会领袖测试和认可。
+    <br/> 2. 不断修改完善。
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
-<p>We believe:</p>
+    <string name="statement_of_faith"><![CDATA[<h1>信仰宣言</h1>
+<p>我们相信</p>
 <ul>
-    <li>The Bible is divinely inspired by God and has final authority.</li>
-    <li>God is one and exists in three persons: God the Father, God the Son and God the Holy Spirit.</li>
-    <li>Because of the fall of man, all humans are sinful, and in need of salvation.</li>
-    <li>The death of Christ is a substitute for sinners and provides for the cleansing of those who believe.</li>
-    <li>By God’s grace, through faith, man receives salvation as a free gift because of Jesus’ death and resurrection.</li>
-    <li>The resurrection of all—the saved to eternal life and the lost to eternal punishment.</li>
+    <li>圣经是神所默示的，拥有最终权威。</li>
+    <li>圣经是神所默示的，拥有最终权威。</li>
+    <li>因为人的堕落，所有的人都是有罪的，都需要救赎。</li>
+    <li>基督是替代罪人而死，叫凡相信的人都得洁净。</li>
+    <li>藉着神的恩典和人的相信，因着耶稣的死和复活，人类就可以得着无偿的救恩。</li>
+    <li>所有人的复活——得救的人得永生，失丧的人永远受罚。</li>
 </ul>]]></string>
 </resources>
