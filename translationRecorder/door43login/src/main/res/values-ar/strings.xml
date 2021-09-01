@@ -8,11 +8,8 @@
     <string name="license_accept">I Agree</string>
     <string name="view_statement_of_faith">Statement of Faith</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
-
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license">
-        <![CDATA[
-<h2>Creative Commons Attribution-ShareAlike 4.0 International</h2>
+    <string name="license"><![CDATA[<h2>Creative Commons Attribution-ShareAlike 4.0 International</h2>
 <h3>Human-Readable Summary</h3>
 <p>The Creative Commons Attribution-Share Alike 4.0 International License is available at <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a></p>
 <h4>This is a human-readable summary of (and not a substitute for) the License</h4>
@@ -27,13 +24,9 @@
 <br/><b>&#8226; No additional restrictions</b> - You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</p>
 <h3>Notices:</h3>
 <p><br/>&#8226; You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation.</p>
-<p><br/>&#8226; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>
-]]>
-    </string>
+<p><br/>&#8226; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines">
-<![CDATA[
-<h1>Translation Guidelines</h1>
+    <string name="translation_guidlines"><![CDATA[<h1>Translation Guidelines</h1>
 <p>
       <strong>Accurate</strong> - Accurate translations effectively communicate the intended meaning of the original, divinely inspired text. An accurate translation expresses the meaning the author intended for the original audience in the original context.
       <p>
@@ -63,13 +56,9 @@
 <p>
     1. It is tested and approved by believers of the language community and their church leaders.
     <br/>2. Ongoing revisions and improvements are made.
-</p>
-]]>
-    </string>
+</p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith">
-<![CDATA[
-<h1>Statement of Faith</h1>
+    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
 <p>We believe:</p>
 <ul>
     <li>The Bible is divinely inspired by God and has final authority.</li>
@@ -78,7 +67,5 @@
     <li>The death of Christ is a substitute for sinners and provides for the cleansing of those who believe.</li>
     <li>By God’s grace, through faith, man receives salvation as a free gift because of Jesus’ death and resurrection.</li>
     <li>The resurrection of all—the saved to eternal life and the lost to eternal punishment.</li>
-</ul>
-]]>
-    </string>
+</ul>]]></string>
 </resources>

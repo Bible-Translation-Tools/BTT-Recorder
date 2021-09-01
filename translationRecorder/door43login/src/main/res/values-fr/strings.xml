@@ -2,59 +2,78 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Conditions d\'utilisation</string>
-    <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <string name="view_license_agreement">License Agreement</string>
-    <string name="license_deny">No Thanks</string>
-    <string name="license_accept">I Agree</string>
-    <string name="view_statement_of_faith">Statement of Faith</string>
-    <string name="view_translation_guidelines">Translation Guidelines</string>
+    <string name="terms">En utilisant cette application, vous acceptez la déclaration de foi et les directives de traduction et de publication de votre travail sous les termes de Creative Commons Attribution-ShareAlike 4.0 International License.</string>
+    <string name="view_license_agreement">Contrat d\'accord</string>
+    <string name="license_deny">Non merci</string>
+    <string name="license_accept">J’accepte</string>
+    <string name="view_statement_of_faith">Déclaration de foi</string>
+    <string name="view_translation_guidelines">Directives de traduction</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license"><![CDATA[<h2>You are free to:</h2>
-<p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
-<h2>Under the following terms:</h2>
-<p>
-    <b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;
-    <br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;
-    <br/><b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
-</p>
-<h2>Notices:</h2>
-<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
+    <string name="license"><![CDATA[<h2>Creative Commons Paternité-Partage à l'identique 4. International</h2>
+<h3>Résumé lisible par l'homme</h3>
+<p>The Creative Commons Attribution-Share Alike 4. La licence internationale est disponible à <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4. /</a></p>
+<h4>Ceci est un résumé lisible par l'homme (et non pas un substitut) de la licence</h4>
+<br/>
+<h3>Vous êtes libre à:</h3>
+<br/><b>&#8226; Partager</b> - copiez et redistribuez le matériel dans n'importe quel support ou format
+<br/><b>&#8226; Adaptation</b> - remixez, transformer, et construire sur le matériel pour n'importe quel but, même commercialement.
+<p>Le concédant ne peut pas révoquer ces libertés tant que vous respectez les conditions de la licence.</p>
+<h3>Selon les conditions suivantes :</h3>
+<br/><b>&#8226; Attribution</b> - Vous devez donner un crédit approprié, fournir un lien vers la licence et indiquer si des changements ont été apportés. Vous pouvez le faire de quelque manière que ce soit, mais pas de quelque manière que ce soit qui suggère que le concédant vous approuve ou que vous utilisez.
+<br/><b><b>&#8226; Partage à l'identique</b> - Si vous remixez, transformez, ou construisez sur le matériel, vous devez distribuer vos contributions sous la même licence que l'original.
+<br/><b>&#8226; Pas de restrictions supplémentaires</b> - Vous ne pouvez pas appliquer de conditions légales ou de mesures technologiques qui limitent légalement les autres à faire quoi que ce soit le permis de licence.</p>
+<h3>Avis :</h3>
+<p><br/>&#8226; Vous n'avez pas à vous conformer à la licence pour les éléments du matériel dans le domaine public ou lorsque votre utilisation est permise par une exception ou une limitation applicables.</p>
+<p><br/>&#8226; Aucune garantie n'est donnée. La licence peut ne pas vous donner toutes les autorisations nécessaires à votre utilisation prévue. Par exemple, d'autres droits tels que la publicité, la vie privée ou les droits moraux peuvent limiter la façon dont vous utilisez le matériel.</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines"><![CDATA[<h1>Translation Guidelines</h1>
-<p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the <xliff:g id="organization_name">Wycliffe Associates</xliff:g> project. All translation activities are carried out according to these common guidelines.</em></p>
+    <string name="translation_guidlines"><![CDATA[<h1>Directives de traduction</h1>
 <p>
-  <strong>Accurate</strong> - Translate accurately, without detracting from, changing, or adding to the meaning of the original text. Translated content should faithfully communicate as precisely as possible the meaning of the original text as it would have been understood by the original audience.
-  <br/><br/><strong>Clear</strong> - Use whatever language structures are necessary to achieve the highest level of comprehension. This includes rearranging the form of a text and using as many or as few terms as necessary to communicate the original meaning as accurately as possible.
-  <br/><br/><strong>Faithful</strong> - Use key terms that are faithful to the vocabulary of the original biblical languages. Terms addressing the relationship between God the Father and God the Son should be retained in translated content and clarified, as needed, in footnotes or other supplemental resources.
-  <br/><br/><strong>Authoritative</strong> - Use the original language biblical texts as the highest authority for translation of biblical content. Reliable biblical content in other languages may be used for clarification and as intermediary source texts.
-  <br/><br/><strong>Pure</strong> - Avoid any political, denominational, ideological, social, cultural, or theological bias in your translation.
-  <br/><br/><strong>Expressive</strong> - Communicate the feelings and attitudes of the original text. As much as possible, maintain the literary forms in the original text, including narrative, poetry, exhortation, and prophecy, representing them with corresponding forms that communicate in a similar way in your language.
-  <br/><br/><strong>Historical</strong> - Communicate historical events and facts accurately, providing additional information as needed in order to accurately communicate the intended message to people who do not share the same context and culture as the original recipients of the original content.
-  <br/><br/><strong>Natural</strong> - Use language forms that are effective and that reflect the way your language is used in corresponding contexts.
-  <br/><br/><strong>Collaborative</strong> - Where possible, work together with other believers who speak your language to translate, check, and distribute the translated content, ensuring that it is of the highest quality and available to as many people as possible.
-  <br/><br/><strong>Ongoing</strong> - Encourage the periodic review of translations to ascertain when revision or a new translation is needed.
+     <strong>Précise</strong> - Les traductions précises communiquent éfficacement le sens voulu du texte original, divinement inspiré. Une traduction précise exprime le sens voulu par l'auteur pour le public d'origine dans le contexte original.
+    <p>
+        1.  Dans la mesure du possible, rien n'est ajouté, mal interprété ou supprimé du message original.
+        <br/>2. Il ne reformule pas le sens du texte original pour le rendre plus pertinent pour le public contemporain.
+        <br/>3.  Une traduction précise ne déforme pas le sens afin de favoriser une perspective interprétative specifique. Elle doit être exempte de tout préjugé théologique, culturel ou personnel.
+        <br/>4. Une traduction précise communique les événements et les faits historiques avec exactitude.
+      <p>
 </p>
-<h1>Managing and Identifying Translation Quality</h1>
-<p>The quality of a translation generally refers to the fidelity of the translation to the meaning of the original, and the degree to which the translation is understandable and effective for the speakers of the receptor language. The strategy we suggest involves checking the forms and communicative quality of the translation with the language community, and checking the fidelity of the translation with the Church in that people group.</p>
-<p>The specific steps involved may vary significantly, depending on the language and context of the translation project. Generally, we consider a good translation to be one that is:</p>
 <p>
-  <strong>Accurate</strong> - Faithful to the intended meaning of the original, as determined by the Church in that people group and in alignment with the Church global and historical, and consequently:
-  <br/><br/><strong>Affirmed by the Church</strong> - Endorsed and used by the Church.
+      <strong>Claire</strong> - Les traductions claires utiliseront toutes les structures linguistiques nécessaires pour aides les lecteurs à les lire et à les comprendre facilement.
+      <p>
+        1. Une traduction claire peut utiliser autant ou aussi peu de termes que nécessaire pour communiquer le sens original aussi clairement que possible.
+        <br/>2. Faire une traduction claire ne signifie pas que le traducteur clarifie quelque chose qui est ambigüe dans le texte source. 
+        <br/>3.  Faire une traduction claire ne signifie pas que le traducteur donne au lecteur une interprétation spécifique pour chaque passage où le sens est véritablement débattu.
+      </p>
 </p>
-<p>In addition, a good translation is reviewed by the speakers of the language community and is found to be:</p>
 <p>
-  <strong>Natural</strong> - Using current forms of the language, and
-  <br/><br/><strong>Clear</strong> - Strives for the highest level of comprehension by hearers.
-</p>]]></string>
+      <strong>Naturelle</strong> - Les traductions naturelles utilisent des formes linguistiques qui reflètent la façon dont la langue cible est utilisée dans les contextes correspondants.
+      <p>
+        1.  Les traductions naturelles de la Bible doit se lire comme elles avaient été produites par un adult de langue maternelle qui parle et / ou écrit bien.
+        <br/>2. Une traduction naturelle de la Bible n'utilise pas d'expressions propres à leur propre culture afin de rendre la traduction naturelle.
+        <br/>3. Il est plus important qu'une partie de l'Écriture soit traduite avec précision que d'être parfaitement naturelle pour tous ceux qui la lisent.
+      </p>
+</p>
+<p> Nous pensons qu'une traduction a la plus grande probabilite d'être de bonne qualité lorsqu'après avoir appliqué les directives ci-dessus, les éléments suivants sont remplis: </p>
+<p>
+    1. Elle est testée et approuvée par les croyants de la communauté linguistique et par leur responsables d'église.
+    <br/>2. Des révisions et des améliorations continues sont apportées.
+</p>
+
+
+
+
+
+
+   ]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>Statement of Faith</h1>
-<p>
-  The divine inspiration and consequent authority of the whole canonical Scriptures.
-  <br/><br/>The doctrine of the Trinity—God is one, existing in three persons, the Father, the Son and the Holy Spirit.
-  <br/><br/>The fall of man, his consequent moral depravity, and his need for regeneration.
-  <br/><br/>The atonement through the substitutionary death of Christ.
-  <br/><br/>The doctrine of justification by faith.
-  <br/><br/>The resurrection of the body, in the case of the just and the unjust.
-  <br/><br/>The eternal life of the saved and the eternal punishment of the lost.
-</p>]]></string>
+    <string name="statement_of_faith"><![CDATA[<h1>Déclaration de foi</h1>
+
+<p>Nous croyons que:</p>
+<ul>
+    <li>La Bible est divinement inspirée par Dieu et a l'autorité finale.</li>
+    <li>Dieu est un et existe en trois personnes : Dieu le Père, Dieu le Fils et Dieu le Saint-Esprit.</li>
+    <li>À cause de la chute de l'homme, tous les humains sont pécheurs et ont besoin de salut.</li>
+    <li>La mort de Christ est un substitut aux pécheurs et prévoit la purification de ceux qui croient.</li>
+    <li>Par la grâce de Dieu, par la foi, l’homme reçoit le salut comme un don gratuit à cause de la mort et de la résurrection de Jésus.</li>
+    <li>La résurrection de tous - les sauvés à la vie éternelle et les perdus au châtiment éternel.</li>
+</ul>]]></string>
 </resources>

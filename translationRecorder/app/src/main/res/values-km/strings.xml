@@ -104,9 +104,9 @@
     <string name="anthology_ot">សញ្ញា​ចាស់</string>
     <string name="anthology_obs">បើករឿង​​​​នៃ​ព្រះគម្ពីរ</string>
     <!--Resource names-->
-    <string name="ulb" comment="ULB&#10;Bible version">Unlocked Literal Bible</string>
-    <string name="udb" comment="UDB&#10;Bible version">Unlocked Dynamic Bible</string>
-    <string name="reg">Regular</string>
+    <string name="ulb">អង្គការ​ព្រះ​គម្ពីរ Unlocked Literal Bible</string>
+    <string name="udb">អង្គការ​ព្រះគម្ពីរ​ Unlocked Dynamic Bible</string>
+    <string name="reg">ធម្មតា</string>
     <!--Book names-->
     <string name="book_gen">លោកុ‌ប្បត្តិ</string>
     <string name="book_exo">និក្ខមនំ</string>
@@ -210,18 +210,18 @@
     <string name="obs_book_34">៣៤. ព្រះយេស៊ូបង្រៀន​អំពី​រឿង​ផ្សេងៗ</string>
     <string name="obs_book_35">៣៥. រឿងរបស់ព្រះវរបិតាដែលមេត្តា​ករុណា</string>
     <string name="obs_book_36">៣៦. ការផ្លាស់ប្រែព្រះកាយ​</string>
-    <string name="obs_book_37">37. Jesus Raises Lazarus from the Dead</string>
-    <string name="obs_book_38">38. Jesus Is Betrayed</string>
-    <string name="obs_book_39">39. Jesus Is Put on Trial</string>
-    <string name="obs_book_40">40. Jesus Is Crucified</string>
-    <string name="obs_book_41">41. God Raises Jesus from the Dead</string>
-    <string name="obs_book_42">42. Jesus Returns to Heaven</string>
-    <string name="obs_book_43">43. The Church Begins</string>
-    <string name="obs_book_44">44. Peter and John Heal a Beggar</string>
-    <string name="obs_book_45">45. Stephen and Philip</string>
-    <string name="obs_book_46">46. Paul Becomes a Christian</string>
-    <string name="obs_book_47">47. Paul and Silas in Philippi</string>
-    <string name="obs_book_48">48. Jesus Is the Promised Messiah</string>
-    <string name="obs_book_49">49. God’s New Covenant</string>
-    <string name="obs_book_50">50. Jesus Returns</string>
+    <string name="obs_book_37">ព្រះយេស៊ូប្រោសឡាសារ ឲ្យ រស់ឡើងវិញ</string>
+    <string name="obs_book_38">គេ​​ក្បត់​ព្រះ​យេស៊ូ</string>
+    <string name="obs_book_39">គេ​ជំនុំ​ជម្រះ​​ព្រះ​យេស៊ូ</string>
+    <string name="obs_book_40">គេ​​​ឆ្កាង​​ព្រះ​យេស៊ូ</string>
+    <string name="obs_book_41">ព្រះ‌ជា‌ម្ចាស់​ប្រោស​ព្រះ‌យេស៊ូ​ឲ្យ​មាន​ព្រះ‌ជន្ម​រស់​ឡើង​វិញ</string>
+    <string name="obs_book_42">ព្រះយេស៊ូយាងទៅស្ថានសួគ៌វិញ</string>
+    <string name="obs_book_43">ក្រុម​ជំនុំ​ចាប់​ផ្ដើម​</string>
+    <string name="obs_book_44">លោក​ពេត្រុសនិង​លោក​យ៉ូហានព្យាបាលអ្នកសុំទានម្នាក់ឱ្យ​បាន​ជា</string>
+    <string name="obs_book_45">លោក​ស្ទេផាននិងលោក​ភីលីព</string>
+    <string name="obs_book_46">លោក​ប៉ូលក្លាយជាគ្រីស្ទាន</string>
+    <string name="obs_book_47">លោក​ប៉ូល និង​លោក​ស៊ីឡាស នៅ​ក្រុង​ភីលីព</string>
+    <string name="obs_book_48">ព្រះយេស៊ូគឺជាព្រះមេស្ស៊ីដែលបានសន្យា</string>
+    <string name="obs_book_49">សម្ពន្ធមេត្រីថ្មី​របស់​ព្រះ</string>
+    <string name="obs_book_50">ព្រះយេស៊ូ​យាង​ត្រឡប់មកវិញ</string>
 </resources>
