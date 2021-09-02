@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">BTT Grabadora</string>
+    <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">Ajustes</string>
     <string name="logout_menu">Cerrar sesión</string>
     <string name="help_menu">Ayuda</string>
