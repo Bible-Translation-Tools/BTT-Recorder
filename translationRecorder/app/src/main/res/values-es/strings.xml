@@ -42,7 +42,7 @@
     <string name="source_audio_language">Idioma de audio original</string>
     <string name="choose_source_language">Elija el idioma de destino</string>
     <string name="app_settings">Configuración de BTT Recorder</string>
-    <string name="source_language">Lenguaje fuente</string>
+    <string name="source_language">Idioma de Origen</string>
     <string name="add_temp_language">Añadir lenguaje temporal</string>
     <string name="update_language_from_td">Actualizar idiomas de la base de datos de traducción</string>
     <string name="update_language_from_file">Actualizar Idiomas desde archivo</string>
