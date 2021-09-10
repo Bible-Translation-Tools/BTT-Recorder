@@ -5,7 +5,7 @@
     <string name="terms">តាមរយៈការប្រើកម្មវិធីនេះ អ្នកយល់ស្របនឹងសេចក្តីថ្លែងការណ៍នៃជំនឿ និងសេចក្តីណែនាំអំពីការបកប្រែ ព្រមទាំងយល់ព្រមប្រគល់ការងាររបស់អ្នកក្រោមលក្ខខណ្ឌនៃ អាជ្ញាបណ្ណអន្តរជាតិ Creative Commons Attribution-ShareAlike 4.0។</string>
     <string name="view_license_agreement">កិច្ចព្រមព្រៀងអាជ្ញាបណ្ណ</string>
     <string name="license_deny">ទេ អរគុណ</string>
-    <string name="license_accept">ខ្ញុំយល់ព្រមទទួលយក</string>
+    <string name="license_accept">ខ្ញុំយល់ព្រម</string>
     <string name="view_statement_of_faith">សេចក្តីថ្លែងការណ៍នៃជំនឿ</string>
     <string name="view_translation_guidelines">គោលការណែនាំអំពីការបកប្រែ​</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
