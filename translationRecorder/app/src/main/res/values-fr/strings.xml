@@ -37,6 +37,8 @@
     <string name="source_audio">Audio Source</string>
     <string name="select_source_language">Sélectionner une Langue source</string>
     <string name="select_source_location">Sélectionnez l\'emplacement de la source</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Language: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Location: %s</string>
     <string name="source_audio_not_found">L\'audio source est introuvable dans l\'emplacement par défaut. Si vous souhaitez utiliser l\'audio Source avec votre projet, veuillez sélectionner une langue source et ensuite trouver le dossier audio source correspondant sur votre appareil ou carte SD en utilisant les boutons ci-dessous.</string>
     <string name="source_audio_location">Emplacement de la source audio</string>
     <string name="source_audio_language">Audio de la langue source</string>
