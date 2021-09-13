@@ -37,8 +37,8 @@
     <string name="source_audio">Audio origen</string>
     <string name="select_source_language">Seleccione el idioma de origen</string>
     <string name="select_source_location">Seleccionar ubicación origen</string>
-    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">%s</string>
-    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">%s</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Idioma de Origen: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Ubicación Origen: %s</string>
     <string name="source_audio_not_found">No se pudo encontrar el audio fuente en la ubicación por defecto. Si desea que el audio original se use con su proyecto, por favor selecciona un idioma de origen y luego encuentra la carpeta de audio de origen correspondiente en tu dispositivo o tarjeta SD usando los botones abajo.</string>
     <string name="source_audio_location">Ubicación de audio origen</string>
     <string name="source_audio_language">Idioma de audio original</string>
