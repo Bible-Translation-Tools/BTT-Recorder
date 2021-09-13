@@ -43,6 +43,8 @@
     <string name="source_audio">Source Audio</string>
     <string name="select_source_language">Select Source Language</string>
     <string name="select_source_location">Select Source Location</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Language: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Location: %s</string>
     <string name="source_audio_not_found">Source audio could not be found in the default location. If you would like Source Audio to use with your project, please select a source language and then find the corresponding Source Audio folder on your device or SD card using the buttons below.</string>
     <string name="source_audio_location">Source Audio Location</string>
     <string name="source_audio_language">Source Audio Language</string>
