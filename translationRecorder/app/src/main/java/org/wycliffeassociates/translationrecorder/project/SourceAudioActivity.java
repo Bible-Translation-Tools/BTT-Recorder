@@ -103,10 +103,16 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         mSetLanguage = savedInstanceState.getBoolean(mSetLanguageKey);
         mSetLocation = savedInstanceState.getBoolean(mSetLocationKey);
         if (mSetLocation) {
-            btnSourceLocation.setText("Source Location: " + mProject.getSourceAudioPath());
+            btnSourceLocation.setText(getResources().getString(
+                    R.string.source_location_selected,
+                    mProject.getSourceAudioPath()
+            ));
         }
         if (mSetLanguage) {
-            btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguageSlug());
+            btnSourceLanguage.setText(getResources().getString(
+                    R.string.source_language_selected,
+                    mProject.getSourceLanguageSlug()
+            ));
         }
         if(savedInstanceState.getBoolean(mUserSearchingLanguageKey)){
             mSearchText = savedInstanceState.getString(mSearchTextKey);
@@ -253,7 +259,10 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         if (requestCode == REQUEST_SOURCE_LOCATION) {
             if (data.hasExtra(SelectSourceDirectory.SOURCE_LOCATION)) {
                 mProject.setSourceAudioPath(data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION));
-                btnSourceLocation.setText("Source Location: " + mProject.getSourceAudioPath());
+                btnSourceLocation.setText(getResources().getString(
+                        R.string.source_location_selected,
+                        mProject.getSourceAudioPath()
+                ));
                 mSetLocation = true;
                 continueIfBothSet();
             }
@@ -265,7 +274,10 @@ public class SourceAudioActivity extends AppCompatActivity implements Scrollable
         Utils.closeKeyboard(this);
         hideSearchMenu();
         mProject.setSourceLanguage((Language) result);
-        btnSourceLanguage.setText("Source Language: " + mProject.getSourceLanguageSlug());
+        btnSourceLanguage.setText(getResources().getString(
+                R.string.source_language_selected,
+                mProject.getSourceLanguageSlug()
+        ));
         mSetLanguage = true;
         mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
         findViewById(R.id.fragment_container).setVisibility(View.INVISIBLE);

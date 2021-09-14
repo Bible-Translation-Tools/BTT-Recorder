@@ -6,8 +6,8 @@
     <string name="view_license_agreement">Acuerdo de Licencia</string>
     <string name="license_deny">No, gracias</string>
     <string name="license_accept">Estoy de acuerdo</string>
-    <string name="view_statement_of_faith">Declaración de feito</string>
-    <string name="view_translation_guidelines">Guía de traducción</string>
+    <string name="view_statement_of_faith">Declaración de Fe</string>
+    <string name="view_translation_guidelines">Directrices de Traducción</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license"><![CDATA[<h2>Atribución Creative Commons-CompartirAlike 4.0 Internacional</h2>
 <h3>Resumen Legible </h3>
@@ -27,7 +27,7 @@ para cualquier propósito, incluso comercialmente.
 <p><br/>&#8226; Usted no tiene que cumplir con la licencia para elementos del material en el dominio público o cuando su uso está permitido por una excepción o limitación aplicable.</p>
 <p><br/>&#8226; No se dan garantías. Es posible que la licencia no le dé todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, la privacidad o los derechos morales pueden limitar la forma en que utiliza el material.</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines"><![CDATA[<h1> Consideraciones para la Traducción</h1>
+    <string name="translation_guidlines"><![CDATA[<h1> Directrices de Traducción</h1>
 <p>
       <strong>Precisa</strong> - Las traducciones precisas comunican eficazmente el significado pretendido del texto original inspirado por Dios. Una traducción precisa expresa el significado que el autor pretendía para la audiencia original en el contexto original.
       <p>
