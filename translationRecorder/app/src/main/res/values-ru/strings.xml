@@ -37,6 +37,8 @@
     <string name="source_audio">Исходное аудио</string>
     <string name="select_source_language">Выберите исходный язык</string>
     <string name="select_source_location">Выберите исходное аудио</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Language: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Location: %s</string>
     <string name="source_audio_not_found">Исходное аудио не найдено в месте по умолчанию. Если вы хотите, чтобы исходное аудио использовалось в вашем проекте, выберите исходный язык, а затем найдите соответствующую папку исходного аудио на вашем устройстве или SD-карте с помощью кнопок ниже.</string>
     <string name="source_audio_location">Местоположение исходного аудио</string>
     <string name="source_audio_language">Язык исходного аудио</string>

@@ -37,6 +37,8 @@
     <string name="source_audio">សំឡេងប្រភពដើម</string>
     <string name="select_source_language">ជ្រើស​យក​សំឡេងប្រភពដើម</string>
     <string name="select_source_location">ជ្រើស​យក​​ទីតាំង​ប្រភពដើម</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">ភាសាប្រភពដើម៖ %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">ទីតាំង​ប្រភពដើម៖ %s</string>
     <string name="source_audio_not_found">សំឡេងប្រភពដើមមិនអាចរកឃើញនៅក្នុងទីតាំងលំនាំដើមទេ។ ប្រសិនបើអ្នកចង់យកសំឡេង​ប្រភពដើម​ទៅ​ប្រើជាមួយគម្រោងរបស់អ្នក សូមជ្រើសយក​ភាសាប្រភពដើម ហើយបន្ទាប់មក រកថតឯកសារ​សំឡេងប្រភពដើមដែលត្រូវគ្នា នៅលើឧបករណ៍ឬកាតអេសឌីរបស់អ្នក ដោយប្រើប៊ូតុងខាងក្រោម។</string>
     <string name="source_audio_location">ទីតាំង​សំឡេង​ប្រភពដើម</string>
     <string name="source_audio_language">ភាសាសំឡេង​ប្រភពដើម</string>
@@ -104,8 +106,8 @@
     <string name="anthology_ot">សញ្ញា​ចាស់</string>
     <string name="anthology_obs">បើករឿង​​​​នៃ​ព្រះគម្ពីរ</string>
     <!--Resource names-->
-    <string name="ulb">អង្គការ​ព្រះ​គម្ពីរ Unlocked Literal Bible</string>
-    <string name="udb">អង្គការ​ព្រះគម្ពីរ​ Unlocked Dynamic Bible</string>
+    <string name="ulb">កម្មវិធី Unlocked Literal Bible</string>
+    <string name="udb">កម្មវិធី​ Unlocked Dynamic Bible</string>
     <string name="reg">ធម្មតា</string>
     <!--Book names-->
     <string name="book_gen">លោកុ‌ប្បត្តិ</string>
@@ -210,7 +212,7 @@
     <string name="obs_book_34">៣៤. ព្រះយេស៊ូបង្រៀន​អំពី​រឿង​ផ្សេងៗ</string>
     <string name="obs_book_35">៣៥. រឿងរបស់ព្រះវរបិតាដែលមេត្តា​ករុណា</string>
     <string name="obs_book_36">៣៦. ការផ្លាស់ប្រែព្រះកាយ​</string>
-    <string name="obs_book_37">ព្រះយេស៊ូប្រោសឡាសារ ឲ្យ រស់ឡើងវិញ</string>
+    <string name="obs_book_37">ព្រះយេស៊ូប្រោសឡាសារឲ្យរស់ឡើងវិញ</string>
     <string name="obs_book_38">គេ​​ក្បត់​ព្រះ​យេស៊ូ</string>
     <string name="obs_book_39">គេ​ជំនុំ​ជម្រះ​​ព្រះ​យេស៊ូ</string>
     <string name="obs_book_40">គេ​​​ឆ្កាង​​ព្រះ​យេស៊ូ</string>
@@ -219,9 +221,9 @@
     <string name="obs_book_43">ក្រុម​ជំនុំ​ចាប់​ផ្ដើម​</string>
     <string name="obs_book_44">លោក​ពេត្រុសនិង​លោក​យ៉ូហានព្យាបាលអ្នកសុំទានម្នាក់ឱ្យ​បាន​ជា</string>
     <string name="obs_book_45">លោក​ស្ទេផាននិងលោក​ភីលីព</string>
-    <string name="obs_book_46">លោក​ប៉ូលក្លាយជាគ្រីស្ទាន</string>
+    <string name="obs_book_46">លោក​ប៉ូលក្លាយជាអ្នកគ្រីស្ទាន</string>
     <string name="obs_book_47">លោក​ប៉ូល និង​លោក​ស៊ីឡាស នៅ​ក្រុង​ភីលីព</string>
-    <string name="obs_book_48">ព្រះយេស៊ូគឺជាព្រះមេស្ស៊ីដែលបានសន្យា</string>
+    <string name="obs_book_48">ព្រះយេស៊ូគឺព្រះមេស្ស៊ីដែលជាការសន្យា</string>
     <string name="obs_book_49">សម្ពន្ធមេត្រីថ្មី​របស់​ព្រះ</string>
     <string name="obs_book_50">ព្រះយេស៊ូ​យាង​ត្រឡប់មកវិញ</string>
 </resources>

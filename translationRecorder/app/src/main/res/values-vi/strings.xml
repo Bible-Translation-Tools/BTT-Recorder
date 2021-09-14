@@ -37,6 +37,8 @@
     <string name="source_audio">Thu âm gốc</string>
     <string name="select_source_language">Chọn ngôn ngữ gốc</string>
     <string name="select_source_location">Chọn Vị trí Thư mục gốc</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Language: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Location: %s</string>
     <string name="source_audio_not_found">Bản thu âm gốc không được tìm thấy. Nếu bạn muốn sử dụng bản gốc cho dự án, vui lòng chọn một ngôn ngữ gốc và tìm một thư mục thu âm gốc trên thiết bị hoặc thẻ SD bằng những nút dưới đây.</string>
     <string name="source_audio_location">Vị trí Thư mục Thu âm gốc</string>
     <string name="source_audio_language">Ngôn ngữ Thu âm gốc</string>

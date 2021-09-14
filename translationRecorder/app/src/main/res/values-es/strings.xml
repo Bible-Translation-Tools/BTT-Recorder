@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-    <string name="app_name">BTT Grabadora</string>
+    <string name="app_name">BTT Recorder</string>
     <string name="settings_menu">Ajustes</string>
     <string name="logout_menu">Cerrar sesión</string>
     <string name="help_menu">Ayuda</string>
@@ -37,17 +37,19 @@
     <string name="source_audio">Audio origen</string>
     <string name="select_source_language">Seleccione el idioma de origen</string>
     <string name="select_source_location">Seleccionar ubicación origen</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Idioma de Origen: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Ubicación Origen: %s</string>
     <string name="source_audio_not_found">No se pudo encontrar el audio fuente en la ubicación por defecto. Si desea que el audio original se use con su proyecto, por favor selecciona un idioma de origen y luego encuentra la carpeta de audio de origen correspondiente en tu dispositivo o tarjeta SD usando los botones abajo.</string>
     <string name="source_audio_location">Ubicación de audio origen</string>
     <string name="source_audio_language">Idioma de audio original</string>
     <string name="choose_source_language">Elija el idioma de destino</string>
     <string name="app_settings">Configuración de BTT Recorder</string>
-    <string name="source_language">Lenguaje fuente</string>
+    <string name="source_language">Idioma de Origen</string>
     <string name="add_temp_language">Añadir lenguaje temporal</string>
     <string name="update_language_from_td">Actualizar idiomas de la base de datos de traducción</string>
     <string name="update_language_from_file">Actualizar Idiomas desde archivo</string>
     <string name="change_upload_server">Cambiar el servidor de subida</string>
-    <string name="app_version">Versión de BTT Grabadora</string>
+    <string name="app_version">Versión de BTT Recorder</string>
     <string name="language_code_exists">¡El código del idioma ya existe!</string>
     <string name="language_code_length_tip">El código de idioma debe contener exactamente 6 caracteres!</string>
     <string name="language_name">Nombre de idioma: </string>
