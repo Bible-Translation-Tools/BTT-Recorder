@@ -53,9 +53,10 @@
     <string name="app_settings">BTT Recorder Settings</string>
     <string name="source_language">Source Language</string>
     <string name="add_temp_language">Add Temporary Language</string>
-    <string name="update_language_from_td">Update Languages From translationDatabase</string>
-    <string name="update_language_from_file">Update Languages From file</string>
+    <string name="update_language_from_td">Update Languages From Url</string>
+    <string name="update_language_from_file">Update Languages From File</string>
     <string name="change_upload_server">Change Upload Server</string>
+    <string name="change_languages_url">Change Languages Url</string>
     <string name="app_version">BTT Recorder Version</string>
     <string name="language_code_exists">Language code already exists!</string>
     <string name="language_code_length_tip">Language code must contain exactly 6 characters!</string>
@@ -65,6 +66,7 @@
     <string name="languages_updated">Languages successfully updated!</string>
     <string name="invalid_json">Invalid languages file</string>
     <string name="server_name">Server Name: </string>
+    <string name="lang_url">URL: </string>
     <string name="restore_defaults">Restore</string>
     <string name="save">Save</string>
     <string name="version">Version</string>
@@ -87,6 +89,7 @@
     <string name="folder_name" translatable="false">BTTRecorder</string>
     <string name="pref_default_lang" translatable="false">en</string>
     <string name="pref_upload_server" translatable="false">opentranslationtools.org</string>
+    <string name="pref_languages_url" translatable="false">https://langnames.bibleineverylanguage.org/langnames.json</string>
     <string name="action_search" translatable="false">Search</string>
     <string name="menu_update" translatable="false">Update</string>
 

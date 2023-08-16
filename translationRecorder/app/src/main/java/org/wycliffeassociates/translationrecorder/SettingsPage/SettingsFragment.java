@@ -81,8 +81,11 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
         updateLanguagesButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                Preference updateLanguagesUrlPref = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_URL);
+                String updateLanguagesUrl = updateLanguagesUrlPref.getSummary().toString();
+
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db),
+                        new ResyncLanguageNamesTask(1, getActivity(), db, updateLanguagesUrl),
                         "Updating Languages",
                         "Please wait...",
                         true
@@ -99,6 +102,16 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
                 intent.setType("application/octet-stream");
                 startActivityForResult(intent, FILE_GET_REQUEST_CODE);
                 return true;
+            }
+        });
+
+        Preference languagesUrlButton = findPreference(Settings.KEY_PREF_LANGUAGES_URL);
+        languagesUrlButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                LanguagesUrlDialog add = new LanguagesUrlDialog();
+                add.show(getFragmentManager(), "save");
+                return false;
             }
         });
 
