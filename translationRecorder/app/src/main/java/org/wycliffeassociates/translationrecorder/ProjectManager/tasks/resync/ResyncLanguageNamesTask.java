@@ -33,12 +33,18 @@ public class ResyncLanguageNamesTask extends Task {
     ProjectDatabaseHelper db;
     boolean isLocal = false;
     Uri localFile;
+    String remoteUrl;
     Handler handler = new Handler(Looper.getMainLooper());
 
-    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db) {
+    private ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db) {
         super(taskTag);
         mCtx = ctx;
         this.db = db;
+    }
+
+    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, String url) {
+        this(taskTag, ctx, db);
+        this.remoteUrl = url;
     }
 
     public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, Uri uri) {
@@ -76,7 +82,7 @@ public class ResyncLanguageNamesTask extends Task {
 
     private String loadJsonFromUrl() {
         try {
-            URL url = new URL("http://td.unfoldingword.org/exports/langnames.json");
+            URL url = new URL(this.remoteUrl);
             HttpURLConnection urlConnection = null;
 
             try {

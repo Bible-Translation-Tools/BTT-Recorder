@@ -46,6 +46,14 @@
         </PreferenceScreen>
 
         <PreferenceScreen
+            android:key="pref_languages_url"
+            android:layout="@layout/custom_pref"
+            android:title="@string/change_languages_url"
+            android:summary="@string/pref_languages_url"
+            android:defaultValue="@string/pref_languages_url">
+        </PreferenceScreen>
+
+        <PreferenceScreen
                 android:key="pref_upload_server"
                 android:layout="@layout/custom_pref"
                 android:title="@string/change_upload_server"

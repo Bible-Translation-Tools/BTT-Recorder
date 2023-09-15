@@ -48,9 +48,11 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
     public static final String KEY_PREF_GLOBAL_LANG_SRC = "pref_global_lang_src";
     public static final String KEY_PREF_ADD_LANGUAGE = "pref_add_temp_language";
     public static final String KEY_PREF_UPDATE_LANGUAGES = "pref_update_languages";
+    public static final String KEY_PREF_UPDATE_LANGUAGES_URL = "pref_languages_url";
     public static final String KEY_PREF_UPDATE_LANGUAGES_FROM_FILE = "pref_update_languages_from_file";
 
     public static final String KEY_PREF_UPLOAD_SERVER = "pref_upload_server";
+    public static final String KEY_PREF_LANGUAGES_URL = "pref_languages_url";
 
 
     private String mSearchText;
