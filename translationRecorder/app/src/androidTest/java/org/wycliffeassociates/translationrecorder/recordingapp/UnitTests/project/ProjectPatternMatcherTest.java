@@ -13,8 +13,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ProjectPatternMatcherTest {
 
-
-
     @Test
     public void test(){
         String regexBible = "([a-zA-Z]{2,3}[-[\\d\\w]+]*)_([a-zA-Z]{3})_b([\\d]{2})_([1-3]*[a-zA-Z]+)_c([\\d]{2,3})_v([\\d]{2,3})(-([\\d]{2,3}))?(_t([\\d]{2}))?(.wav)?";

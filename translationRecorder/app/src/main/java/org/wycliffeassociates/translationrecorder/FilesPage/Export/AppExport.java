@@ -6,7 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.core.content.FileProvider;
-import org.wycliffeassociates.translationrecorder.BuildConfig;
+import androidx.multidex.BuildConfig;
+
 import org.wycliffeassociates.translationrecorder.project.Project;
 
 import java.io.File;

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import com.door43.login.TermsOfUseActivity
 import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.ActivityLoginBinding
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentReviewProfile
 import org.wycliffeassociates.translationrecorder.login.interfaces.OnProfileCreatedListener
@@ -25,7 +26,9 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        val binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         Screen.lockOrientation(this)
         if (savedInstanceState == null) {
             startActivityForResult(Intent(this, TermsOfUseActivity::class.java), 42)

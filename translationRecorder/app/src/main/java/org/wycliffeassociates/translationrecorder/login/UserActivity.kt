@@ -9,11 +9,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pixplicity.sharp.Sharp
 import jdenticon.Jdenticon
-import kotlinx.android.synthetic.main.activity_user.*
-import login.adapters.UserAdapter
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ActivityUserBinding
 import org.wycliffeassociates.translationrecorder.project.components.User
 
 /**
@@ -21,19 +19,27 @@ import org.wycliffeassociates.translationrecorder.project.components.User
  */
 
 class UserActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityUserBinding
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_user)
+
+        binding = ActivityUserBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val orientation = resources.configuration.orientation
         var layoutManager = GridLayoutManager(this, 4) as RecyclerView.LayoutManager
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             layoutManager = GridLayoutManager(this, 3)
         }
-        recycler.layoutManager = layoutManager
-        recycler.itemAnimator = DefaultItemAnimator()
-        val adapter = UserAdapter(this, userList())
-        recycler.adapter = adapter
+
+        with(binding) {
+            recycler.layoutManager = layoutManager
+            recycler.itemAnimator = DefaultItemAnimator()
+            val adapter = UserAdapter(this@UserActivity, userList())
+            recycler.adapter = adapter
+        }
     }
 
     private fun userList(): List<Pair<User, Drawable>> {

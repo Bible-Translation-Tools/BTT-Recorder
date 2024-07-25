@@ -1,4 +1,4 @@
-package login.adapters
+package org.wycliffeassociates.translationrecorder.login
 
 import android.app.Activity
 import android.content.Intent
@@ -10,11 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import kotlinx.android.synthetic.main.user_list_item.view.*
 import org.wycliffeassociates.translationrecorder.MainMenu
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
-import org.wycliffeassociates.translationrecorder.login.LoginActivity
+import org.wycliffeassociates.translationrecorder.databinding.UserListItemBinding
 import org.wycliffeassociates.translationrecorder.project.components.User
 
 
@@ -31,51 +30,52 @@ class UserAdapter(private val context: Activity, private val users: List<Pair<Us
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.user_list_item, parent, false))
+        val binding = UserListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val user = users[position]
         if (position == 0) {
-            holder?.newUserTxt?.visibility = View.VISIBLE
-            holder?.identicon?.setImageResource(R.drawable.ic_person_add_black_48dp)
-            holder?.playIcon?.visibility = View.INVISIBLE
-            holder?.identicon.rootView.setOnClickListener {
+            holder.newUserTxt.visibility = View.VISIBLE
+            holder.identicon.setImageResource(R.drawable.ic_person_add_black_48dp)
+            holder.playIcon.visibility = View.INVISIBLE
+            holder.identicon.rootView.setOnClickListener {
                 it.context.startActivity(Intent(it.context, LoginActivity::class.java))
                 (it.context as Activity).finish()
             }
         } else {
-            holder?.identicon?.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-            holder?.identicon?.setImageDrawable(user.second)
-            holder?.identicon.setOnClickListener(View.OnClickListener {
+            holder.identicon.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            holder.identicon.setImageDrawable(user.second)
+            holder.identicon.setOnClickListener {
                 Toast.makeText(it.context, "Identicon $position", Toast.LENGTH_LONG).show()
                 val pref = PreferenceManager.getDefaultSharedPreferences(context)
                 pref.edit().putInt(Settings.KEY_PROFILE, user.first.id).apply()
                 val mainActivityIntent = Intent(context, MainMenu::class.java)
                 context.startActivity(mainActivityIntent)
                 context.finish()
-            })
-            holder?.playIcon.setOnClickListener(View.OnClickListener {
-                if(!playing) {
+            }
+            holder.playIcon.setOnClickListener {
+                if (!playing) {
                     playing = true
-                    var player = MediaPlayer()
+                    val player = MediaPlayer()
                     player.setDataSource(users[position].first.audio.toString())
                     player.prepare()
                     player.setOnCompletionListener {
                         player.release()
                         playing = false
-                        holder?.playIcon.isActivated = false
+                        holder.playIcon.isActivated = false
                     }
                     player.start()
                 }
-            })
+            }
         }
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val identicon = view.identicon
-        val playIcon = view.playIcon
-        val newUserTxt = view.new_user_txt
+    class ViewHolder(binding: UserListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        val identicon = binding.identicon
+        val playIcon = binding.playIcon
+        val newUserTxt = binding.newUserTxt
     }
 
 }
