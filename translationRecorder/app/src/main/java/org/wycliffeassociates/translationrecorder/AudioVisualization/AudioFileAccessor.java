@@ -22,7 +22,6 @@ public class AudioFileAccessor {
     ShortBuffer mUncompressed;
     CutOp mCut;
     int mWidth;
-    int mUncmpToCmp;
     boolean mUseCmp = false;
 
     public AudioFileAccessor(ShortBuffer compressed, ShortBuffer uncompressed, CutOp cut) {
@@ -31,7 +30,7 @@ public class AudioFileAccessor {
         mCut = cut;
         mWidth = AudioInfo.SCREEN_WIDTH;
         //increment to write the compressed file. ~44 indices uncompressed = 2 compressed
-        mUseCmp = (compressed == null) ? false : true;
+        mUseCmp = compressed != null;
     }
 
     public void switchBuffers(boolean cmpReady) {
@@ -79,65 +78,17 @@ public class AudioFileAccessor {
         return mUncompressed.capacity() - mCut.getSizeFrameCutUncmp();
     }
 
-    //can return an invalid index, negative indices useful for how many zeros to add
-    //iterates backwards, checking if time hits a skip
-    //OPTIMIZE: optimize by subtracting exactly the times needed between this range, rather than for loop
-    public int[] indexAfterSubtractingTime(int timeToSubtractMs, int currentTimeMs, double numSecondsOnScreen) {
-        int time = currentTimeMs;
-        for (int i = 1; i < timeToSubtractMs; i++) {
-            time--;
-            int skip = mCut.skipReverse(mCut.timeToUncmpLoc(time));
-            if (skip != Integer.MAX_VALUE) {
-                time = (int)(skip / 44.1);
-                //System.out.println("here, skip back to " + time);
-            }
-        }
-        int loc = absoluteIndexFromAbsoluteTime(time);
-        loc = absoluteIndexToRelative(loc);
-        int locAndTime[] = new int[2];
+    public int[] indexAfterSubtractingFrame(int framesToSubtract, int currentFrame) {
+        int frame = currentFrame;
+        frame -= framesToSubtract;
+        int loc = frameToIndex(frame);
+        int[] locAndTime = new int[2];
         locAndTime[0] = loc;
-        locAndTime[1] = time;
+        locAndTime[1] = frame;
         return locAndTime;
     }
 
-    public int[] indexAfterSubtractingFrame(int framesToSubtract, int currentFrame){
-        int frame = currentFrame;
-        if(mCut.cutExistsInRange(currentFrame-framesToSubtract-1, framesToSubtract)) {
-            for (int i = 1; i < framesToSubtract; i++) {
-                frame--;
-                int skip = mCut.skipReverse(frame);
-                if (skip != Integer.MAX_VALUE) {
-                    frame = skip;
-                    //System.out.println("here, skip back to " + time);
-                }
-            }
-        } else {
-            frame -= framesToSubtract;
-        }
-        int loc = absoluteIndexFromAbsoluteTime(frame);
-        loc = absoluteIndexToRelative(loc);
-        int locAndTime[] = new int[2];
-        locAndTime[0] = loc;
-        locAndTime[1] = frame;
-        return locAndTime;    }
-
-    //deprecated
-//    public int indicesInAPixelMinimap() {
-//        //get the number of milliseconds in a pixel, map it to an absolute index, then convert to relative
-//        double fileInc = Math.round((AudioInfo.SAMPLERATE * AudioInfo.COMPRESSED_SECONDS_ON_SCREEN) / (double) AudioInfo.SCREEN_WIDTH) * 2;
-//        //int incUncmp = (int) Math.round(((AudioInfo.SAMPLERATE * mManager.getAdjustedDuration()) / (double) 1000) / (double) AudioInfo.SCREEN_WIDTH) * 2;
-//        int incCmp = (int) Math.round((incUncmp / (double) 44)) * 4;
-//        int increment = (mUseCmp) ? incCmp : incUncmp;
-//        return increment;
-//    }
-
-    public int absoluteIndexFromAbsoluteTime(int idx) {
-//        int seconds = timeMs / 1000;
-//        int ms = (timeMs - (seconds * 1000));
-//        int tens = ms / 10;
-//
-//
-//        int idx = (AudioInfo.SAMPLERATE * seconds) + (ms * 44) + (tens);
+    public int frameToIndex(int idx) {
         if (mUseCmp) {
             idx /= 25;
         }
@@ -158,16 +109,12 @@ public class AudioFileAccessor {
 
     //used for minimap
     public static double uncompressedIncrement(double adjustedDuration, double screenWidth) {
-        double increment = (adjustedDuration / screenWidth);
-        //increment = (increment % 2 == 0)? increment : increment+1;
-        return increment;
+        return (adjustedDuration / screenWidth);
     }
 
     //used for minimap
     public static double compressedIncrement(double adjustedDuration, double screenWidth) {
-        double increment = (uncompressedIncrement(adjustedDuration, screenWidth) / 25.f);
-        //increment = (increment % 2 == 0)? increment : increment+1;
-        return increment;
+        return (uncompressedIncrement(adjustedDuration, screenWidth) / 25.f);
     }
 
     //FIXME: rounding will compound error in long files, resulting in pixels being off

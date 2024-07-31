@@ -215,7 +215,7 @@ public class PlaybackActivity extends Activity implements
                     cue.getLocation()
             );
         }
-        if (cues.size() == 0) {
+        if (cues.isEmpty()) {
             mWaveformFragment.addVerseMarker(0, 0);
         }
     }
@@ -460,7 +460,6 @@ public class PlaybackActivity extends Activity implements
             DraggableMarker marker = markerList.get(i);
             if (marker.getFrame() <= relativeLoopEnd && marker.getFrame() > relativeLoopStart) {
                 if (marker instanceof VerseMarker) {
-                    //iter.remove();
                     mMarkerMediator.onRemoveVerseMarker(
                             ((VerseMarkerView) marker.getView()).getMarkerId()
                     );
@@ -871,7 +870,7 @@ public class PlaybackActivity extends Activity implements
 
     private void initializeRenderer() {
         try {
-            int numThreads = 4;
+            int numThreads = 1;
             ShortBuffer uncompressed = wavFileLoader.mapAndGetAudioBuffer();
             ShortBuffer compressed = wavFileLoader.mapAndGetVisualizationBuffer();
             wavVis = new WavVisualizer(
