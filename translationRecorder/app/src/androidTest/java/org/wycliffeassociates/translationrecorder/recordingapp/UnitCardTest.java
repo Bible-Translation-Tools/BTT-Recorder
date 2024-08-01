@@ -2,7 +2,7 @@ package org.wycliffeassociates.translationrecorder.recordingapp;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
-import android.test.suitebuilder.annotation.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 

@@ -30,8 +30,8 @@ public final class Screen {
     private static class Orientation {
         private static final int LANDSCAPE = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
         private static final int PORTRAIT = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        private static final int REVERSE_LANDSCAPE = 8; // ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-        private static final int REVERSE_PORTRAIT = 9; // ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+        private static final int REVERSE_LANDSCAPE = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+        private static final int REVERSE_PORTRAIT = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
         private static final int UNSPECIFIED = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
@@ -50,16 +50,10 @@ public final class Screen {
         final int rotation = display.getRotation();
 
         final int width, height;
-        if (Build.VERSION.SDK_INT >= 13) {
-            Point size = new Point();
-            display.getSize(size);
-            width = size.x;
-            height = size.y;
-        }
-        else {
-            width = display.getWidth();
-            height = display.getHeight();
-        }
+        Point size = new Point();
+        display.getSize(size);
+        width = size.x;
+        height = size.y;
 
         switch (rotation) {
             case Surface.ROTATION_90:

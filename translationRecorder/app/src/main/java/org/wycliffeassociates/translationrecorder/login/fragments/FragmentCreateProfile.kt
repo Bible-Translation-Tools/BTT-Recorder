@@ -9,8 +9,6 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import kotlinx.android.synthetic.main.fragment_create_profile.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,6 +18,7 @@ import org.wycliffeassociates.translationrecorder.Recording.RecordingQueues
 import org.wycliffeassociates.translationrecorder.Recording.WavFileWriter
 import org.wycliffeassociates.translationrecorder.Recording.WavRecorder
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform
+import org.wycliffeassociates.translationrecorder.databinding.FragmentCreateProfileBinding
 import org.wycliffeassociates.translationrecorder.login.interfaces.OnProfileCreatedListener
 import org.wycliffeassociates.translationrecorder.login.utils.convertWavToMp4
 import org.wycliffeassociates.translationrecorder.wav.WavFile
@@ -56,12 +55,15 @@ class FragmentCreateProfile : Fragment() {
     private lateinit var mRecordingWaveform: FragmentRecordingWaveform
     private lateinit var mRenderer: ActiveRecordingRenderer
 
+    private lateinit var binding: FragmentCreateProfileBinding
+
     private var isRecording = false
     private var mNewRecording: WavFile? = null
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        return inflater?.inflate(R.layout.fragment_create_profile, container, false)
+        binding = FragmentCreateProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onDestroy() {
@@ -72,14 +74,17 @@ class FragmentCreateProfile : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mRecordingWaveform = FragmentRecordingWaveform.newInstance()
-        btnRecord as Button
-        btnRecord.setOnClickListener {
-            (btnRecord.background as Animatable).start()
-            if (btnRecord.isActivated.not()) {
-                btnRecord.isActivated = true
-                startRecording()
+
+        with(binding) {
+            btnRecord.setOnClickListener {
+                (btnRecord.background as Animatable).start()
+                if (btnRecord.isActivated.not()) {
+                    btnRecord.isActivated = true
+                    startRecording()
+                }
             }
         }
+
         fragmentManager.beginTransaction().add(R.id.waveform_view, mRecordingWaveform).commit()
         mRenderer = ActiveRecordingRenderer(null, null, mRecordingWaveform)
     }
@@ -114,7 +119,7 @@ class FragmentCreateProfile : Fragment() {
         RecordingQueues.pauseQueues()
         RecordingQueues.stopQueues(activity)
         isRecording = false
-        btnRecord.isActivated = true
+        binding.btnRecord.isActivated = true
         convertAudio()
     }
 

@@ -13,20 +13,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageView
-import androidx.appcompat.widget.AppCompatImageButton
 import com.pixplicity.sharp.Sharp
 import jdenticon.Jdenticon
-import kotlinx.android.synthetic.main.fragment_review_profile.*
 import org.wycliffeassociates.translationrecorder.*
 import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer
 import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
 import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer
 import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.FragmentReviewProfileBinding
 import org.wycliffeassociates.translationrecorder.login.interfaces.OnRedoListener
 import org.wycliffeassociates.translationrecorder.project.components.User
 import org.wycliffeassociates.translationrecorder.wav.WavCue
@@ -35,6 +31,8 @@ import java.io.File
 import java.util.*
 
 class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
+    private lateinit var binding: FragmentReviewProfileBinding
+
     override fun onDrawWaveform(canvas: Canvas?, paint: Paint?) {
         if(mLayoutInitialized) {
             paint?.let {
@@ -69,62 +67,60 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
-        return inflater?.inflate(R.layout.fragment_review_profile, container, false)
+    ): View {
+        binding = FragmentReviewProfileBinding.inflate(inflater, container, false);
+        return binding.root
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        icon_hash as ImageView
-        renderIdenticon(hash, icon_hash)
-        btnRedo as Button
-        btnRedo.setOnClickListener {
-            onRedoListener?.let {
-                audio.delete()
-                audio.createNewFile()
-                onRedoListener.onRedo()
+
+        with(binding) {
+            renderIdenticon(hash, iconHash)
+            btnRedo.setOnClickListener {
+                onRedoListener.let {
+                    audio.delete()
+                    audio.createNewFile()
+                    onRedoListener.onRedo()
+                }
             }
-        }
-        btnYes as Button
-        btnYes.setOnClickListener {
-            val profilesDir = File(Environment.getExternalStorageDirectory(), "BTTRecorder/Profiles/")
-            if (profilesDir.exists().not()) {
-                profilesDir.mkdirs()
+            btnYes.setOnClickListener {
+                val profilesDir = File(Environment.getExternalStorageDirectory(), "BTTRecorder/Profiles/")
+                if (profilesDir.exists().not()) {
+                    profilesDir.mkdirs()
+                }
+                val newAudio = File(profilesDir.absolutePath + "/" + audio.name)
+                audio.renameTo(newAudio)
+                audio = newAudio
+                val user = User(audio, hash)
+                val db = (activity.application as TranslationRecorderApp).database
+                db.addUser(user)
+                val pref = PreferenceManager.getDefaultSharedPreferences(activity)
+                pref.edit().putInt(Settings.KEY_PROFILE, user.id).apply()
+                val mainActivityIntent = Intent(activity, MainMenu::class.java)
+                activity.startActivity(mainActivityIntent)
+                activity.finish()
             }
-            val newAudio = File(profilesDir.absolutePath + "/" + audio.name)
-            audio.renameTo(newAudio)
-            audio = newAudio
-            val user = User(audio, hash)
-            val db = (activity.application as TranslationRecorderApp).database
-            db.addUser(user)
-            val pref = PreferenceManager.getDefaultSharedPreferences(activity)
-            pref.edit().putInt(Settings.KEY_PROFILE, user.id).apply()
-            val mainActivityIntent = Intent(activity, MainMenu::class.java)
-            activity.startActivity(mainActivityIntent)
-            activity.finish()
+            mWaveformLayer = WaveformLayer.newInstance(activity, this@FragmentReviewProfile)
+            waveformFrame.addView(mWaveformLayer)
+            lateinit var layoutListener: ViewTreeObserver.OnGlobalLayoutListener
+            layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+                initializeRenderer()
+                mLayoutInitialized = true
+                mWaveformLayer.viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
+            }
+            mWaveformLayer.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+            btnPlay.setOnClickListener {
+                showPauseButton()
+                mPlayer.play()
+            }
+            btnPause.setOnClickListener {
+                showPlayButton()
+                mPlayer.pause()
+            }
+            audioTrack = (activity.application as TranslationRecorderApp).audioTrack
+            trackBufferSize = (activity.application as TranslationRecorderApp).trackBufferSize
         }
-        waveform_frame as FrameLayout
-        mWaveformLayer = WaveformLayer.newInstance(activity, this)
-        waveform_frame.addView(mWaveformLayer)
-        lateinit var layoutListener: ViewTreeObserver.OnGlobalLayoutListener
-        layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-            initializeRenderer()
-            mLayoutInitialized = true
-            mWaveformLayer.viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
-        }
-        mWaveformLayer.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
-        btn_play as AppCompatImageButton
-        btn_play.setOnClickListener {
-            showPauseButton()
-            mPlayer.play()
-        }
-        btn_pause as AppCompatImageButton
-        btn_pause.setOnClickListener {
-            showPlayButton()
-            mPlayer.pause()
-        }
-        audioTrack = (activity.application as TranslationRecorderApp).audioTrack
-        trackBufferSize = (activity.application as TranslationRecorderApp).trackBufferSize
     }
 
     private fun renderIdenticon(hash: String, view: ImageView) {
@@ -142,9 +138,9 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
                 uncompressed,
                 null,
                 numThreads,
-                waveform_frame.width,
-                waveform_frame.height,
-                waveform_frame.width,
+                binding.waveformFrame.width,
+                binding.waveformFrame.height,
+                binding.waveformFrame.width,
                 CutOp()
         )
         mPlayer = WavPlayer(audioTrack, trackBufferSize, uncompressed, CutOp(), LinkedList<WavCue>())
@@ -154,10 +150,10 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     }
 
     private fun showPauseButton() {
-        Utils.swapViews(arrayOf(btn_pause), arrayOf(btn_play))
+        Utils.swapViews(arrayOf(binding.btnPause), arrayOf(binding.btnPlay))
     }
 
     private fun showPlayButton() {
-        Utils.swapViews(arrayOf(btn_play), arrayOf(btn_pause))
+        Utils.swapViews(arrayOf(binding.btnPlay), arrayOf(binding.btnPause))
     }
 }

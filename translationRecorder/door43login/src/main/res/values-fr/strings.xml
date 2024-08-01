@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+<resources>
     <!-- The terms that users must agree with in order to use the app -->
-    <string name="terms_title">Conditions d\'utilisation</string>
+    <string name="terms_title">Conditions d’utilisation</string>
     <string name="terms">En utilisant cette application, vous acceptez la déclaration de foi et les directives de traduction et de publication de votre travail sous les termes de Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <string name="view_license_agreement">Contrat d\'accord</string>
+    <string name="view_license_agreement">Contrat d’accord</string>
     <string name="license_deny">Non merci</string>
     <string name="license_accept">J’accepte</string>
     <string name="view_statement_of_faith">Déclaration de foi</string>
     <string name="view_translation_guidelines">Directives de traduction</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license"><![CDATA[<h2>Creative Commons Paternité-Partage à l'identique 4. International</h2>
-<h3>Résumé lisible par l'homme</h3>
+    <string name="license"><![CDATA[<h2>Creative Commons Paternité-Partage à l’identique 4. International</h2>
+<h3>Résumé lisible par l’homme</h3>
 <p>The Creative Commons Attribution-Share Alike 4. La licence internationale est disponible à <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4. /</a></p>
-<h4>Ceci est un résumé lisible par l'homme (et non pas un substitut) de la licence</h4>
+<h4>Ceci est un résumé lisible par l’homme (et non pas un substitut) de la licence</h4>
 <br/>
 <h3>Vous êtes libre à:</h3>
-<br/><b>&#8226; Partager</b> - copiez et redistribuez le matériel dans n'importe quel support ou format
-<br/><b>&#8226; Adaptation</b> - remixez, transformer, et construire sur le matériel pour n'importe quel but, même commercialement.
+<br/><b>&#8226; Partager</b> - copiez et redistribuez le matériel dans n’importe quel support ou format
+<br/><b>&#8226; Adaptation</b> - remixez, transformer, et construire sur le matériel pour n’importe quel but, même commercialement.
 <p>Le concédant ne peut pas révoquer ces libertés tant que vous respectez les conditions de la licence.</p>
 <h3>Selon les conditions suivantes :</h3>
 <br/><b>&#8226; Attribution</b> - Vous devez donner un crédit approprié, fournir un lien vers la licence et indiquer si des changements ont été apportés. Vous pouvez le faire de quelque manière que ce soit, mais pas de quelque manière que ce soit qui suggère que le concédant vous approuve ou que vous utilisez.
-<br/><b><b>&#8226; Partage à l'identique</b> - Si vous remixez, transformez, ou construisez sur le matériel, vous devez distribuer vos contributions sous la même licence que l'original.
+<br/><b><b>&#8226; Partage à l’identique</b> - Si vous remixez, transformez, ou construisez sur le matériel, vous devez distribuer vos contributions sous la même licence que l’original.
 <br/><b>&#8226; Pas de restrictions supplémentaires</b> - Vous ne pouvez pas appliquer de conditions légales ou de mesures technologiques qui limitent légalement les autres à faire quoi que ce soit le permis de licence.</p>
 <h3>Avis :</h3>
-<p><br/>&#8226; Vous n'avez pas à vous conformer à la licence pour les éléments du matériel dans le domaine public ou lorsque votre utilisation est permise par une exception ou une limitation applicables.</p>
-<p><br/>&#8226; Aucune garantie n'est donnée. La licence peut ne pas vous donner toutes les autorisations nécessaires à votre utilisation prévue. Par exemple, d'autres droits tels que la publicité, la vie privée ou les droits moraux peuvent limiter la façon dont vous utilisez le matériel.</p>]]></string>
+<p><br/>&#8226; Vous n’avez pas à vous conformer à la licence pour les éléments du matériel dans le domaine public ou lorsque votre utilisation est permise par une exception ou une limitation applicables.</p>
+<p><br/>&#8226; Aucune garantie n’est donnée. La licence peut ne pas vous donner toutes les autorisations nécessaires à votre utilisation prévue. Par exemple, d’autres droits tels que la publicité, la vie privée ou les droits moraux peuvent limiter la façon dont vous utilisez le matériel.</p>]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines"><![CDATA[<h1>Directives de traduction</h1>
 <p>
-     <strong>Précise</strong> - Les traductions précises communiquent éfficacement le sens voulu du texte original, divinement inspiré. Une traduction précise exprime le sens voulu par l'auteur pour le public d'origine dans le contexte original.
+     <strong>Précise</strong> - Les traductions précises communiquent éfficacement le sens voulu du texte original, divinement inspiré. Une traduction précise exprime le sens voulu par l’auteur pour le public d’origine dans le contexte original.
     <p>
-        1.  Dans la mesure du possible, rien n'est ajouté, mal interprété ou supprimé du message original.
+        1.  Dans la mesure du possible, rien n’est ajouté, mal interprété ou supprimé du message original.
         <br/>2. Il ne reformule pas le sens du texte original pour le rendre plus pertinent pour le public contemporain.
         <br/>3.  Une traduction précise ne déforme pas le sens afin de favoriser une perspective interprétative specifique. Elle doit être exempte de tout préjugé théologique, culturel ou personnel.
         <br/>4. Une traduction précise communique les événements et les faits historiques avec exactitude.
@@ -48,13 +48,13 @@
       <strong>Naturelle</strong> - Les traductions naturelles utilisent des formes linguistiques qui reflètent la façon dont la langue cible est utilisée dans les contextes correspondants.
       <p>
         1.  Les traductions naturelles de la Bible doit se lire comme elles avaient été produites par un adult de langue maternelle qui parle et / ou écrit bien.
-        <br/>2. Une traduction naturelle de la Bible n'utilise pas d'expressions propres à leur propre culture afin de rendre la traduction naturelle.
-        <br/>3. Il est plus important qu'une partie de l'Écriture soit traduite avec précision que d'être parfaitement naturelle pour tous ceux qui la lisent.
+        <br/>2. Une traduction naturelle de la Bible n’utilise pas d’expressions propres à leur propre culture afin de rendre la traduction naturelle.
+        <br/>3. Il est plus important qu’une partie de l’Écriture soit traduite avec précision que d’être parfaitement naturelle pour tous ceux qui la lisent.
       </p>
 </p>
-<p> Nous pensons qu'une traduction a la plus grande probabilite d'être de bonne qualité lorsqu'après avoir appliqué les directives ci-dessus, les éléments suivants sont remplis: </p>
+<p> Nous pensons qu’une traduction a la plus grande probabilite d’être de bonne qualité lorsqu’après avoir appliqué les directives ci-dessus, les éléments suivants sont remplis: </p>
 <p>
-    1. Elle est testée et approuvée par les croyants de la communauté linguistique et par leur responsables d'église.
+    1. Elle est testée et approuvée par les croyants de la communauté linguistique et par leur responsables d’église.
     <br/>2. Des révisions et des améliorations continues sont apportées.
 </p>
 
@@ -69,9 +69,9 @@
 
 <p>Nous croyons que:</p>
 <ul>
-    <li>La Bible est divinement inspirée par Dieu et a l'autorité finale.</li>
+    <li>La Bible est divinement inspirée par Dieu et a l’autorité finale.</li>
     <li>Dieu est un et existe en trois personnes : Dieu le Père, Dieu le Fils et Dieu le Saint-Esprit.</li>
-    <li>À cause de la chute de l'homme, tous les humains sont pécheurs et ont besoin de salut.</li>
+    <li>À cause de la chute de l’homme, tous les humains sont pécheurs et ont besoin de salut.</li>
     <li>La mort de Christ est un substitut aux pécheurs et prévoit la purification de ceux qui croient.</li>
     <li>Par la grâce de Dieu, par la foi, l’homme reçoit le salut comme un don gratuit à cause de la mort et de la résurrection de Jésus.</li>
     <li>La résurrection de tous - les sauvés à la vie éternelle et les perdus au châtiment éternel.</li>

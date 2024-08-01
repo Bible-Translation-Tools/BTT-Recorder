@@ -255,4 +255,6 @@
     <string name="obs_book_48">48. Jesus Is the Promised Messiah</string>
     <string name="obs_book_49">49. God’s New Covenant</string>
     <string name="obs_book_50">50. Jesus Returns</string>
+
+    <string name="github_token" translatable="false">token</string>
 </resources>

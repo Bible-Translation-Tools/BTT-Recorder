@@ -6,9 +6,9 @@ import android.content.Context;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.BoundedMatcher;
+import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
 import androidx.recyclerview.widget.RecyclerView;
-import android.test.suitebuilder.annotation.LargeTest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
