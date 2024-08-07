@@ -88,11 +88,11 @@ public class AudioFileAccessor {
         return locAndTime;
     }
 
-    public int frameToIndex(int idx) {
+    public int frameToIndex(int frame) {
         if (mUseCmp) {
-            idx /= 25;
+            frame /= 25;
         }
-        return idx;
+        return frame;
     }
 
     public int relativeIndexToAbsolute(int idx) {
