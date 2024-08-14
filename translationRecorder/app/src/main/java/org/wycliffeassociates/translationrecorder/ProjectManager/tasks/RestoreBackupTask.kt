@@ -1,98 +1,80 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.tasks;
+package org.wycliffeassociates.translationrecorder.ProjectManager.tasks
 
-import android.content.Context;
-import android.net.Uri;
-import android.os.Environment;
-
-import com.door43.tools.reporting.Logger;
-
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.UUID;
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import com.door43.tools.reporting.Logger
+import net.lingala.zip4j.ZipFile
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.UUID
 
 /**
  * Created by sarabiaj on 9/27/2016.
  */
-public class RestoreBackupTask extends Task {
+class RestoreBackupTask(
+    taskTag: Int,
+    private val context: Context,
+    private val backupUri: Uri
+) : Task(taskTag) {
 
-    private static final String TAG = "RestoreBackupTask";
+    private val appDataDir get() = File(context.applicationInfo.dataDir)
+    private val userDataDir
+        get() = File(
+            Environment.getExternalStorageDirectory(),
+            context.resources.getString(R.string.folder_name)
+        )
 
-    private final Context context;
-
-    private final Uri backupUri;
-    private final File appDataDir;
-    private final File userDataDir;
-
-    public RestoreBackupTask(int taskTag, Context context, Uri backupUri) {
-        super(taskTag);
-
-        this.context = context;
-        this.backupUri = backupUri;
-        this.userDataDir = new File(
-                Environment.getExternalStorageDirectory(),
-                context.getResources().getString(R.string.folder_name)
-        );
-        this.appDataDir = new File(context.getApplicationInfo().dataDir);
-    }
-
-    @Override
-    public void run() {
-        String uuid = UUID.randomUUID().toString();
-        File tempZipFile = new File(context.getCacheDir(), uuid + ".zip");
+    override fun run() {
+        val uuid = UUID.randomUUID().toString()
+        val tempZipFile = File(context.cacheDir, "$uuid.zip")
 
         try {
-            try (InputStream inputStream = context.getContentResolver().openInputStream(backupUri)) {
-                try (OutputStream outputStream = new FileOutputStream(tempZipFile)) {
-                    byte[] buffer = new byte[1024];
-                    int length;
+            context.contentResolver.openInputStream(backupUri).use { inputStream ->
+                FileOutputStream(tempZipFile).use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var length: Int
                     while (true) {
-                        assert inputStream != null;
-                        if (!((length = inputStream.read(buffer)) > 0)) break;
-                        outputStream.write(buffer, 0, length);
+                        checkNotNull(inputStream)
+                        if (inputStream.read(buffer).also { length = it } <= 0) break
+                        outputStream.write(buffer, 0, length)
                     }
                 }
             }
-
-            try (ZipFile zipFile = new ZipFile(tempZipFile)) {
-                extractDirectory(zipFile, "user_data/", userDataDir);
-                extractDirectory(zipFile, "app_data/", appDataDir);
+            ZipFile(tempZipFile).use { zipFile ->
+                extractDirectory(zipFile, "user_data/", userDataDir)
+                extractDirectory(zipFile, "app_data/", appDataDir)
             }
-
-            tempZipFile.delete();
-        } catch (IOException e) {
-            Logger.e(TAG, e.getMessage(), e);
+            tempZipFile.delete()
+        } catch (e: IOException) {
+            Logger.e(RestoreBackupTask::class.toString(), e.message, e)
         }
 
-        onTaskCompleteDelegator();
+        onTaskCompleteDelegator()
     }
 
-    private void extractDirectory(ZipFile zipFile, String dirToExtract, File destDir) throws IOException {
-        for (FileHeader fileHeader : zipFile.getFileHeaders()) {
+    @Throws(IOException::class)
+    private fun extractDirectory(zipFile: ZipFile, dirToExtract: String, destDir: File) {
+        for (fileHeader in zipFile.fileHeaders) {
             // Check if the file is a child of the specified folder within the zip file
-            String filePathInZip = fileHeader.getFileName();
-            if (filePathInZip.startsWith(dirToExtract) && !filePathInZip.equals(dirToExtract)) {
+            val filePathInZip = fileHeader.fileName
+            if (filePathInZip.startsWith(dirToExtract) && filePathInZip != dirToExtract) {
                 // Calculate the relative path of the file by removing the parent folder path
-                String relativePath = filePathInZip.substring(dirToExtract.length());
+                val relativePath = filePathInZip.substring(dirToExtract.length)
 
                 // Construct the destination file path
-                File destFile = new File(destDir, relativePath);
+                val destFile = File(destDir, relativePath)
 
                 // Ensure the parent directories exist
-                if (fileHeader.isDirectory()) {
-                    destFile.mkdirs();
+                if (fileHeader.isDirectory) {
+                    destFile.mkdirs()
                 } else {
-                    destFile.getParentFile().mkdirs();
+                    destFile.parentFile?.mkdirs()
                     // Extract the file to the destination directory
-                    zipFile.extractFile(fileHeader, destFile.getParent(), destFile.getName());
+                    zipFile.extractFile(fileHeader, destFile.parent, destFile.name)
                 }
             }
         }

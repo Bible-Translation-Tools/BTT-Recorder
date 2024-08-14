@@ -62,7 +62,7 @@ public class ProjectListResyncTask extends Task implements ProjectDatabaseHelper
         File[] langs = root.listFiles();
         if (langs != null) {
             for(File lang : langs) {
-                if (!lang.isDirectory() || lang.getName().equals("Backups")) {
+                if (!lang.isDirectory()) {
                     continue;
                 }
                 File[] versions = lang.listFiles();
