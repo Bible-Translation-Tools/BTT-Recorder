@@ -1,12 +1,13 @@
 package org.wycliffeassociates.translationrecorder.FilesPage.Export;
 
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.progress.ProgressMonitor;
-import net.lingala.zip4j.util.Zip4jConstants;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -47,7 +48,7 @@ public class ZipProject {
                     ZipFile zipper = new ZipFile(outFile);
                     ZipParameters zp = new ZipParameters();
                     zipper.setRunInThread(true);
-                    zp.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
+                    zp.setCompressionLevel(CompressionLevel.ULTRA);
                     //zip.addFiles(files, zp);
                     final ProgressMonitor pm = zipper.getProgressMonitor();
                     if (mDirectory != null) {
@@ -57,7 +58,7 @@ public class ZipProject {
                     }
                     if (progressCallback != null) {
                         progressCallback.onStart(ZIP_PROJECT_ID);
-                        while (pm.getState() == ProgressMonitor.STATE_BUSY) {
+                        while (pm.getState() == ProgressMonitor.State.BUSY) {
                             progressCallback.setCurrentFile(ZIP_PROJECT_ID, pm.getFileName());
                             progressCallback.setUploadProgress(ZIP_PROJECT_ID, pm.getPercentDone());
                             Thread.sleep(PROGRESS_REFRESH_RATE);

@@ -57,6 +57,10 @@
     <string name="update_language_from_file">Update Languages From File</string>
     <string name="change_upload_server">Change Upload Server</string>
     <string name="change_languages_url">Change Languages Url</string>
+    <string name="updating_languages">Updating Languages</string>
+    <string name="backup_restore">Backup/Restore</string>
+    <string name="restoring_backup">Restoring from backup</string>
+    <string name="creating_backup">Creating backup</string>
     <string name="app_version">BTT Recorder Version</string>
     <string name="language_code_exists">Language code already exists!</string>
     <string name="language_code_length_tip">Language code must contain exactly 6 characters!</string>
@@ -66,6 +70,8 @@
     <string name="languages_updated">Languages successfully updated!</string>
     <string name="invalid_json">Invalid languages file</string>
     <string name="server_name">Server Name: </string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
     <string name="lang_url">URL: </string>
     <string name="restore_defaults">Restore</string>
     <string name="save">Save</string>

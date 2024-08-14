@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -13,7 +14,11 @@ import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.door43.tools.reporting.Logger;
+
+import org.wycliffeassociates.translationrecorder.MainMenu;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.SplashScreen;
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
@@ -54,6 +59,11 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
     public static final String KEY_PREF_UPLOAD_SERVER = "pref_upload_server";
     public static final String KEY_PREF_LANGUAGES_URL = "pref_languages_url";
 
+    public static final String KEY_PREF_BACKUP_RESTORE = "pref_backup_restore";
+
+    public static final int RESYNC_LANGUAGE_NAMES_TASK_TAG = 1;
+    public static final int BACKUP_TASK_TAG = 2;
+    public static final int RESTORE_TASK_TAG = 3;
 
     private String mSearchText;
     private FragmentManager mFragmentManager;
@@ -186,6 +196,15 @@ public class Settings extends AppCompatActivity implements TaskFragment.OnTaskCo
 
     @Override
     public void onTaskComplete(int taskTag, int resultCode) {
-
+        if (resultCode == TaskFragment.STATUS_OK) {
+            switch (taskTag) {
+                case RESTORE_TASK_TAG:
+                    Intent intent = new Intent(this, SplashScreen.class);
+                    startActivity(intent);
+                    this.finishAffinity();
+                    System.exit(0);
+                    break;
+            }
+        }
     }
 }

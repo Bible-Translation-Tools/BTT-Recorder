@@ -4,16 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 
 import org.wycliffeassociates.translationrecorder.project.Project;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by sarabiaj on 12/10/2015.
@@ -88,31 +86,23 @@ public class FolderExport extends Export{
          */
         public void savefile(Uri destUri, File zippedProject)
         {
-            BufferedInputStream bis = null;
-            BufferedOutputStream bos = null;
             try {
-                ParcelFileDescriptor destFilename = getContentResolver().openFileDescriptor(destUri, "w");
-                FileInputStream fis = new FileInputStream(zippedProject);
-                bis = new BufferedInputStream(fis);
-                FileOutputStream fos = new FileOutputStream(destFilename.getFileDescriptor());
-                bos = new BufferedOutputStream(fos);
-                byte[] buf = new byte[1024];
-                bis.read(buf);
-                do {
-                    bos.write(buf);
-                } while(bis.read(buf) != -1);
+                try (OutputStream outputStream = getContentResolver().openOutputStream(destUri)) {
+                    try (InputStream inputStream = new FileInputStream(zippedProject)) {
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = inputStream.read(buffer)) > 0) {
+                            assert outputStream != null;
+                            outputStream.write(buffer, 0, length);
+                        }
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    if (bis != null) bis.close();
-                    if (bos != null) bos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                zippedProject.delete();
-                this.finish();
             }
+
+            zippedProject.delete();
+            this.finish();
         }
 
         /**

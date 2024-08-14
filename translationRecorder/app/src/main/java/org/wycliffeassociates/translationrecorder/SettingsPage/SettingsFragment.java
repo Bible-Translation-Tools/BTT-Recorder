@@ -13,6 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.CreateBackupTask;
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.RestoreBackupTask;
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncLanguageNamesTask;
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
@@ -23,7 +27,8 @@ import org.wycliffeassociates.translationrecorder.R;
 /**
  * Created by leongv on 12/17/2015.
  */
-public class SettingsFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragment  implements SharedPreferences.OnSharedPreferenceChangeListener,
+        BackupRestoreDialog.BackupRestoreDialogListener {
 
     private int FILE_GET_REQUEST_CODE = 45;
 
@@ -32,6 +37,7 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
     ProjectDatabaseHelper db;
     private TaskFragment mTaskFragment;
     private String TAG_TASK_FRAGMENT = "tag_task_fragment";
+
 
     interface LanguageSelector{
         void sourceLanguageSelected();
@@ -58,71 +64,61 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
         }
 
         Preference sourceLanguageButton = findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC);
-        sourceLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                mParent.sourceLanguageSelected();
-                return true;
-            }
+        sourceLanguageButton.setOnPreferenceClickListener(preference -> {
+            mParent.sourceLanguageSelected();
+            return true;
         });
 
         Preference addTemporaryLanguageButton = findPreference(Settings.KEY_PREF_ADD_LANGUAGE);
-        addTemporaryLanguageButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    AddTargetLanguageDialog add = new AddTargetLanguageDialog();
-                    add.show(getFragmentManager(), "add");
-                    return false;
-                }
-            }
+        addTemporaryLanguageButton.setOnPreferenceClickListener(preference -> {
+            AddTargetLanguageDialog add = new AddTargetLanguageDialog();
+            add.show(getFragmentManager(), "add");
+            return false;
+        }
         );
 
         Preference updateLanguagesButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES);
-        updateLanguagesButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Preference updateLanguagesUrlPref = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_URL);
-                String updateLanguagesUrl = updateLanguagesUrlPref.getSummary().toString();
+        updateLanguagesButton.setOnPreferenceClickListener(preference -> {
+            Preference updateLanguagesUrlPref = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_URL);
+            String updateLanguagesUrl = updateLanguagesUrlPref.getSummary().toString();
 
-                mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db, updateLanguagesUrl),
-                        "Updating Languages",
-                        "Please wait...",
-                        true
-                );
-                return true;
-            }
+            mTaskFragment.executeRunnable(
+                    new ResyncLanguageNamesTask(Settings.RESYNC_LANGUAGE_NAMES_TASK_TAG, getActivity(), db, updateLanguagesUrl),
+                    getString(R.string.updating_languages),
+                    getString(R.string.please_wait),
+                    true
+            );
+            return true;
         });
 
         Preference updateLanguagesFromFileButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE);
-        updateLanguagesFromFileButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.setType("application/octet-stream");
-                startActivityForResult(intent, FILE_GET_REQUEST_CODE);
-                return true;
-            }
+        updateLanguagesFromFileButton.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.setType("application/octet-stream");
+            startActivityForResult(intent, FILE_GET_REQUEST_CODE);
+            return true;
         });
 
         Preference languagesUrlButton = findPreference(Settings.KEY_PREF_LANGUAGES_URL);
-        languagesUrlButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                LanguagesUrlDialog add = new LanguagesUrlDialog();
-                add.show(getFragmentManager(), "save");
-                return false;
-            }
+        languagesUrlButton.setOnPreferenceClickListener(preference -> {
+            LanguagesUrlDialog add = new LanguagesUrlDialog();
+            add.show(getFragmentManager(), "save");
+            return false;
         });
 
         Preference uploadServerButton = findPreference(Settings.KEY_PREF_UPLOAD_SERVER);
-        uploadServerButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                UploadServerDialog add = new UploadServerDialog();
-                add.show(getFragmentManager(), "save");
-                return false;
-            }
+        uploadServerButton.setOnPreferenceClickListener(preference -> {
+            UploadServerDialog add = new UploadServerDialog();
+            add.show(getFragmentManager(), "save");
+            return false;
+        });
+
+        Preference backupRestoreButton = findPreference(Settings.KEY_PREF_BACKUP_RESTORE);
+        backupRestoreButton.setOnPreferenceClickListener(preference -> {
+            BackupRestoreDialog dialog = new BackupRestoreDialog();
+            dialog.setListener(this);
+            dialog.show(getFragmentManager(), "backup");
+            return false;
         });
     }
 
@@ -132,13 +128,33 @@ public class SettingsFragment extends PreferenceFragment  implements SharedPrefe
             if (requestCode == FILE_GET_REQUEST_CODE) {
                 Uri uri = resultData.getData();
                 mTaskFragment.executeRunnable(
-                        new ResyncLanguageNamesTask(1, getActivity(), db, uri),
-                        "Updating Languages",
-                        "Please wait...",
+                        new ResyncLanguageNamesTask(Settings.RESYNC_LANGUAGE_NAMES_TASK_TAG, getActivity(), db, uri),
+                        getString(R.string.updating_languages),
+                        getString(R.string.please_wait),
                         true
                 );
             }
         }
+    }
+
+    @Override
+    public void onCreateBackup(@NonNull Uri backupUri) {
+        mTaskFragment.executeRunnable(
+                new CreateBackupTask(Settings.BACKUP_TASK_TAG, getActivity(), backupUri),
+                getString(R.string.creating_backup),
+                getString(R.string.please_wait),
+                true
+        );
+    }
+
+    @Override
+    public void onRestoreBackup(@NonNull Uri backupUri) {
+        mTaskFragment.executeRunnable(
+                new RestoreBackupTask(Settings.RESTORE_TASK_TAG, getActivity(), backupUri),
+                getString(R.string.restoring_backup),
+                getString(R.string.please_wait),
+                true
+        );
     }
 
     @Override
