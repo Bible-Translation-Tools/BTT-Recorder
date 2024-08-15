@@ -192,7 +192,7 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener,
         preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(mSharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(mSharedPreferences: SharedPreferences, key: String?) {
         updateSummaryText(mSharedPreferences, key)
     }
 
@@ -214,7 +214,7 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener,
         }
     }
 
-    private fun updateSummaryText(mSharedPreferences: SharedPreferences, key: String) {
+    private fun updateSummaryText(mSharedPreferences: SharedPreferences, key: String?) {
         try {
             updateSummariesSetViaActivities(mSharedPreferences)
             val text = mSharedPreferences.getString(key, "")
