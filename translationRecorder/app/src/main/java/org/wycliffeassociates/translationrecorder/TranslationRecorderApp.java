@@ -40,13 +40,20 @@ public class TranslationRecorderApp extends Application implements DirectoryProv
 
     private static Context context;
 
-    //some arbitrarily larger buffer
-    int minBufferSize = 10 * AudioTrack.getMinBufferSize(AudioInfo.SAMPLERATE,
-    AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+    int minBufferSize = AudioTrack.getMinBufferSize(
+            AudioInfo.SAMPLERATE,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+    );
 
-    AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, AudioInfo.SAMPLERATE,
-                            AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                            minBufferSize, AudioTrack.MODE_STREAM);
+    AudioTrack audioTrack = new AudioTrack(
+            AudioManager.STREAM_MUSIC,
+            AudioInfo.SAMPLERATE,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            minBufferSize,
+            AudioTrack.MODE_STREAM
+    );
 
     ProjectDatabaseHelper database = new ProjectDatabaseHelper(this);
 

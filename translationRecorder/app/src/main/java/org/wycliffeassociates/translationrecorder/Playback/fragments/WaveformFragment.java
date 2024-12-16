@@ -26,6 +26,7 @@ import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularH
 import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer;
 import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer;
 import org.wycliffeassociates.translationrecorder.R;
+import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableImageView;
 import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker;
 import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarker;
 import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarkerView;
@@ -61,7 +62,6 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
     private int mCurrentRelativeFrame;
     private WavVisualizer mWavVis;
     private int mCurrentMs;
-    private long mStart;
     private MediaController mMediaController;
     private int mCurrentAbsoluteFrame;
 
@@ -118,8 +118,6 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
         mFrame.addView(mHighlightLayer);
 
         int dpSize =  2;
-        DisplayMetrics dm = getResources().getDisplayMetrics() ;
-        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
 
         mPaintPlaback = new Paint();
         mPaintPlaback.setColor(getResources().getColor(R.color.primary));
@@ -165,7 +163,7 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
 
         int color =  getResources().getColor(R.color.dark_moderate_cyan);
         SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_startmarker_cyan, MarkerHolder.START_MARKER_ID, SectionMarkerView.Orientation.LEFT_MARKER, color, strokeWidth);
-        div.setX(div.mapLocationToScreenSpace(frame, mFrame.getWidth())-div.getWidth());
+        div.setX(DraggableImageView.mapLocationToScreenSpace(frame, mFrame.getWidth())-div.getWidth());
         mMarkerMediator.onAddStartSectionMarker(new SectionMarker(div, frame));
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
     }
@@ -177,7 +175,7 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
 
         int color =  getResources().getColor(R.color.dark_moderate_cyan);
         SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_endmarker_cyan, Gravity.BOTTOM, MarkerHolder.END_MARKER_ID, SectionMarkerView.Orientation.RIGHT_MARKER, color, strokeWidth);
-        div.setX(div.mapLocationToScreenSpace(frame, mFrame.getWidth()));
+        div.setX(DraggableImageView.mapLocationToScreenSpace(frame, mFrame.getWidth()));
         mMarkerMediator.onAddEndSectionMarker(new SectionMarker(div, frame));
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
     }
@@ -221,9 +219,8 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
             }
             d.drawMarkerLine(canvas);
         }
-        canvas.drawLine(mWaveformLayer.getWidth()/8, 0, mWaveformLayer.getWidth()/8, mWaveformLayer.getHeight(), mPaintPlaback);
-        canvas.drawLine(0, mWaveformLayer.getHeight()/2, mWaveformLayer.getWidth(), mWaveformLayer.getHeight()/2, mPaintBaseLine);
-        //System.out.println("Markers " + (System.currentTimeMillis() - mStart) + "ms");
+        canvas.drawLine((float) mWaveformLayer.getWidth() /8, 0, (float) mWaveformLayer.getWidth() /8, mWaveformLayer.getHeight(), mPaintPlaback);
+        canvas.drawLine(0, (float) mWaveformLayer.getHeight() /2, mWaveformLayer.getWidth(), (float) mWaveformLayer.getHeight() /2, mPaintBaseLine);
     }
 
     public void onDrawHighlight(Canvas canvas, Paint paint) {
@@ -231,22 +228,19 @@ public class WaveformFragment extends Fragment implements DraggableViewFrame.Pos
             canvas.drawRect(mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).getMarkerX(), 0,
                     mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).getMarkerX(), mFrame.getHeight(), paint);
         }
-        //System.out.println("Highlight (should be last):" + (System.currentTimeMillis() - mStart) + "ms");
     }
 
     @Override
     public void onDrawWaveform(Canvas canvas, Paint paint){
         if(mWavVis != null) {
-            canvas.drawLines(mWavVis.getDataToDraw(mCurrentAbsoluteFrame), paint);
+            canvas.drawLines(mWavVis.getDataToDraw(mCurrentRelativeFrame), paint);
         }
-        //System.out.println("Waveform: " + (System.currentTimeMillis() - mStart) + "ms");
     }
 
     public void invalidateFrame(int absoluteFrame, int relativeFrame, int ms) {
         mCurrentRelativeFrame = relativeFrame;
         mCurrentAbsoluteFrame = absoluteFrame;
         mCurrentMs = ms;
-        mStart = System.currentTimeMillis();
 
         mHandler.post(new Runnable() {
             @Override
