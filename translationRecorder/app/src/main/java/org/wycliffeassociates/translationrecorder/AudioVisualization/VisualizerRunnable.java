@@ -44,18 +44,14 @@ public class VisualizerRunnable implements Runnable {
         boolean wroteData = false;
         boolean resetIncrementNextIteration = false;
         float offset = 0;
-        int iterations = 0;
-        long startMs = 0;
-        long endMs = 0;
-        long sum = 0;
 
-        //startMs = System.currentTimeMillis();
         for(int i = mStart; i < mEnd; i++){
             if(startPosition > mAccessor.size()){
                 break;
             }
             mIndex = Math.max(WavVisualizer.addHighAndLowToDrawingArray(mAccessor, mSamples, startPosition, startPosition+(int)increment, mIndex, mScreenHeight), mIndex);
-            startPosition += Math.floor(increment);
+
+            startPosition += (int) Math.floor(increment);
             if(resetIncrementNextIteration){
                 resetIncrementNextIteration = false;
                 increment--;
@@ -65,24 +61,15 @@ public class VisualizerRunnable implements Runnable {
                 increment++;
                 resetIncrementNextIteration = true;
             }
-            offset += increment - Math.floor(increment);
+            offset += (float) (increment - Math.floor(increment));
 
-//            count += leftover;
-//            if(addedLeftover){
-//                addedLeftover = false;
-//                increment = (mUseCompressedFile)? increment - 0 : increment;
-//            }
             wroteData = true;
-            //sum += (endMs - startMs);
-            //iterations++;
         }
-       // endMs = System.currentTimeMillis();
-        //System.out.println("Average iteration took: " + (endMs-startMs) + " ns");
+
         try {
             mResponse.put((wroteData)? mIndex : 0);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return;
     }
 }

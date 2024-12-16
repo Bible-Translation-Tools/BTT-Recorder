@@ -13,6 +13,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -54,7 +55,6 @@ public class CutOp {
         }
     }
 
-
     public void clear() {
         try {
             mLock.writeLock();
@@ -75,7 +75,7 @@ public class CutOp {
     public void undo() {
         try {
             mLock.readLock();
-            if (mUncompressedFrameStack.size() == 0) {
+            if (mUncompressedFrameStack.isEmpty()) {
                 return;
             }
         } catch (InterruptedException e) {
@@ -101,11 +101,6 @@ public class CutOp {
         int max = -1;
         try {
             mLock.readLock();
-//            for (Pair<Integer, Integer> cut : mFlattenedFrameStack) {
-//                if (frame >= cut.first && frame < cut.second) {
-//                    max = Math.max(cut.second, max);
-//                }
-//            }
             for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
                 if (frame >= mFlattenedFrameStack.get(i).first && frame < mFlattenedFrameStack.get(i).second) {
                     max = Math.max(mFlattenedFrameStack.get(i).second, max);
@@ -123,8 +118,7 @@ public class CutOp {
     public boolean hasCut() {
         try {
             mLock.readLock();
-            boolean hasCut = mUncompressedFrameStack.size() > 0;
-            return hasCut;
+            return !mUncompressedFrameStack.isEmpty();
         } catch (InterruptedException e) {
             Logger.e(this.toString(), "Error trying to lock for a read in hasCut()", e);
             //TODO: think of better approach... needs to return but shouldn't return invalid info
@@ -138,11 +132,6 @@ public class CutOp {
         int min = Integer.MAX_VALUE;
         try {
             mLock.readLock();
-//            for (Pair<Integer, Integer> cut : mFlattenedFrameStack) {
-//                if (frame > cut.first && frame <= cut.second) {
-//                    min = Math.min(cut.first, min);
-//                }
-//            }
             for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
                 if (frame > mFlattenedFrameStack.get(i).first && frame <= mFlattenedFrameStack.get(i).second) {
                     min = Math.min(mFlattenedFrameStack.get(i).first, min);
@@ -177,10 +166,10 @@ public class CutOp {
         for (Pair<Integer, Integer> p : mUncompressedFrameStack) {
             copy.add(new Pair<>(p.first, p.second));
         }
-        Collections.sort(copy, new Comparator<Pair<Integer, Integer>>() {
+        Collections.sort(copy, new Comparator<>() {
             @Override
             public synchronized int compare(Pair<Integer, Integer> lhs, Pair<Integer, Integer> rhs) {
-                if (lhs.first == rhs.first) {
+                if (Objects.equals(lhs.first, rhs.first)) {
                     return 0;
                 } else if (lhs.first > rhs.first) {
                     return 1;
@@ -211,97 +200,17 @@ public class CutOp {
             for (int i = 1; i < list.size(); i++) {
                 end = (end < list.get(i).second) ? list.get(i).second : end;
             }
-            mFlattenedFrameStack.add(new Pair<Integer, Integer>(start, end));
+            mFlattenedFrameStack.add(new Pair<>(start, end));
             sum += end - start;
         }
         mSizeFrameCutUncmp = sum;
         return sum;
     }
 
-//    /**
-//     * Since the marker position takes into account total data played by audiotrack, the position
-//     * is agnostic of the "actual" position. This method computes the time to add back to it,
-//     * it takes the original time, looks to see if it's greater than or equal to a start cut. If so
-//     * it adds total time cut out, and adds this to time. Time is then compared to the next cut, and
-//     * the process is repeated. Break when the next cut takes place at a later time than we're at.
-//     * <p/>
-//     * mFlattenedFrameStack is a representation of the cut stack WITHOUT any nested cuts, and based on
-//     * the way it is computed, we can assume this list is sorted.
-//     *
-//     * @param frame location that was computed from BufferPlayer before considering cuts
-//     * @return inflated time accounting for cuts
-//     */
-//    public int frameAdjusted(int frame){
-//        mReaders.incrementAndGet();
-//        while(!mWriteRequest.compareAndSet(false,false));
-//        if(mFlattenedFrameStack == null) {
-//            mReaders.decrementAndGet();
-//            return frame;
-//        }
-//        for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-//            if (frame >= p.first) {
-//                frame += p.second - p.first;
-//            } else {
-//                break;
-//            }
-//        }
-//        mReaders.decrementAndGet();
-//        return frame;
-//    }
-//
-//    public int frameAdjusted(int frame, int playbackStart){
-//        mReaders.incrementAndGet();
-//        while(!mWriteRequest.compareAndSet(false,false));
-//        if(mFlattenedFrameStack == null) {
-//            mReaders.decrementAndGet();
-//            return frame;
-//        }
-//        for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-//            if (p.second > playbackStart) {
-//                if (frame >= p.first) {
-//                    frame += p.second - p.first;
-//                } else {
-//                    break;
-//                }
-//            }
-//        }
-//        mReaders.decrementAndGet();
-//        return frame;
-//    }
-//
-//    /**
-//     * Given an absolute time in the uncut waveform, this method
-//     * returns the adjusted time in the cut waveform.  The given
-//     * time must not be in an existing cut.
-//     *
-//     * @param frame a time in ms in the uncut waveform.  timeMs must not
-//     *               be in an existing cut.
-//     * @return the adjusted time in the cut waveform.
-//     */
-//    public synchronized int reverseFrameAdjusted(int frame){
-//        mReaders.incrementAndGet();
-//        while(!mWriteRequest.compareAndSet(false,false));
-//        if (mFlattenedFrameStack == null) {
-//            mReaders.decrementAndGet();
-//            return frame;
-//        }
-//        int adjustedFrame = frame;
-//        for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-//            if (frame >= p.second) {
-//                adjustedFrame -= p.second - p.first;
-//            } else {
-//                break;
-//            }
-//        }
-//        mReaders.decrementAndGet();
-//        return adjustedFrame;
-//    }
-
-
     //NOT THREAD SAFE make sure this function is called under a write lock
     private void generateTimeStack() {
         mSizeTimeCut = 0;
-        mTimeStack = new Vector<Pair<Integer, Integer>>();
+        mTimeStack = new Vector<>();
         for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
             Pair<Integer, Integer> y = new Pair<>(uncompressedFrameToTime(p.first), uncompressedFrameToTime(p.second));
             mTimeStack.add(y);
@@ -323,22 +232,19 @@ public class CutOp {
     //NOT THREAD SAFE make sure this function is called under a write lock
     private void generateCutStackCmpLoc() {
         mSizeFrameCutCmp = 0;
-        mCompressedFrameStack = new Vector<Pair<Integer, Integer>>();
+        mCompressedFrameStack = new Vector<>();
         for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
             Pair<Integer, Integer> y = new Pair<>(uncompressedToCompressed(p.first), uncompressedToCompressed(p.second));
             mCompressedFrameStack.add(y);
             mSizeFrameCutCmp += y.second - y.first;
         }
-
     }
 
     public static int timeToUncmpLoc(int timeMs) {
         int seconds = timeMs / 1000;
         int ms = (timeMs - (seconds * 1000));
         int tens = ms / 10;
-        int idx = (AudioInfo.SAMPLERATE * seconds) + (ms * 44) + (tens);
-        //idx *= 2;
-        return idx;
+        return (AudioInfo.SAMPLERATE * seconds) + (ms * 44) + (tens);
     }
 
     public static int timeToCmpLoc(int timeMs) {
@@ -347,7 +253,6 @@ public class CutOp {
         int tens = ms / 10;
         int idx = (AudioInfo.SAMPLERATE * seconds) + (ms * 44) + (tens);
         idx /= 25;
-        //idx *= 2;
         return idx;
     }
 
@@ -364,11 +269,6 @@ public class CutOp {
             int max = -1;
             mLock.readLock();
             Vector<Pair<Integer, Integer>> stack = (compressed) ? mCompressedFrameStack : mFlattenedFrameStack;
-//            for (Pair<Integer, Integer> cut : stack) {
-//                if (frame >= cut.first && frame < cut.second) {
-//                    max = Math.max(cut.second, max);
-//                }
-//            }
             for (int i = 0; i < stack.size(); i++) {
                 if (frame >= stack.get(i).first && frame < stack.get(i).second) {
                     max = Math.max(stack.get(i).second, max);
@@ -390,11 +290,6 @@ public class CutOp {
             if (stack == null) {
                 return frame;
             }
-//            for (Pair<Integer, Integer> cut : stack) {
-//                if (frame >= cut.first) {
-//                    frame += cut.second - cut.first;
-//                }
-//            }
             for (int i = 0; i < stack.size(); i++) {
                 if (frame >= stack.get(i).first) {
                     frame += stack.get(i).second - stack.get(i).first;
@@ -413,7 +308,6 @@ public class CutOp {
         if (hasCut()) {
             try {
                 mLock.readLock();
-                //for (Pair<Integer, Integer> cut : mFlattenedFrameStack) {
                 for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
                     //if the frame is in the middle of a cut
                     if (frame >= mFlattenedFrameStack.get(i).first && frame <= mFlattenedFrameStack.get(i).second) {
@@ -527,7 +421,6 @@ public class CutOp {
                     count--;
                 }
             }
-            return;
         } catch (InterruptedException e) {
             Logger.e(this.toString(), "Error trying to lock for a read in writeCut()", e);
             throw new RuntimeException(e);
