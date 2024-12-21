@@ -1,275 +1,239 @@
-package org.wycliffeassociates.translationrecorder.Recording.fragments;
+package org.wycliffeassociates.translationrecorder.Recording.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.UnitPicker;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-
-import java.io.IOException;
+import android.content.Context
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.door43.tools.reporting.Logger
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.UnitPicker.DIRECTION
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.FragmentRecordingFileBarBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import java.io.IOException
+import java.util.Locale
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
+@AndroidEntryPoint
+class FragmentRecordingFileBar : Fragment() {
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetProvider: AssetsProvider
 
-public class FragmentRecordingFileBar extends Fragment {
+    private lateinit var mProject: Project
+    private var mChunks: ChunkPlugin? = null
+    private var mChapter = ChunkPlugin.DEFAULT_CHAPTER
+    private var mUnit = ChunkPlugin.DEFAULT_UNIT
+    private var mHandler: Handler? = null
 
+    private var mOnUnitChangedListener: OnUnitChangedListener? = null
+    private var mMode: FragmentRecordingControls.Mode? = null
 
-    private static final String KEY_PROJECT = "key_project";
-    public static final String KEY_CHAPTER = "key_chapter";
-    public static final String KEY_UNIT = "key_unit";
+    private var _binding: FragmentRecordingFileBarBinding? = null
+    private val binding get() = _binding!!
 
-    private TextView mBookView;
-    private TextView mSourceView;
-    private TextView mLanguageView;
-    private UnitPicker mUnitPicker;
-    private UnitPicker mChapterPicker;
-    private TextView mChapterView;
-    private TextView mModeView;
-    private Project mProject;
-    private ChunkPlugin mChunks;
-    private int mChapter = ChunkPlugin.DEFAULT_CHAPTER;
-    private int mUnit = ChunkPlugin.DEFAULT_UNIT;
-    private Handler mHandler;
-    private ProjectDatabaseHelper db;
-
-    private OnUnitChangedListener mOnUnitChangedListener;
-    private FragmentRecordingControls.Mode mMode;
-
-    public interface OnUnitChangedListener {
-        void onUnitChanged(Project project, String fileName, int chapter);
+    interface OnUnitChangedListener {
+        fun onUnitChanged(project: Project, fileName: String, chapter: Int)
     }
 
-    public static FragmentRecordingFileBar newInstance(
-            Project project,
-            int chapter,
-            int unit,
-            FragmentRecordingControls.Mode mode
-    ) {
-        FragmentRecordingFileBar f = new FragmentRecordingFileBar();
-        Bundle args = new Bundle();
-        args.putParcelable(KEY_PROJECT, project);
-        args.putInt(KEY_CHAPTER, chapter);
-        args.putInt(KEY_UNIT, unit);
-        f.setArguments(args);
-        f.setMode(mode);
-        return f;
+    private fun setMode(mode: FragmentRecordingControls.Mode) {
+        mMode = mode
     }
 
-    private void setMode(FragmentRecordingControls.Mode mode) {
-        mMode = mode;
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        db = ((TranslationRecorderApp)activity.getApplication()).getDatabase();
-        if (activity instanceof OnUnitChangedListener) {
-            mOnUnitChangedListener = (OnUnitChangedListener) activity;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnUnitChangedListener) {
+            mOnUnitChangedListener = context
         } else {
-            throw new RuntimeException(
-                    "Attempted to attach activity which does not implement OnUnitChangedListener"
-            );
+            throw RuntimeException(
+                "Attempted to attach activity which does not implement OnUnitChangedListener"
+            )
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mOnUnitChangedListener = null;
+    override fun onDestroy() {
+        super.onDestroy()
+        mOnUnitChangedListener = null
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(
-            LayoutInflater inflater,
-            ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_recording_file_bar, container, false);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentRecordingFileBarBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mHandler = new Handler(Looper.getMainLooper());
-        findViews();
-        loadArgs(getArguments());
-        initializeViews();
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mHandler = Handler(Looper.getMainLooper())
+        loadArgs(arguments)
+        initializeViews()
         try {
-            initializePickers();
+            initializePickers()
             if (mMode == FragmentRecordingControls.Mode.INSERT_MODE) {
-                disablePickers();
+                disablePickers()
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Logger.e(this.toString(), "onViewCreate", e);
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Logger.e(this.toString(), "onViewCreate", e)
         }
     }
 
-    private void loadArgs(Bundle args) {
-        mProject = (Project) args.getParcelable(KEY_PROJECT);
-        mChapter = args.getInt(KEY_CHAPTER);
-        mUnit = args.getInt(KEY_UNIT);
+    private fun loadArgs(args: Bundle?) {
+        mProject = args?.getParcelable(KEY_PROJECT)!!
+        mChapter = args.getInt(KEY_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        mUnit = args.getInt(KEY_UNIT, ChunkPlugin.DEFAULT_UNIT)
     }
 
-    private void findViews() {
-        View view = getView();
-        mBookView = (TextView) view.findViewById(R.id.file_book);
-        mSourceView = (TextView) view.findViewById(R.id.file_project);
-        mLanguageView = (TextView) view.findViewById(R.id.file_language);
-        mUnitPicker = (UnitPicker) view.findViewById(R.id.unit_picker);
-        mChapterPicker = (UnitPicker) view.findViewById(R.id.chapter_picker);
-        mModeView = (TextView) view.findViewById(R.id.file_unit_label);
-        mChapterView = (TextView) view.findViewById(R.id.file_chapter_label);
-    }
-
-    private void initializeViews() {
+    private fun initializeViews() {
         //Logging to help track issue #669
-        if (mProject.getBookSlug().equals("")) {
-            Logger.e(this.toString(), "Project book is empty string " + mProject);
+        if (mProject.bookSlug == "") {
+            Logger.e(
+                this.toString(),
+                "Project book is empty string $mProject"
+            )
         }
 
-        String languageCode = mProject.getTargetLanguageSlug();
-        mLanguageView.setText(languageCode.toUpperCase());
-        mLanguageView.postInvalidate();
+        val languageCode = mProject.targetLanguageSlug
+        binding.fileLanguage.text = languageCode.uppercase(Locale.getDefault())
+        binding.fileLanguage.postInvalidate()
 
-        String bookName = mProject.getBookName();
-        mBookView.setText(bookName);
-        mBookView.postInvalidate();
+        val bookName = mProject.bookName
+        binding.fileBook.text = bookName
+        binding.fileBook.postInvalidate()
 
-        mModeView.setText(mProject.getLocalizedModeName(getActivity()));
-        mSourceView.setText(mProject.getVersionSlug().toUpperCase());
+        binding.fileUnitLabel.text = mProject.getLocalizedModeName(requireActivity())
+        binding.fileProject.text = mProject.versionSlug.uppercase(Locale.getDefault())
     }
 
-    private void initializePickers() throws IOException {
-        mChunks = mProject.getChunkPlugin(new ChunkPluginLoader(getActivity()));
-        mChunks.initialize(mChapter, mUnit);
-        String chapterLabel = mChunks.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
-        mChapterView.setText(chapterLabel);
-        initializeUnitPicker();
-        initializeChapterPicker();
+    @Throws(IOException::class)
+    private fun initializePickers() {
+        mChunks = mProject.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetProvider))
+        mChunks?.initialize(mChapter, mUnit)
+        val chapterLabel = if (mChunks?.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+        binding.fileChapterLabel.text = chapterLabel
+        initializeUnitPicker()
+        initializeChapterPicker()
     }
 
-    private void initializeChapterPicker() {
-        final String[] values = mChunks.getChapterDisplayLabels();
-        if (values != null && values.length > 0) {
-            mChapterPicker.setDisplayedValues(values);
-            mChapterPicker.setCurrent(mChunks.getChapterLabelIndex());
-            mChapterPicker.setOnValueChangedListener(new UnitPicker.OnValueChangeListener() {
-                @Override
-                public void onValueChange(
-                        UnitPicker picker,
-                        int oldVal,
-                        int newVal,
-                        UnitPicker.DIRECTION direction
-                ) {
-                    if (direction == UnitPicker.DIRECTION.INCREMENT) {
-                        mChunks.nextChapter();
-                    } else {
-                        mChunks.previousChapter();
-                    }
-                    mUnitPicker.setCurrent(0);
-                    initializeUnitPicker();
-                    mOnUnitChangedListener.onUnitChanged(
-                            mProject,
-                            mProject.getFileName(
-                                    mChunks.getChapter(),
-                                    mChunks.getStartVerse(),
-                                    mChunks.getEndVerse()
-                            ),
-                            mChunks.getChapter()
-                    );
-                }
-            });
-        } else {
-            Logger.e(this.toString(), "values was null or of zero length");
-        }
-    }
-
-    private void initializeUnitPicker() {
-        final String[] values = mChunks.getChunkDisplayLabels();
-        mUnitPicker.setDisplayedValues(values);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (values != null && values.length > 0) {
-                    mUnitPicker.setCurrent(mChunks.getStartVerseLabelIndex());
-                    mOnUnitChangedListener.onUnitChanged(
-                            mProject,
-                            mProject.getFileName(
-                                    mChunks.getChapter(),
-                                    mChunks.getStartVerse(),
-                                    mChunks.getEndVerse()
-                            ),
-                            mChunks.getChapter()
-                    );
-                    //reinitialize all of the filenames
-                    mUnitPicker.setOnValueChangedListener(new UnitPicker.OnValueChangeListener() {
-                        @Override
-                        public void onValueChange(
-                                UnitPicker picker,
-                                int oldVal,
-                                int newVal,
-                                UnitPicker.DIRECTION direction
-                        ) {
-                            if (direction == UnitPicker.DIRECTION.INCREMENT) {
-                                mChunks.nextChunk();
-                            } else {
-                                mChunks.previousChunk();
-                            }
-                            mOnUnitChangedListener.onUnitChanged(mProject,
-                                    mProject.getFileName(
-                                            mChunks.getChapter(),
-                                            mChunks.getStartVerse(),
-                                            mChunks.getEndVerse()
-                                    ),
-                                    mChunks.getChapter()
-                            );
-                        }
-                    });
+    private fun initializeChapterPicker() {
+        val values = mChunks?.chapterDisplayLabels
+        if (!values.isNullOrEmpty()) {
+            binding.chapterPicker.displayedValues = values
+            binding.chapterPicker.setCurrent(mChunks!!.chapterLabelIndex)
+            binding.chapterPicker.setOnValueChangedListener { picker, oldVal, newVal, direction ->
+                if (direction == DIRECTION.INCREMENT) {
+                    mChunks!!.nextChapter()
                 } else {
-                    Logger.e(this.toString(), "values was null or of zero length");
+                    mChunks!!.previousChapter()
                 }
+                binding.unitPicker.setCurrent(0)
+                initializeUnitPicker()
+                mOnUnitChangedListener!!.onUnitChanged(
+                    mProject,
+                    mProject.getFileName(
+                        mChunks!!.chapter,
+                        mChunks!!.startVerse,
+                        mChunks!!.endVerse
+                    ),
+                    mChunks!!.chapter
+                )
             }
-        });
+        } else {
+            Logger.e(this.toString(), "values was null or of zero length")
+        }
     }
 
-    public String getStartVerse() {
-        return String.valueOf(mChunks.getStartVerse());
+    private fun initializeUnitPicker() {
+        val values = mChunks?.chunkDisplayLabels
+        binding.unitPicker.displayedValues = values
+        mHandler!!.post {
+            if (!values.isNullOrEmpty()) {
+                binding.unitPicker.setCurrent(mChunks!!.startVerseLabelIndex)
+                mOnUnitChangedListener!!.onUnitChanged(
+                    mProject,
+                    mProject.getFileName(
+                        mChunks!!.chapter,
+                        mChunks!!.startVerse,
+                        mChunks!!.endVerse
+                    ),
+                    mChunks!!.chapter
+                )
+                //reinitialize all of the filenames
+                binding.unitPicker.setOnValueChangedListener { picker, oldVal, newVal, direction ->
+                    if (direction == DIRECTION.INCREMENT) {
+                        mChunks!!.nextChunk()
+                    } else {
+                        mChunks!!.previousChunk()
+                    }
+                    mOnUnitChangedListener!!.onUnitChanged(
+                        mProject,
+                        mProject.getFileName(
+                            mChunks!!.chapter,
+                            mChunks!!.startVerse,
+                            mChunks!!.endVerse
+                        ),
+                        mChunks!!.chapter
+                    )
+                }
+            } else {
+                Logger.e(this.toString(), "values was null or of zero length")
+            }
+        }
     }
 
-    public String getEndVerse() {
-        return String.valueOf(mChunks.getEndVerse());
+    val startVerse: String
+        get() = mChunks!!.startVerse.toString()
+
+    val endVerse: String
+        get() = mChunks!!.endVerse.toString()
+
+    val unit: Int
+        get() = mChunks!!.startVerse
+
+    val chapter: Int
+        get() = mChunks!!.chapter
+
+    fun disablePickers() {
+        binding.unitPicker.displayIncrementDecrement(false)
+        binding.chapterPicker.displayIncrementDecrement(false)
     }
 
-    public int getUnit() {
-        return mChunks.getStartVerse();
-    }
+    companion object {
+        private const val KEY_PROJECT = "key_project"
+        const val KEY_CHAPTER: String = "key_chapter"
+        const val KEY_UNIT: String = "key_unit"
 
-    public int getChapter() {
-        return mChunks.getChapter();
-    }
-
-    public void disablePickers() {
-        mUnitPicker.displayIncrementDecrement(false);
-        mChapterPicker.displayIncrementDecrement(false);
+        @JvmStatic
+        fun newInstance(
+            project: Project?,
+            chapter: Int,
+            unit: Int,
+            mode: FragmentRecordingControls.Mode
+        ): FragmentRecordingFileBar {
+            val f = FragmentRecordingFileBar()
+            val args = Bundle()
+            args.putParcelable(KEY_PROJECT, project)
+            args.putInt(KEY_CHAPTER, chapter)
+            args.putInt(KEY_UNIT, unit)
+            f.arguments = args
+            f.setMode(mode)
+            return f
+        }
     }
 }

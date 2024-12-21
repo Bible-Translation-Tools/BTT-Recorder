@@ -1,194 +1,187 @@
-package org.wycliffeassociates.translationrecorder.Recording.fragments;
+package org.wycliffeassociates.translationrecorder.Recording.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.RecordingTimer;
-import org.wycliffeassociates.translationrecorder.R;
-import com.door43.tools.reporting.Logger;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.AudioVisualization.RecordingTimer
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentRecordingControlsBinding
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
-
-public class FragmentRecordingControls extends Fragment {
-
-
-    public enum Mode {
+class FragmentRecordingControls : Fragment() {
+    enum class Mode {
         RECORDING_MODE,
-        INSERT_MODE;
+        INSERT_MODE
     }
 
-    private RelativeLayout mToolBar;
-    private TextView mTimerView;
-    RecordingTimer timer;
-    Handler mHandler;
-    RecordingControlCallback mRecordingControlCallback;
-    private boolean isRecording = false;
-    private boolean isPausedRecording = false;
-    private Mode mMode;
+    var timer: RecordingTimer? = null
+    lateinit var mHandler: Handler
+    var mRecordingControlCallback: RecordingControlCallback? = null
+    private var isRecording = false
+    private var isPausedRecording = false
+    private var mMode: Mode? = null
 
-    public interface RecordingControlCallback {
-        void onStartRecording();
-        void onPauseRecording();
-        void onStopRecording();
+    interface RecordingControlCallback {
+        fun onStartRecording()
+        fun onPauseRecording()
+        fun onStopRecording()
     }
 
-    public static FragmentRecordingControls newInstance(Mode mode){
-        FragmentRecordingControls f = new FragmentRecordingControls();
-        f.setMode(mode);
-        return f;
+    private fun setMode(mode: Mode) {
+        mMode = mode
     }
 
-    private void setMode(Mode mode){
-        mMode = mode;
-    }
+    private var _binding: FragmentRecordingControlsBinding? = null
+    private val binding get() = _binding!!
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if(activity instanceof RecordingControlCallback) {
-            mRecordingControlCallback = (RecordingControlCallback)activity;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is RecordingControlCallback) {
+            mRecordingControlCallback = context
         } else {
-            throw new RuntimeException("Attempted to attach to an activity" +
-                    " that does not implement RecordingControlCallback");
+            throw RuntimeException(
+                "Attempted to attach to an activity" +
+                        " that does not implement RecordingControlCallback"
+            )
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mRecordingControlCallback = null;
+    override fun onDestroy() {
+        super.onDestroy()
+        mRecordingControlCallback = null
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_recording_controls, container, false);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentRecordingControlsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mHandler = new Handler(Looper.getMainLooper());
-        findViews();
-        timer = new RecordingTimer();
-        if(mMode == Mode.INSERT_MODE) {
-            mToolBar.setBackgroundColor(getResources().getColor(R.color.secondary));
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mHandler = Handler(Looper.getMainLooper())
+        findViews()
+        timer = RecordingTimer()
+        if (mMode == Mode.INSERT_MODE) {
+            binding.toolbar.setBackgroundColor(resources.getColor(R.color.secondary))
         }
     }
 
-    private void findViews(){
-        View view = getView();
-        mTimerView = (TextView) view.findViewById(R.id.timer_view);
-        mToolBar = (RelativeLayout) view.findViewById(R.id.toolbar);
-        view.findViewById(R.id.btnRecording).setOnClickListener(btnClick);
-        view.findViewById(R.id.btnStop).setOnClickListener(btnClick);
-        view.findViewById(R.id.btnPauseRecording).setOnClickListener(btnClick);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    public void startTimer(){
-        timer.startTimer();
+    private fun findViews() {
+        binding.btnRecording.setOnClickListener(btnClick)
+        binding.btnStop.setOnClickListener(btnClick)
+        binding.btnPauseRecording.setOnClickListener(btnClick)
     }
 
-    public void pauseTimer(){
-        timer.pause();
+    fun startTimer() {
+        timer?.startTimer()
     }
 
-    public void resumeTimer(){
-        timer.resume();
+    fun pauseTimer() {
+        timer?.pause()
     }
 
-    public void updateTime() {
-        long t = timer.getTimeElapsed();
-        final String time = String.format("%02d:%02d:%02d", t / 3600000, (t / 60000) % 60, (t / 1000) % 60);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mTimerView.setText(time);
-                mTimerView.invalidate();
-            }
-        });
+    fun resumeTimer() {
+        timer?.resume()
     }
 
-    public void startRecording(){
-        isRecording = true;
-        if(!isPausedRecording) {
-            startTimer();
+    @SuppressLint("DefaultLocale")
+    fun updateTime() {
+        val t = timer!!.timeElapsed
+        val time = String.format("%02d:%02d:%02d", t / 3600000, (t / 60000) % 60, (t / 1000) % 60)
+        mHandler.post {
+            binding.timerView.text = time
+            binding.timerView.invalidate()
+        }
+    }
+
+    fun startRecording() {
+        isRecording = true
+        if (!isPausedRecording) {
+            startTimer()
         } else {
-            resumeTimer();
-            isPausedRecording = false;
+            resumeTimer()
+            isPausedRecording = false
         }
-        int toShow[] = {R.id.btnPauseRecording};
-        int toHide[] = {R.id.btnRecording, R.id.btnStop};
-        swapViews(toShow, toHide);
-        mRecordingControlCallback.onStartRecording();
+        val toShow = intArrayOf(R.id.btnPauseRecording)
+        val toHide = intArrayOf(R.id.btnRecording, R.id.btnStop)
+        swapViews(toShow, toHide)
+        mRecordingControlCallback?.onStartRecording()
     }
 
-    public void stopRecording(){
+    fun stopRecording() {
         if (isPausedRecording || isRecording) {
-            mRecordingControlCallback.onStopRecording();
-            isRecording = false;
-            isPausedRecording = false;
+            mRecordingControlCallback?.onStopRecording()
+            isRecording = false
+            isPausedRecording = false
         }
     }
 
-    public void pauseRecording(){
-        isPausedRecording = true;
-        isRecording = false;
-        pauseTimer();
-        int toShow[] = {R.id.btnRecording, R.id.btnStop};
-        int toHide[] = {R.id.btnPauseRecording};
-        swapViews(toShow, toHide);
-        mRecordingControlCallback.onPauseRecording();
+    fun pauseRecording() {
+        isPausedRecording = true
+        isRecording = false
+        pauseTimer()
+        val toShow = intArrayOf(R.id.btnRecording, R.id.btnStop)
+        val toHide = intArrayOf(R.id.btnPauseRecording)
+        swapViews(toShow, toHide)
+        mRecordingControlCallback?.onPauseRecording()
     }
 
-    public void swapViews(int[] toShow, int[] toHide) {
-        for (int v : toShow) {
-            View view = getView().findViewById(v);
+    fun swapViews(toShow: IntArray, toHide: IntArray) {
+        for (v in toShow) {
+            val view = binding.root.findViewById<View>(v)
             if (view != null) {
-                view.setVisibility(View.VISIBLE);
+                view.visibility = View.VISIBLE
             }
         }
-        for (int v : toHide) {
-            View view = getView().findViewById(v);
+        for (v in toHide) {
+            val view = binding.root.findViewById<View>(v)
             if (view != null) {
-                view.setVisibility(View.INVISIBLE);
+                view.visibility = View.INVISIBLE
             }
         }
     }
 
-    private View.OnClickListener btnClick = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.btnRecording: {
-                    Logger.w(this.toString(), "User pressed Record");
-                    startRecording();
-                    break;
-                }
-                case R.id.btnStop: {
-                    Logger.w(this.toString(), "User pressed Stop");
-                    stopRecording();
-                    break;
-                }
-                case R.id.btnPauseRecording: {
-                    Logger.w(this.toString(), "User pressed Pause");
-                    pauseRecording();
-                    break;
-                }
+    private val btnClick = View.OnClickListener { v ->
+        when (v.id) {
+            R.id.btnRecording -> {
+                Logger.w(this.toString(), "User pressed Record")
+                startRecording()
+            }
+            R.id.btnStop -> {
+                Logger.w(this.toString(), "User pressed Stop")
+                stopRecording()
+            }
+            R.id.btnPauseRecording -> {
+                Logger.w(this.toString(), "User pressed Pause")
+                pauseRecording()
             }
         }
-    };
+    }
+
+    companion object {
+        fun newInstance(mode: Mode): FragmentRecordingControls {
+            val f = FragmentRecordingControls()
+            f.setMode(mode)
+            return f
+        }
+    }
 }

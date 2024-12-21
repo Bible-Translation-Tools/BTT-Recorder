@@ -1,74 +1,58 @@
-package org.wycliffeassociates.translationrecorder.Recording.fragments;
+package org.wycliffeassociates.translationrecorder.Recording.fragments
 
-import android.app.Fragment;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.WaveformView;
-import org.wycliffeassociates.translationrecorder.R;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.databinding.FragmentRecordingWaveformBinding
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
+class FragmentRecordingWaveform : Fragment() {
+    private var _binding: FragmentRecordingWaveformBinding? = null
+    private val binding get() = _binding!!
 
-public class FragmentRecordingWaveform extends Fragment {
-
-    private WaveformView mainWave;
-    private Handler mHandler;
-
-    public static FragmentRecordingWaveform newInstance(){
-        FragmentRecordingWaveform f = new FragmentRecordingWaveform();
-        return f;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentRecordingWaveformBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_recording_waveform, container, false);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mHandler = new Handler(Looper.getMainLooper());
-        findViews();
+    fun updateWaveform(buffer: FloatArray?) {
+        binding.mainCanvas.setBuffer(buffer)
+        binding.mainCanvas.postInvalidate()
     }
 
-    private void findViews(){
-        View view = getView();
-        mainWave = (WaveformView) view.findViewById(R.id.main_canvas);
+    fun setDrawingFromBuffer(drawFromBuffer: Boolean) {
+        binding.mainCanvas.setDrawingFromBuffer(drawFromBuffer)
     }
 
-    public void updateWaveform(float[] buffer) {
-        mainWave.setBuffer(buffer);
-        mainWave.postInvalidate();
-    }
-
-    public void setDrawingFromBuffer(boolean drawFromBuffer) {
-        mainWave.setDrawingFromBuffer(drawFromBuffer);
-    }
-
-    public int getWidth(){
-        View view = getView();
-        if(view != null) {
-            return view.getWidth();
-        } else {
-            return 0;
+    val width: Int
+        get() {
+            val view = view
+            return view?.width ?: 0
         }
-    }
 
-    public int getHeight() {
-        View view = getView();
-        if(view != null) {
-            return view.getHeight();
-        } else {
-            return 0;
+    val height: Int
+        get() {
+            val view = view
+            return view?.height ?: 0
+        }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(): FragmentRecordingWaveform {
+            return FragmentRecordingWaveform()
         }
     }
 }

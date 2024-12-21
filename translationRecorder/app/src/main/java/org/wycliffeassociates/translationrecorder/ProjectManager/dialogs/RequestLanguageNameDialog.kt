@@ -1,66 +1,55 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs;
+package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs
 
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.os.Bundle;
-import androidx.appcompat.app.AlertDialog;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.R;
-
-import java.util.concurrent.BlockingQueue;
+import android.app.Dialog
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import org.wycliffeassociates.translationrecorder.databinding.DialogLanguageNotFoundBinding
+import java.util.concurrent.BlockingQueue
 
 /**
  * Created by sarabiaj on 12/14/2016.
  */
+class RequestLanguageNameDialog : DialogFragment() {
+    private var mCode: String? = null
+    private var mResponse: BlockingQueue<String>? = null
 
-public class RequestLanguageNameDialog extends DialogFragment{
-
-    private String mCode;
-    private BlockingQueue<String> mResponse;
-
-    public static RequestLanguageNameDialog newInstance(String languageCode, BlockingQueue<String> response) {
-        RequestLanguageNameDialog dialog = new RequestLanguageNameDialog();
-        dialog.setLanguageCode(languageCode);
-        dialog.setResponseQueue(response);
-        return dialog;
+    private fun setLanguageCode(code: String) {
+        mCode = code
     }
 
-    private void setLanguageCode(String code){
-        mCode = code;
+    private fun setResponseQueue(responseQueue: BlockingQueue<String>) {
+        mResponse = responseQueue
     }
 
-    private void setResponseQueue(BlockingQueue<String> responseQueue) {
-        mResponse = responseQueue;
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val builder = AlertDialog.Builder(requireActivity())
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_language_not_found, null);
+        val binding = DialogLanguageNotFoundBinding.inflate(layoutInflater)
 
-        final TextView languageCode = (TextView) view.findViewById(R.id.language_code);
-        final EditText languageName = (EditText) view.findViewById(R.id.language_name);
-        final Button addButton = (Button) view.findViewById(R.id.ok_button);
-
-        languageCode.setText(mCode);
-
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    mResponse.put(languageName.getText().toString());
-                    dismiss();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        binding.languageCode.text = mCode
+        binding.okButton.setOnClickListener {
+            try {
+                mResponse?.put(binding.languageName.text.toString())
+                dismiss()
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
-        });
+        }
 
-        builder.setView(view);
-        return builder.create();
+        builder.setView(view)
+        return builder.create()
+    }
+
+    companion object {
+        fun newInstance(
+            languageCode: String,
+            response: BlockingQueue<String>
+        ): RequestLanguageNameDialog {
+            val dialog = RequestLanguageNameDialog()
+            dialog.setLanguageCode(languageCode)
+            dialog.setResponseQueue(response)
+            return dialog
+        }
     }
 }

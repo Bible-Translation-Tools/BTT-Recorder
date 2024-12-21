@@ -1,282 +1,278 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-
-import org.wycliffeassociates.translationrecorder.Playback.SourceAudio;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.TimecodeLayer;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.widgets.AudioPlayer;
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.Playback.SourceAudio.OnAudioListener
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer.MarkerLineDrawDelegator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer.MinimapDrawDelegator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer.HighlightDelegator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer.OnTapListener
+import org.wycliffeassociates.translationrecorder.Playback.overlays.TimecodeLayer
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentTabbedWidgetBinding
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.project.Project
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 11/4/2016.
  */
+@AndroidEntryPoint
+class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDelegator,
+    OnTapListener, ScrollGestureLayer.OnScrollListener, HighlightDelegator {
 
-public class FragmentTabbedWidget extends Fragment implements MinimapLayer.MinimapDrawDelegator,
-        MarkerLineLayer.MarkerLineDrawDelegator, ScrollGestureLayer.OnTapListener, ScrollGestureLayer.OnScrollListener,
-        RectangularHighlightLayer.HighlightDelegator
-{
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var prefs: IPreferenceRepository
 
-    private static final String KEY_PROJECT = "key_project";
-    private static final String KEY_FILENAME = "key_filename";
-    private static final String KEY_CHAPTER = "key_chapter";
+    private lateinit var mLocationPaint: Paint
+    private lateinit var mSectionPaint: Paint
+    private lateinit var mVersePaint: Paint
 
-    private ImageButton mSwitchToMinimap;
-    private ImageButton mSwitchToPlayback;
-    private SourceAudio mSrcPlayer;
+    private var mViewCreatedCallback: ViewCreatedCallback? = null
+    private var mMediaController: MediaController? = null
+    private var mAudioListener: OnAudioListener? = null
 
-    private Paint mLocationPaint;
-    private Paint mSectionPaint;
-    private Paint mVersePaint;
+    private var mFilename: String = ""
+    private lateinit var mProject: Project
+    private var mChapter: Int = 0
 
-    ViewCreatedCallback mViewCreatedCallback;
-    MediaController mMediaController;
-    SourceAudio.OnAudioListener mAudioListener;
+    private var mTimecodeLayer: TimecodeLayer? = null
+    private var mMinimapDrawDelegator: MinimapDrawDelegator? = null
+    private var mMinimapLayer: MinimapLayer? = null
+    private var mMarkerLineLayer: MarkerLineLayer? = null
+    private var mGestureLayer: ScrollGestureLayer? = null
+    private var mMinimapLineDrawDelegator: DelegateMinimapMarkerDraw? = null
+    private var mHighlightLayer: RectangularHighlightLayer? = null
+    private var mMarkerMediator: MarkerMediator? = null
 
-    String mFilename = "";
-    Project mProject;
-    int mChapter = 0;
+    private var _binding: FragmentTabbedWidgetBinding? = null
+    private val binding get() = _binding!!
 
-    private FrameLayout mMinimapFrame;
-    private TimecodeLayer mTimecodeLayer;
-    private MinimapLayer.MinimapDrawDelegator mMinimapDrawDelegator;
-    private MinimapLayer mMinimapLayer;
-    private MarkerLineLayer mMarkerLineLayer;
-    private ScrollGestureLayer mGestureLayer;
-    private DelegateMinimapMarkerDraw mMinimapLineDrawDelegator;
-    private RectangularHighlightLayer mHighlightLayer;
-    private MarkerMediator mMarkerMediator;
-
-    public interface DelegateMinimapMarkerDraw {
-        void onDelegateMinimapMarkerDraw(Canvas canvas, Paint location, Paint section, Paint verse);
+    interface DelegateMinimapMarkerDraw {
+        fun onDelegateMinimapMarkerDraw(
+            canvas: Canvas,
+            location: Paint,
+            section: Paint,
+            verse: Paint
+        )
     }
 
-    public static FragmentTabbedWidget newInstance(MarkerMediator mediator, Project project, String filename, int chapter){
-        FragmentTabbedWidget f = new FragmentTabbedWidget();
-        Bundle args = new Bundle();
-        args.putParcelable(KEY_PROJECT, project);
-        args.putString(KEY_FILENAME, filename);
-        args.putInt(KEY_CHAPTER, chapter);
-        f.setArguments(args);
-        f.setMediator(mediator);
-        return f;
+    private fun setMediator(mediator: MarkerMediator?) {
+        mMarkerMediator = mediator
     }
 
-    private void setMediator(MarkerMediator mediator) {
-        mMarkerMediator = mediator;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mViewCreatedCallback = context as ViewCreatedCallback
+        mMediaController = context as MediaController
+        mMinimapDrawDelegator = context as MinimapDrawDelegator
+        mMinimapLineDrawDelegator = context as DelegateMinimapMarkerDraw
+        mAudioListener = context as OnAudioListener
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mViewCreatedCallback = (ViewCreatedCallback) activity;
-        mMediaController = (MediaController) activity;
-        mMinimapDrawDelegator = (MinimapLayer.MinimapDrawDelegator) activity;
-        mMinimapLineDrawDelegator = (DelegateMinimapMarkerDraw) activity;
-        mAudioListener = (SourceAudio.OnAudioListener) activity;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentTabbedWidgetBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_tabbed_widget, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        parseArgs(getArguments());
-        findViews();
-        initializePaints();
-        mViewCreatedCallback.onViewCreated(this);
-        if(!view.isInEditMode()){
-            mSrcPlayer.initSrcAudio(mProject, mFilename, mChapter);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        parseArgs(arguments)
+        initializePaints()
+        mViewCreatedCallback?.onViewCreated(this)
+        if (!view.isInEditMode) {
+            binding.srcAudioPlayer.initSrcAudio(mProject, mFilename, mChapter, directoryProvider, prefs)
         }
-        attachListeners();
-        mSwitchToMinimap.setSelected(true);
-        mTimecodeLayer = TimecodeLayer.newInstance(getActivity());
-        mMinimapLayer = MinimapLayer.newInstance(getActivity(), this);
-        mMarkerLineLayer = MarkerLineLayer.newInstance(getActivity(), this);
-        mGestureLayer = ScrollGestureLayer.newInstance(getActivity(), this, this);
-        mHighlightLayer = RectangularHighlightLayer.newInstance(getActivity(), this);
-        mMinimapFrame.addView(mMinimapLayer);
-        mMinimapFrame.addView(mTimecodeLayer);
-        mMinimapFrame.addView(mGestureLayer);
-        mMinimapFrame.addView(mMarkerLineLayer);
-        mMinimapFrame.addView(mHighlightLayer);
+        attachListeners()
+        binding.switchMinimap.isSelected = true
+        mTimecodeLayer = TimecodeLayer.newInstance(activity)
+        mMinimapLayer = MinimapLayer.newInstance(activity, this)
+        mMarkerLineLayer = MarkerLineLayer.newInstance(activity, this)
+        mGestureLayer = ScrollGestureLayer.newInstance(activity, this, this)
+        mHighlightLayer = RectangularHighlightLayer.newInstance(activity, this)
+        binding.minimap.addView(mMinimapLayer)
+        binding.minimap.addView(mTimecodeLayer)
+        binding.minimap.addView(mGestureLayer)
+        binding.minimap.addView(mMarkerLineLayer)
+        binding.minimap.addView(mHighlightLayer)
     }
 
-    private void initializePaints(){
-        mLocationPaint = new Paint();
-        mLocationPaint.setStyle(Paint.Style.STROKE);
-        mLocationPaint.setStrokeWidth(2f);
-        mLocationPaint.setColor(getResources().getColor(R.color.primary));
+    private fun initializePaints() {
+        mLocationPaint = Paint()
+        mLocationPaint.style = Paint.Style.STROKE
+        mLocationPaint.strokeWidth = 2f
+        mLocationPaint.color = resources.getColor(R.color.primary)
 
-        mSectionPaint = new Paint();
-        mSectionPaint.setColor(getResources().getColor(R.color.dark_moderate_cyan));
-        mSectionPaint.setStyle(Paint.Style.STROKE);
-        mSectionPaint.setStrokeWidth(2f);
+        mSectionPaint = Paint()
+        mSectionPaint.color = resources.getColor(R.color.dark_moderate_cyan)
+        mSectionPaint.style = Paint.Style.STROKE
+        mSectionPaint.strokeWidth = 2f
 
-        mVersePaint = new Paint();
-        mVersePaint.setColor(getResources().getColor(R.color.tertiary));
-        mVersePaint.setStyle(Paint.Style.STROKE);
-        mVersePaint.setStrokeWidth(2f);
+        mVersePaint = Paint()
+        mVersePaint.color = resources.getColor(R.color.tertiary)
+        mVersePaint.style = Paint.Style.STROKE
+        mVersePaint.strokeWidth = 2f
     }
 
-    public int getWidgetWidth(){
-        return getView().getWidth() - mSwitchToMinimap.getWidth();
+    val widgetWidth: Int
+        get() = binding.root.width - binding.switchMinimap.width
+
+    private fun parseArgs(args: Bundle?) {
+        mProject = args?.getParcelable(KEY_PROJECT)!!
+        mFilename = args.getString(KEY_FILENAME, "")
+        mChapter = args.getInt(KEY_CHAPTER, 0)
     }
 
-    void parseArgs(Bundle args){
-        mProject = args.getParcelable(KEY_PROJECT);
-        mFilename = args.getString(KEY_FILENAME);
-        mChapter = args.getInt(KEY_CHAPTER);
+    private fun attachListeners() {
+        binding.switchMinimap.setOnClickListener { v -> // TODO: Refactor? Maybe use radio button to select one and exclude the other?
+            v.isSelected = true
+            v.setBackgroundColor(Color.parseColor("#00000000"))
+            binding.minimap.visibility = View.VISIBLE
+            binding.srcAudioPlayer.visibility = View.INVISIBLE
+            binding.switchSourcePlayback.isSelected = false
+            binding.switchSourcePlayback.setBackgroundColor(resources.getColor(R.color.mostly_black))
+        }
+
+        binding.switchSourcePlayback.setOnClickListener { v ->
+            // TODO: Refactor? Maybe use radio button to select one and exclude the other?
+            v.isSelected = true
+            v.setBackgroundColor(Color.parseColor("#00000000"))
+            binding.srcAudioPlayer.visibility = View.VISIBLE
+            binding.minimap.visibility = View.INVISIBLE
+            binding.switchMinimap.isSelected = false
+            binding.switchMinimap.setBackgroundColor(resources.getColor(R.color.mostly_black))
+        }
+
+        binding.srcAudioPlayer.setSourceAudioListener(mAudioListener)
     }
 
-    void findViews(){
-        View view = getView();
-        mSwitchToMinimap = (ImageButton) view.findViewById(R.id.switch_minimap);
-        mSwitchToPlayback = (ImageButton) view.findViewById(R.id.switch_source_playback);
-        mSrcPlayer = (SourceAudio) view.findViewById(R.id.srcAudioPlayer);
-        mMinimapFrame = (FrameLayout) view.findViewById(R.id.minimap);
+    override fun onPause() {
+        super.onPause()
+        binding.srcAudioPlayer.pauseSource()
     }
 
-    void attachListeners(){
-        mSwitchToMinimap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Refactor? Maybe use radio button to select one and exclude the other?
-                v.setSelected(true);
-                v.setBackgroundColor(Color.parseColor("#00000000"));
-                mMinimapFrame.setVisibility(View.VISIBLE);
-                mSrcPlayer.setVisibility(View.INVISIBLE);
-                mSwitchToPlayback.setSelected(false);
-                mSwitchToPlayback.setBackgroundColor(getResources().getColor(R.color.mostly_black));
-            }
-        });
-
-        mSwitchToPlayback.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Refactor? Maybe use radio button to select one and exclude the other?
-                v.setSelected(true);
-                v.setBackgroundColor(Color.parseColor("#00000000"));
-                mSrcPlayer.setVisibility(View.VISIBLE);
-                mMinimapFrame.setVisibility(View.INVISIBLE);
-                mSwitchToMinimap.setSelected(false);
-                mSwitchToMinimap.setBackgroundColor(getResources().getColor(R.color.mostly_black));
-            }
-        });
-
-        mSrcPlayer.setSourceAudioListener(mAudioListener);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding.srcAudioPlayer.cleanup()
+        _binding = null
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        mSrcPlayer.pauseSource();
+    override fun onDestroy() {
+        super.onDestroy()
+        mViewCreatedCallback = null
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mSrcPlayer.cleanup();
-        mViewCreatedCallback = null;
+    fun initializeTimecode(durationMs: Int) {
+        mTimecodeLayer!!.setAudioLength(durationMs)
     }
 
-    public SourceAudio getSrcPlayer() {
-        return mSrcPlayer;
+    override fun onDelegateMinimapDraw(canvas: Canvas, paint: Paint): Boolean {
+        val success = mMinimapDrawDelegator!!.onDelegateMinimapDraw(canvas, paint)
+        if (!success) {
+            invalidateMinimap()
+            return false
+        }
+        return true
     }
 
-    public void initializeTimecode(int durationMs){
-        mTimecodeLayer.setAudioLength(durationMs);
+    fun invalidateMinimap() {
+        mMinimapLayer!!.invalidateMinimap()
     }
 
-    @Override
-    public boolean onDelegateMinimapDraw(Canvas canvas, Paint paint) {
-//        if(minimap == null) {
-//            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-//            minimap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), conf);
-//            Canvas temp = new Canvas(minimap);
-//            mPaint = new Paint();
-            boolean success =  mMinimapDrawDelegator.onDelegateMinimapDraw(canvas, paint);
-            if(!success){
-                invalidateMinimap();
-                return false;
-            }
-        //}
-        //canvas.drawBitmap(minimap, 0, 0, mPaint);
-        return true;
+    fun onLocationChanged() {
+        mMinimapLayer!!.postInvalidate()
+        initializeTimecode(mMediaController!!.durationMs)
+        mTimecodeLayer!!.postInvalidate()
+        mMarkerLineLayer!!.postInvalidate()
+        mHighlightLayer!!.postInvalidate()
     }
 
-    public void invalidateMinimap(){
-        mMinimapLayer.invalidateMinimap();
+    fun pauseSource() {
+        binding.srcAudioPlayer.pauseSource()
     }
 
-    public void onLocationChanged(){
-        mMinimapLayer.postInvalidate();
-        initializeTimecode(mMediaController.getDurationMs());
-        mTimecodeLayer.postInvalidate();
-        mMarkerLineLayer.postInvalidate();
-        mHighlightLayer.postInvalidate();
+    override fun onDrawMarkers(canvas: Canvas) {
+        mMinimapLineDrawDelegator?.onDelegateMinimapMarkerDraw(
+            canvas,
+            mLocationPaint,
+            mSectionPaint,
+            mVersePaint
+        )
     }
 
-    @Override
-    public void onDrawMarkers(Canvas canvas) {
-        mMinimapLineDrawDelegator.onDelegateMinimapMarkerDraw(canvas, mLocationPaint, mSectionPaint, mVersePaint);
-    }
-
-    @Override
-    public void onDrawHighlight(Canvas canvas, Paint paint) {
-        if(mMediaController.hasSetMarkers()) {
-            float left = (mMediaController.getStartMarkerFrame() / (float) mMediaController.getDurationInFrames()) * canvas.getWidth();
-            float right = (mMediaController.getEndMarkerFrame() / (float) mMediaController.getDurationInFrames()) * canvas.getWidth();
-            canvas.drawRect(left, 0, right, canvas.getHeight(), paint);
+    override fun onDrawHighlight(canvas: Canvas, paint: Paint) {
+        if (mMediaController!!.hasSetMarkers()) {
+            val left =
+                (mMediaController!!.startMarkerFrame / mMediaController!!.durationInFrames.toFloat()) * canvas.width
+            val right =
+                (mMediaController!!.endMarkerFrame / mMediaController!!.durationInFrames.toFloat()) * canvas.width
+            canvas.drawRect(left, 0f, right, canvas.height.toFloat(), paint)
         }
     }
 
-    @Override
-    public void onScroll(float rawX1, float rawX2, float distX) {
-        if(mMediaController.isInEditMode()) {
-            if (rawX1 > rawX2) {
-                float temp = rawX2;
-                rawX2 = rawX1;
-                rawX1 = temp;
+    override fun onScroll(rawX1: Float, rawX2: Float, distX: Float) {
+        var x1 = rawX1
+        var x2 = rawX2
+        if (mMediaController!!.isInEditMode) {
+            if (x1 > x2) {
+                val temp = x2
+                x2 = x1
+                x1 = temp
             }
-            mMediaController.setStartMarkerAt((int) (rawX1 / (float) getWidgetWidth() * mMediaController.getDurationInFrames()));
-            mMediaController.setEndMarkerAt((int) (rawX2 / (float) getWidgetWidth() * mMediaController.getDurationInFrames()));
-            mMarkerMediator.updateStartMarkerFrame(mMediaController.getStartMarkerFrame());
-            mMarkerMediator.updateEndMarkerFrame(mMediaController.getEndMarkerFrame());
-            onLocationChanged();
+            mMediaController!!.setStartMarkerAt((x1 / widgetWidth.toFloat() * mMediaController!!.durationInFrames).toInt())
+            mMediaController!!.setEndMarkerAt((x2 / widgetWidth.toFloat() * mMediaController!!.durationInFrames).toInt())
+            mMarkerMediator!!.updateStartMarkerFrame(mMediaController!!.startMarkerFrame)
+            mMarkerMediator!!.updateEndMarkerFrame(mMediaController!!.endMarkerFrame)
+            onLocationChanged()
         }
     }
 
-    @Override
-    public void onScrollComplete() {}
+    override fun onScrollComplete() {}
 
-    @Override
-    public void onTap(float x) {
-        mMediaController.onSeekTo((x/(float)getWidgetWidth()));
+    override fun onTap(x: Float) {
+        mMediaController!!.onSeekTo((x / widgetWidth.toFloat()))
     }
 
-    public void invalidate(int ms) {
+    companion object {
+        private const val KEY_PROJECT = "key_project"
+        private const val KEY_FILENAME = "key_filename"
+        private const val KEY_CHAPTER = "key_chapter"
 
+        fun newInstance(
+            mediator: MarkerMediator?,
+            project: Project?,
+            filename: String?,
+            chapter: Int
+        ): FragmentTabbedWidget {
+            val f = FragmentTabbedWidget()
+            val args = Bundle()
+            args.putParcelable(KEY_PROJECT, project)
+            args.putString(KEY_FILENAME, filename)
+            args.putInt(KEY_CHAPTER, chapter)
+            f.arguments = args
+            f.setMediator(mediator)
+            return f
+        }
     }
 }

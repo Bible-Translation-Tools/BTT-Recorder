@@ -31,11 +31,7 @@ abstract class PermissionActivity : AppCompatActivity() {
         super.onResume()
         requestingPermission.set(true)
         Dexter.withActivity(this)
-                .withPermissions(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+                .withPermissions(Manifest.permission.RECORD_AUDIO)
                 .withListener(
                         object : MultiplePermissionsListener {
                             override fun onPermissionsChecked(report: MultiplePermissionsReport) {
@@ -47,7 +43,6 @@ abstract class PermissionActivity : AppCompatActivity() {
                                     presentPermissionDialog()
                                 }
                             }
-
                             override fun onPermissionRationaleShouldBeShown(
                                     permissions: List<PermissionRequest>,
                                     token: PermissionToken)

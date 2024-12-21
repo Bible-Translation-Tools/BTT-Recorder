@@ -2,10 +2,9 @@ package org.wycliffeassociates.translationrecorder.ProjectManager.tasks
 
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import com.door43.tools.reporting.Logger
 import net.lingala.zip4j.ZipFile
-import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import java.io.File
 import java.io.FileOutputStream
@@ -18,19 +17,13 @@ import java.util.UUID
 class RestoreBackupTask(
     taskTag: Int,
     private val context: Context,
-    private val backupUri: Uri
+    private val backupUri: Uri,
+    private val directoryProvider: IDirectoryProvider
 ) : Task(taskTag) {
-
-    private val appDataDir get() = File(context.applicationInfo.dataDir)
-    private val userDataDir
-        get() = File(
-            Environment.getExternalStorageDirectory(),
-            context.resources.getString(R.string.folder_name)
-        )
 
     override fun run() {
         val uuid = UUID.randomUUID().toString()
-        val tempZipFile = File(context.cacheDir, "$uuid.zip")
+        val tempZipFile = File(directoryProvider.internalCacheDir, "$uuid.zip")
 
         try {
             context.contentResolver.openInputStream(backupUri).use { inputStream ->
@@ -45,8 +38,8 @@ class RestoreBackupTask(
                 }
             }
             ZipFile(tempZipFile).use { zipFile ->
-                extractDirectory(zipFile, "user_data/", userDataDir)
-                extractDirectory(zipFile, "app_data/", appDataDir)
+                extractDirectory(zipFile, "user_data/", directoryProvider.externalAppDir)
+                extractDirectory(zipFile, "app_data/", directoryProvider.internalAppDir)
             }
             tempZipFile.delete()
         } catch (e: IOException) {

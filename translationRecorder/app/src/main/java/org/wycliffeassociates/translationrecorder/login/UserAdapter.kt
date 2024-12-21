@@ -4,15 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
-import android.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import org.wycliffeassociates.translationrecorder.MainMenu
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
 import org.wycliffeassociates.translationrecorder.databinding.UserListItemBinding
 import org.wycliffeassociates.translationrecorder.project.components.User
 
@@ -21,7 +17,10 @@ import org.wycliffeassociates.translationrecorder.project.components.User
 /**
  * Created by Dilip Maharjan on 05/01/2018
  */
-class UserAdapter(private val context: Activity, private val users: List<Pair<User, Drawable>>) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
+class UserAdapter(
+    private val users: List<Pair<User, Drawable>>,
+    private val onItemClick: (User, Int) -> Unit
+) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
 
     private var playing = false
 
@@ -30,7 +29,8 @@ class UserAdapter(private val context: Activity, private val users: List<Pair<Us
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = UserListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = UserListItemBinding.inflate(inflater, parent, false)
         return ViewHolder(binding)
     }
 
@@ -48,12 +48,7 @@ class UserAdapter(private val context: Activity, private val users: List<Pair<Us
             holder.identicon.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             holder.identicon.setImageDrawable(user.second)
             holder.identicon.setOnClickListener {
-                Toast.makeText(it.context, "Identicon $position", Toast.LENGTH_LONG).show()
-                val pref = PreferenceManager.getDefaultSharedPreferences(context)
-                pref.edit().putInt(Settings.KEY_PROFILE, user.first.id).apply()
-                val mainActivityIntent = Intent(context, MainMenu::class.java)
-                context.startActivity(mainActivityIntent)
-                context.finish()
+                onItemClick.invoke(user.first, position)
             }
             holder.playIcon.setOnClickListener {
                 if (!playing) {

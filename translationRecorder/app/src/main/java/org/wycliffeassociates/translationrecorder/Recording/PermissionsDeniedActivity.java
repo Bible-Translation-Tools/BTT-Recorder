@@ -32,12 +32,7 @@ public class PermissionsDeniedActivity extends Activity {
             }
         });
         AlertDialog dialog = d.create();
-        d.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                finish();
-            }
-        });
+        d.setOnDismissListener(dialogInterface -> finish());
         d.show();
     }
 

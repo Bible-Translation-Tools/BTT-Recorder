@@ -1,152 +1,131 @@
-package org.wycliffeassociates.translationrecorder.project.adapters;
+package org.wycliffeassociates.translationrecorder.project.adapters
+
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Filter
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentScrollListItemBinding
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import java.util.Locale
 
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+class TargetLanguageAdapter(
+    targetLanguages: List<Language>,
+    ctx: Context
+) : ArrayAdapter<Any?>(ctx, R.layout.fragment_scroll_list_item) {
+    private val languages: ArrayList<Language> = arrayListOf()
+    private val filteredLanguages: ArrayList<Language> = arrayListOf()
+    private var languageFilter: LanguageFilter? = null
 
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-/**
- * Created by joel on 9/4/2015.
- */
-public class TargetLanguageAdapter extends ArrayAdapter {
-    private Language[] mLanguages;
-    private Language[] mFilteredLanguages;
-    private LanguageFilter mLanguageFilter;
-
-    public TargetLanguageAdapter(Language[] targetLanguages, Context ctx) {
-        super(ctx, R.layout.fragment_scroll_list_item);
-        List<Language> targetLanguagesList = Arrays.asList(targetLanguages);
-        Collections.sort(targetLanguagesList);
-        mLanguages = targetLanguagesList.toArray(new Language[targetLanguagesList.size()]);
-        mFilteredLanguages = mLanguages;
+    init {
+        languages.clear()
+        languages.addAll(targetLanguages.sorted())
+        filteredLanguages.clear()
+        filteredLanguages.addAll(languages)
     }
 
+    override fun getCount(): Int {
+        return filteredLanguages.size
+    }
 
-    @Override
-    public int getCount() {
-        if(mFilteredLanguages != null) {
-            return mFilteredLanguages.length;
+    override fun getItem(position: Int): Language? {
+        return filteredLanguages.getOrNull(position)
+    }
+
+    override fun getItemId(position: Int): Long {
+        return 0
+    }
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val context = parent.context
+        val holder: ViewHolder
+        val binding: FragmentScrollListItemBinding
+        if (convertView == null) {
+            binding = FragmentScrollListItemBinding.inflate(LayoutInflater.from(context))
+            holder = ViewHolder(binding)
         } else {
-            return 0;
-        }
-    }
-
-    @Override
-    public Language getItem(int position) {
-        return mFilteredLanguages[position];
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
-        ViewHolder holder;
-
-        if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_scroll_list_item, null);
-            holder = new ViewHolder(v);
-        } else {
-            holder = (ViewHolder)v.getTag();
+            holder = convertView.tag as ViewHolder
         }
 
-        // render view
-        holder.mLanguageView.setText(getItem(position).getName());
-        holder.mCodeView.setText(getItem(position).getSlug());
+        holder.bind(position)
 
-
-        LinearLayout ll = (LinearLayout)v.findViewById(R.id.scroll_list_item_layout);
-        ll.removeView(ll.findViewById(R.id.itemIcon));
-        LinearLayout rmll = (LinearLayout)ll.findViewById(R.id.rightmost_scroll_list_item_layout);
-        rmll.removeView((rmll.findViewById(R.id.moreIcon)));
-
-
-        return v;
-    }
-
-    @Override
-    public void notifyDataSetChanged(){
-        super.notifyDataSetChanged();
+        return holder.binding.root
     }
 
     /**
      * Returns the target language filter
      * @return
      */
-    public Filter getFilter() {
-        if(mLanguageFilter == null) {
-            mLanguageFilter = new LanguageFilter();
+    override fun getFilter(): Filter {
+        if (languageFilter == null) {
+            languageFilter = LanguageFilter()
         }
-        return mLanguageFilter;
+        return languageFilter!!
     }
 
-    public static class ViewHolder {
-        public TextView mLanguageView;
-        public TextView mCodeView;
-
-        public ViewHolder(View view) {
-            mLanguageView = (TextView) view.findViewById(R.id.majorText);
-            mCodeView = (TextView) view.findViewById(R.id.minorText);
-            view.setTag(this);
-        }
-    }
-
-    private class LanguageFilter extends Filter {
-
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            FilterResults results = new FilterResults();
-            if(charSequence == null || charSequence.length() == 0) {
+    private inner class LanguageFilter : Filter() {
+        override fun performFiltering(charSequence: CharSequence?): FilterResults {
+            val results = FilterResults()
+            if (charSequence.isNullOrEmpty()) {
                 // no filter
-                results.values = Arrays.asList(mLanguages);
-                results.count = mLanguages.length;
+                results.values = languages
+                results.count = languages.size
             } else {
                 // perform filter
-                List<Language> filteredCategories = new ArrayList<>();
-                for(Language language:mLanguages) {
+                val filteredCategories: MutableList<Language> = ArrayList()
+                for (language in languages) {
                     // match the target language id
-                    boolean match = language.getSlug().toLowerCase().startsWith(charSequence.toString().toLowerCase());
-                    if(!match) {
-                        if (language.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                    var match = language.slug.lowercase(Locale.getDefault()).startsWith(
+                        charSequence.toString().lowercase(
+                            Locale.getDefault()
+                        )
+                    )
+                    if (!match) {
+                        if (language.name.lowercase(Locale.getDefault()).startsWith(
+                                charSequence.toString().lowercase(
+                                    Locale.getDefault()
+                                )
+                            )
+                        ) {
                             // match the target language name
-                            match = true;
+                            match = true
                         }
                     }
-                    if(match) {
-                        filteredCategories.add(language);
+                    if (match) {
+                        filteredCategories.add(language)
                     }
                 }
-                results.values = filteredCategories;
-                results.count = filteredCategories.size();
+                results.values = filteredCategories
+                results.count = filteredCategories.size
             }
-            return results;
+            return results
         }
 
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<Language> filteredLanguages = (List<Language>)filterResults.values;
-            if(charSequence != null && charSequence.length() > 0) {
-                sortLanguages(filteredLanguages, charSequence);
+        override fun publishResults(charSequence: CharSequence?, filterResults: FilterResults) {
+            var filteredLanguages = filterResults.values as List<Language>
+            if (!charSequence.isNullOrEmpty()) {
+                filteredLanguages = sortedLanguages(filteredLanguages, charSequence)
             }
-            mFilteredLanguages = filteredLanguages.toArray(new Language[filteredLanguages.size()]);
-            notifyDataSetChanged();
+            this@TargetLanguageAdapter.filteredLanguages.clear()
+            this@TargetLanguageAdapter.filteredLanguages.addAll(filteredLanguages)
+            notifyDataSetChanged()
+        }
+    }
+
+    private inner class ViewHolder(val binding: FragmentScrollListItemBinding) {
+        init {
+            binding.root.tag = this
+        }
+
+        fun bind(position: Int) {
+            binding.majorText.text = getItem(position)?.name
+            binding.minorText.text = getItem(position)?.slug
+
+            binding.scrollListItemLayout.removeView(binding.itemIcon)
+            binding.rightmostScrollListItemLayout.removeView(binding.moreIcon)
         }
     }
 
@@ -154,22 +133,23 @@ public class TargetLanguageAdapter extends ArrayAdapter {
      * Sorts target languages by id
      * @param languages
      * @param referenceId languages are sorted according to the reference id
+     * @return sorted languages
      */
-    private static void sortLanguages(List<Language> languages, final CharSequence referenceId) {
-        Collections.sort(languages, new Comparator<Language>() {
-            @Override
-            public int compare(Language lhs, Language rhs) {
-                String lhId = lhs.getSlug();
-                String rhId = rhs.getSlug();
-                // give priority to matches with the reference
-                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
-                    lhId = "!" + lhId;
-                }
-                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
-                    rhId = "!" + rhId;
-                }
-                return lhId.compareToIgnoreCase(rhId);
+    private fun sortedLanguages(
+        languages: List<Language>,
+        referenceId: CharSequence
+    ): List<Language> {
+        return languages.sortedWith { lhs, rhs ->
+            var lhId = lhs.slug
+            var rhId = rhs.slug
+            // give priority to matches with the reference
+            if (lhId.startsWith(referenceId.toString().lowercase(Locale.getDefault()))) {
+                lhId = "!$lhId"
             }
-        });
+            if (rhId.startsWith(referenceId.toString().lowercase(Locale.getDefault()))) {
+                rhId = "!$rhId"
+            }
+            lhId.compareTo(rhId, ignoreCase = true)
+        }
     }
 }

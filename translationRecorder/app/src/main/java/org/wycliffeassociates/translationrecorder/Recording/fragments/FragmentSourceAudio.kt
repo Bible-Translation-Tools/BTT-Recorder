@@ -1,63 +1,71 @@
-package org.wycliffeassociates.translationrecorder.Recording.fragments;
+package org.wycliffeassociates.translationrecorder.Recording.fragments
 
-import android.app.Fragment;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.wycliffeassociates.translationrecorder.Playback.SourceAudio;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.R;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.databinding.FragmentSourceAudioBinding
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.project.Project
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
+@AndroidEntryPoint
+class FragmentSourceAudio : Fragment() {
 
-public class FragmentSourceAudio extends Fragment {
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var prefs: IPreferenceRepository
 
-    private SourceAudio mSourcePlayer;
+    private var _binding: FragmentSourceAudioBinding? = null
+    private val binding get() = _binding!!
 
-    public static FragmentSourceAudio newInstance(){
-        FragmentSourceAudio f = new FragmentSourceAudio();
-        return f;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentSourceAudioBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_source_audio, container, false);
+    fun loadAudio(project: Project, filename: String, chapter: Int) {
+        binding.sourceAudioPlayer.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mSourcePlayer = (SourceAudio)getView().findViewById(R.id.source_audio_player);
+    fun disableSourceAudio() {
+        binding.sourceAudioPlayer.cleanup()
+        binding.sourceAudioPlayer.isEnabled = false
     }
 
-    public void loadAudio(Project project, String filename, int chapter){
-        mSourcePlayer.initSrcAudio(project, filename, chapter);
+    fun resetSourceAudio(project: Project, filename: String, chapter: Int) {
+        binding.sourceAudioPlayer.reset(project, filename, chapter, directoryProvider, prefs)
     }
 
-    public void disableSourceAudio() {
-        mSourcePlayer.cleanup();
-        mSourcePlayer.setEnabled(false);
+    fun initialize(project: Project, filename: String, chapter: Int) {
+        binding.sourceAudioPlayer.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
     }
 
-    public void resetSourceAudio(Project project, String filename, int chapter) {
-        mSourcePlayer.reset(project, filename, chapter);
+    override fun onPause() {
+        super.onPause()
+        binding.sourceAudioPlayer.pauseSource()
+        binding.sourceAudioPlayer.cleanup()
     }
 
-    public void initialize(Project project, String filename, int chapter) {
-        mSourcePlayer.initSrcAudio(project, filename, chapter);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        mSourcePlayer.pauseSource();
-        mSourcePlayer.cleanup();
+    companion object {
+        fun newInstance(): FragmentSourceAudio {
+            val f = FragmentSourceAudio()
+            return f
+        }
     }
 }

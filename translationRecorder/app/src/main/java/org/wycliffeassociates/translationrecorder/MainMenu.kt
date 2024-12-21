@@ -1,376 +1,342 @@
-package org.wycliffeassociates.translationrecorder;
+package org.wycliffeassociates.translationrecorder
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
+import android.util.DisplayMetrics
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
+import com.door43.tools.reporting.GithubReporter
+import com.door43.tools.reporting.GlobalExceptionHandler
+import com.door43.tools.reporting.Logger
+import dagger.hilt.android.AndroidEntryPoint
+import org.apache.commons.io.FileUtils
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.Reporting.BugReportDialog
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.MainBinding
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
+import org.wycliffeassociates.translationrecorder.project.TakeInfo
+import java.io.File
+import java.io.IOException
+import java.nio.charset.Charset
+import javax.inject.Inject
 
-import com.door43.tools.reporting.GithubReporter;
-import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.tools.reporting.Logger;
+@AndroidEntryPoint
+class MainMenu : AppCompatActivity() {
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
 
-import org.apache.commons.io.FileUtils;
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.Reporting.BugReportDialog;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.project.ProjectSlugs;
-import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
+    private var mNumProjects = 0
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+    private lateinit var binding: MainBinding
 
-public class MainMenu extends Activity {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    private RelativeLayout btnRecord;
-    private ImageButton btnFiles;
-    private SharedPreferences pref;
-    private ProjectDatabaseHelper db;
+        binding = MainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-    private int mNumProjects = 0;
+        val metrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(metrics)
+        AudioInfo.SCREEN_WIDTH = metrics.widthPixels
 
-    public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
-    public static final String PREF_DEFAULT_LOGGING_LEVEL = "1";
-    public static final String STACKTRACE_DIR = "stacktrace";
+        println("Internal files dir is " + directoryProvider.internalAppDir)
+        println("External files dir is " + directoryProvider.externalAppDir)
 
-    public static final int FIRST_REQUEST = 1;
-    public static final int LANGUAGE_REQUEST = FIRST_REQUEST;
-    public static final int PROJECT_REQUEST = FIRST_REQUEST + 1;
-    public static final int BOOK_REQUEST = FIRST_REQUEST + 2;
-    public static final int MODE_REQUEST = FIRST_REQUEST + 3;
-    public static final int SOURCE_TEXT_REQUEST = FIRST_REQUEST + 4;
-    public static final int SOURCE_REQUEST = FIRST_REQUEST + 5;
-    public static final int PROJECT_WIZARD_REQUEST = FIRST_REQUEST + 6;
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        AudioInfo.SCREEN_WIDTH = metrics.widthPixels;
-
-        System.out.println("internal files dir is " + this.getCacheDir());
-        System.out.println("External files dir is " + Environment.getExternalStorageDirectory());
-
-        db = ((TranslationRecorderApp)getApplication()).getDatabase();
-
-        initApp();
+        initApp()
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
 
-        mNumProjects = db.getNumProjects();
+        mNumProjects = db.numProjects
 
-        btnRecord = (RelativeLayout) findViewById(R.id.new_record);
-        btnRecord.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mNumProjects <= 0 || emptyPreferences()) {
-                    setupNewProject();
-                } else {
-                    startRecordingScreen();
-                }
+        binding.newRecord.setOnClickListener {
+            if (mNumProjects <= 0 || emptyPreferences()) {
+                setupNewProject()
+            } else {
+                startRecordingScreen()
             }
-        });
-
-        btnFiles = (ImageButton) findViewById(R.id.files);
-        btnFiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), ActivityProjectManager.class);
-                startActivityForResult(intent, 0);
-                overridePendingTransition(R.animator.slide_in_left, R.animator.slide_out_left);
-            }
-        });
-
-        initViews();
-    }
-
-    private boolean emptyPreferences() {
-        if (pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1) == -1) {
-            return true;
         }
-        return false;
+
+        binding.files.setOnClickListener { v ->
+            val intent = Intent(v.context, ActivityProjectManager::class.java)
+            startActivityForResult(intent, 0)
+            overridePendingTransition(R.animator.slide_in_left, R.animator.slide_out_left)
+        }
+
+        initViews()
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case PROJECT_WIZARD_REQUEST: {
+    private fun emptyPreferences(): Boolean {
+        return prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1) == -1
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            PROJECT_WIZARD_REQUEST -> {
                 if (resultCode == RESULT_OK) {
-                    Project project = data.getParcelableExtra(Project.PROJECT_EXTRA);
-                    if (addProjectToDatabase(project)) {
-                        loadProject(project);
-                        Intent intent = RecordingActivity.getNewRecordingIntent(
-                                this,
-                                project,
-                                ChunkPlugin.DEFAULT_CHAPTER,
-                                ChunkPlugin.DEFAULT_UNIT
-                        );
-                        startActivity(intent);
+                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)
+                    if (addProjectToDatabase(project!!)) {
+                        loadProject(project)
+                        val intent = RecordingActivity.getNewRecordingIntent(
+                            this,
+                            project,
+                            ChunkPlugin.DEFAULT_CHAPTER,
+                            ChunkPlugin.DEFAULT_UNIT
+                        )
+                        startActivity(intent)
                     } else {
-                        onResume();
+                        onResume()
                     }
                 } else {
-                    onResume();
+                    onResume()
                 }
             }
-            default:
+
+            else -> {}
         }
     }
 
-    private void setupNewProject() {
-        startActivityForResult(new Intent(getBaseContext(), ProjectWizardActivity.class), PROJECT_WIZARD_REQUEST);
+    private fun setupNewProject() {
+        startActivityForResult(
+            Intent(baseContext, ProjectWizardActivity::class.java),
+            PROJECT_WIZARD_REQUEST
+        )
     }
 
-    private void startRecordingScreen() {
-        Project project = Project.getProjectFromPreferences(this, db);
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        int chapter = pref.getInt(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER);
-        int unit = pref.getInt(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT);
-        Intent intent = RecordingActivity.getNewRecordingIntent(
-                this,
-                project,
-                chapter,
-                unit
-        );
-        startActivity(intent);
+    private fun startRecordingScreen() {
+        val project = Project.getProjectFromPreferences(db, prefs)
+        val chapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        val unit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
+        val intent = RecordingActivity.getNewRecordingIntent(
+            this,
+            project,
+            chapter,
+            unit
+        )
+        startActivity(intent)
     }
 
-    private boolean addProjectToDatabase(Project project) {
+    private fun addProjectToDatabase(project: Project): Boolean {
         if (db.projectExists(project)) {
-            ProjectWizardActivity.displayProjectExists(this);
-            return false;
+            ProjectWizardActivity.displayProjectExists(this)
+            return false
         } else {
-            db.addProject(project);
-            return true;
+            db.addProject(project)
+            return true
         }
     }
 
 
-    private void loadProject(Project project) {
-        pref.edit().putString("resume", "resume").commit();
+    private fun loadProject(project: Project) {
+        prefs.setDefaultPref("resume", "resume")
 
         if (db.projectExists(project)) {
-            pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, db.getProjectId(project)).commit();
+            prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, db.getProjectId(project))
         } else {
-            Logger.e(this.toString(), "Project " + project + " doesn't exist in the database");
+            Logger.e(
+                this.toString(),
+                "Project $project doesn't exist in the database"
+            )
         }
     }
 
-    public void report(final String message) {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                reportCrash(message);
-            }
-        });
-        t.start();
+    fun report(message: String) {
+        val t = Thread { reportCrash(message) }
+        t.start()
     }
 
-    private void reportCrash(String message) {
-        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
-        String[] stacktraces = GlobalExceptionHandler.getStacktraces(dir);
-        String githubTokenIdentifier = getResources().getString(R.string.github_token);
-        String githubUrl = getResources().getString(R.string.github_bug_report_repo);
+    private fun reportCrash(message: String) {
+        val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
+        val stackTraces = GlobalExceptionHandler.getStacktraces(dir)
+        val githubTokenIdentifier = resources.getString(R.string.github_token)
+        val githubUrl = resources.getString(R.string.github_bug_report_repo)
 
         // TRICKY: make sure the github_oauth2 token has been set
         if (githubTokenIdentifier != null) {
-            GithubReporter reporter = new GithubReporter(this, githubUrl, githubTokenIdentifier);
-            if (stacktraces.length > 0) {
+            val reporter = GithubReporter(this, githubUrl, githubTokenIdentifier)
+            if (stackTraces.isNotEmpty()) {
                 // upload most recent stacktrace
-                reporter.reportCrash(message, new File(stacktraces[0]), Logger.getLogFile());
+                reporter.reportCrash(message, File(stackTraces[0]), Logger.getLogFile())
                 // empty the log
                 try {
-                    FileUtils.write(Logger.getLogFile(), "");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    FileUtils.write(Logger.getLogFile(), "", Charset.defaultCharset())
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
-                archiveStackTraces();
+                archiveStackTraces()
             }
         }
     }
 
-    public void archiveStackTraces() {
-        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
+    fun archiveStackTraces() {
+        val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
         if (!dir.exists()) {
-            dir.mkdirs();
+            dir.mkdirs()
         }
-        File archive = new File(dir, "Archive");
+        val archive = File(dir, "Archive")
         if (!archive.exists()) {
-            archive.mkdirs();
+            archive.mkdirs()
         }
-        String[] stacktraces = GlobalExceptionHandler.getStacktraces(dir);
-        // delete stacktraces
-        for (String filePath : stacktraces) {
-            File traceFile = new File(filePath);
+        val stackTraces = GlobalExceptionHandler.getStacktraces(dir)
+        // delete stackTraces
+        for (filePath in stackTraces) {
+            val traceFile = File(filePath)
             if (traceFile.exists()) {
-                File move = new File(archive, traceFile.getName());
-                traceFile.renameTo(move);
+                val move = File(archive, traceFile.name)
+                traceFile.renameTo(move)
             }
         }
     }
 
-    private void initViews() {
-        int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
-        TextView languageView = (TextView) findViewById(R.id.language_view);
-        TextView bookView = (TextView) findViewById(R.id.book_view);
+    private fun initViews() {
+        val projectId = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
         if (projectId != -1) {
-            Project project = db.getProject(projectId);
-            String language = project.getTargetLanguageSlug();
+            val project = db.getProject(projectId)
+            var language = project!!.targetLanguageSlug
             if (language.compareTo("") != 0) {
-                language = db.getLanguageName(language);
+                language = db.getLanguageName(language)
             }
-            languageView.setText(language);
+            binding.languageView.text = language
 
-            String book = project.getBookSlug();
+            var book = project.bookSlug
             if (book.compareTo("") != 0) {
-                book = project.getBookName();
+                book = project.bookName
             }
-            bookView.setText(book);
+            binding.bookView.text = book
         } else {
-            languageView.setText("");
-            bookView.setText("");
+            binding.languageView.text = ""
+            binding.bookView.text = ""
         }
     }
 
-    private void initApp() {
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        pref.edit().putString("version", BuildConfig.VERSION_NAME).commit();
+    private fun initApp() {
+        prefs.setDefaultPref("version", BuildConfig.VERSION_NAME)
 
         //set up Visualization folder
-        Utils.VISUALIZATION_DIR = new File(getExternalCacheDir(), "Visualization");
-        Utils.VISUALIZATION_DIR.mkdirs();
-
-        //if the current directory is already set, then don't overwrite it
-        if (pref.getString("current_directory", null) == null) {
-            pref.edit().putString(
-                    "current_directory",
-                    Environment.getExternalStoragePublicDirectory(
-                            getResources().getString(R.string.folder_name)
-                    ).toString()
-            ).commit();
-        }
-        pref.edit().putString(
-                "root_directory",
-                Environment.getExternalStoragePublicDirectory(
-                        getResources().getString(R.string.folder_name)
-                ).toString()
-        ).commit();
+        Utils.VISUALIZATION_DIR = File(
+            directoryProvider.externalCacheDir, "Visualization"
+        )
+        Utils.VISUALIZATION_DIR.mkdirs()
 
         //configure logger
-        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
-        dir.mkdirs();
+        val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
+        dir.mkdirs()
 
-        GlobalExceptionHandler.register(dir);
-        int minLogLevel = Integer.parseInt(pref.getString(KEY_PREF_LOGGING_LEVEL, PREF_DEFAULT_LOGGING_LEVEL));
-        configureLogger(minLogLevel, dir);
+        GlobalExceptionHandler.register(dir)
+        val minLogLevel = prefs.getDefaultPref(
+            KEY_PREF_LOGGING_LEVEL,
+            PREF_DEFAULT_LOGGING_LEVEL
+        ).toInt()
+        configureLogger(minLogLevel, dir)
 
         //check if we crashed
-        String[] stacktraces = GlobalExceptionHandler.getStacktraces(dir);
-        if (stacktraces.length > 0) {
-            FragmentManager fm = getFragmentManager();
-            BugReportDialog brd = new BugReportDialog();
-            brd.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
-            brd.show(fm, "Bug Report Dialog");
+        val stackTraces = GlobalExceptionHandler.getStacktraces(dir)
+        if (stackTraces.isNotEmpty()) {
+            val fm = supportFragmentManager
+            val brd = BugReportDialog()
+            brd.setStyle(DialogFragment.STYLE_NO_TITLE, 0)
+            brd.show(fm, "Bug Report Dialog")
         }
 
-        removeUnusedVisualizationFiles();
+        removeUnusedVisualizationFiles()
     }
 
-    private void removeUnusedVisualizationFiles() {
-        File visFilesLocation = Utils.VISUALIZATION_DIR;
-        File[] visFiles = visFilesLocation.listFiles();
-        if (visFiles == null) {
-            return;
-        }
-        String rootPath = new File(
-                Environment.getExternalStorageDirectory(),
-                getResources().getString(R.string.folder_name)
-            ).getAbsolutePath();
-        List<ProjectPatternMatcher> patterns = db.getProjectPatternMatchers();
-        for (File v : visFiles) {
-            boolean matched = false;
-            TakeInfo takeInfo = null;
+    @SuppressLint("DefaultLocale")
+    private fun removeUnusedVisualizationFiles() {
+        val visFilesLocation = Utils.VISUALIZATION_DIR
+        val visFiles = visFilesLocation.listFiles() ?: return
+        val rootPath = directoryProvider.translationsDir.absolutePath
+        val patterns = db.projectPatternMatchers
+        for (v in visFiles) {
+            var matched = false
+            var takeInfo: TakeInfo? = null
             //no idea what project the vis file is, so try all known anthology regexes until one works
-            for (ProjectPatternMatcher ppm : patterns) {
+            for (ppm in patterns) {
                 if (ppm.match(v)) {
-                    matched = true;
-                    takeInfo = ppm.getTakeInfo();
-                    break;
+                    matched = true
+                    takeInfo = ppm.takeInfo
+                    break
                 }
             }
             if (!matched) {
-                v.delete();
-                continue;
+                v.delete()
+                continue
             }
-            boolean found = false;
-            ProjectSlugs slugs = takeInfo.getProjectSlugs();
-            String path = rootPath + "/" + slugs.getLanguage() + "/" + slugs.getVersion() + "/" + slugs.getBook()
-                    + "/" + String.format("%02d", takeInfo.getChapter());
-            String visFileWithoutExtension = v.getName().split(".vis$")[0];
-            String name = visFileWithoutExtension + "_t" + String.format("%02d", takeInfo.getTake()) + ".wav";
-            File searchName = new File(path, name);
-            if (searchName != null && searchName.exists()) {
-                //check if the names match up; exclude the path to get to them or the file extention
-                if (extractFilename(searchName).equals(extractFilename(v))) {
-                    continue;
+            val found = false
+            val slugs = takeInfo!!.projectSlugs
+            val path = (rootPath + "/" + slugs.language + "/" + slugs.version + "/" + slugs.book
+                    + "/" + String.format("%02d", takeInfo.chapter))
+            val visFileWithoutExtension =
+                v.name.split(".vis$".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+            val name =
+                visFileWithoutExtension + "_t" + String.format("%02d", takeInfo.take) + ".wav"
+            val searchName = File(path, name)
+            if (searchName.exists()) {
+                //check if the names match up; exclude the path to get to them or the file extension
+                if (extractFilename(searchName) == extractFilename(v)) {
+                    continue
                 }
             }
             if (!found) {
-                System.out.println("Removing " + v.getName());
-                v.delete();
+                println("Removing " + v.name)
+                v.delete()
             }
         }
     }
 
-    private String extractFilename(File a) {
-        if (a.isDirectory()) {
-            return "";
+    private fun extractFilename(a: File): String {
+        if (a.isDirectory) {
+            return ""
         }
-        String nameWithExtention = a.getName();
-        boolean hasNoExtension = nameWithExtention.lastIndexOf('.') < 0;
-        if (hasNoExtension || nameWithExtention.lastIndexOf('.') > nameWithExtention.length()
-        ) {
-            return "";
+        val nameWithExtension = a.name
+        val hasNoExtension = nameWithExtension.lastIndexOf('.') < 0
+        if (hasNoExtension || nameWithExtension.lastIndexOf('.') > nameWithExtension.length) {
+            return ""
         }
-        String filename = nameWithExtention.substring(0, nameWithExtention.lastIndexOf('.'));
-        return filename;
+        val filename = nameWithExtension.substring(0, nameWithExtension.lastIndexOf('.'))
+        return filename
     }
 
-
-    public void configureLogger(int minLogLevel, File logDir) {
-        File logFile = new File(logDir, "log.txt");
+    private fun configureLogger(minLogLevel: Int, logDir: File?) {
+        val logFile = File(logDir, "log.txt")
         try {
-            logFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
+            logFile.createNewFile()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        Logger.configure(logFile, Logger.Level.getLevel(minLogLevel));
+        Logger.configure(logFile, Logger.Level.getLevel(minLogLevel))
         if (logFile.exists()) {
-            Logger.w(this.toString(), "SUCCESS: Log file initialized.");
+            Logger.w(this.toString(), "SUCCESS: Log file initialized.")
         } else {
-            Logger.e(this.toString(), "ERROR: could not initialize log file.");
+            Logger.e(this.toString(), "ERROR: could not initialize log file.")
         }
+    }
+
+    companion object {
+        const val KEY_PREF_LOGGING_LEVEL: String = "logging_level"
+        const val PREF_DEFAULT_LOGGING_LEVEL: String = "1"
+        const val STACKTRACE_DIR: String = "stacktrace"
+
+        const val FIRST_REQUEST: Int = 1
+        const val LANGUAGE_REQUEST: Int = FIRST_REQUEST
+        const val PROJECT_REQUEST: Int = FIRST_REQUEST + 1
+        const val BOOK_REQUEST: Int = FIRST_REQUEST + 2
+        const val MODE_REQUEST: Int = FIRST_REQUEST + 3
+        const val SOURCE_TEXT_REQUEST: Int = FIRST_REQUEST + 4
+        const val SOURCE_REQUEST: Int = FIRST_REQUEST + 5
+        const val PROJECT_WIZARD_REQUEST: Int = FIRST_REQUEST + 6
     }
 }

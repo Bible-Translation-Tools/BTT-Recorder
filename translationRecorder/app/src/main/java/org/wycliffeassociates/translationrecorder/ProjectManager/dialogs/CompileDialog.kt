@@ -1,110 +1,107 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs;
+package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
-import android.os.Bundle;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.project.Project;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Context
+import android.os.Bundle
+import androidx.fragment.app.DialogFragment
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.project.Project
 
 /**
  * Created by leongv on 8/17/2016.
  */
-public class CompileDialog extends DialogFragment {
-
-    public static String CHAPTERS_KEY = "key_chapters";
-    public static String COMPILED_KEY = "key_compiled";
-    public static String PROJECT_KEY = "key_project";
-
-    public interface DialogListener {
-        void onPositiveClick(CompileDialog dialog);
-        void onNegativeClick(CompileDialog dialog);
+class CompileDialog : DialogFragment() {
+    interface DialogListener {
+        fun onPositiveClick(dialog: CompileDialog)
+        fun onNegativeClick(dialog: CompileDialog)
     }
 
-    DialogListener mListener;
-    private int[] mChapterIndices;
-    private Project mProject;
-    private boolean mAlreadyCompiled;
+    var mListener: DialogListener? = null
+    var chapterIndicies: IntArray? = null
+        private set
+    var project: Project? = null
+        private set
+    private var mAlreadyCompiled = false
 
-    public static CompileDialog newInstance(Project project, int[] chapterIndices, boolean[] isCompiled){
-        Bundle args = new Bundle();
-        args.putIntArray(CHAPTERS_KEY, chapterIndices);
-        args.putParcelable(PROJECT_KEY, project);
-        args.putBooleanArray(COMPILED_KEY, isCompiled);
-        CompileDialog check = new CompileDialog();
-        check.setArguments(args);
-        return check;
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val args = arguments
 
-    public static CompileDialog newInstance(Project project, int chapterIndex, boolean isCompiled){
-        int[] chapterIndices = {chapterIndex};
-        boolean[] compiled = {isCompiled};
-        return newInstance(project, chapterIndices, compiled);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-
-        mChapterIndices = args.getIntArray(CHAPTERS_KEY);
-        mProject = args.getParcelable(PROJECT_KEY);
-        boolean[] compiled = args.getBooleanArray(COMPILED_KEY);
-        mAlreadyCompiled = false;
-        for(int i = 0; i < compiled.length; i++){
-            if(compiled[i] == true){
-                mAlreadyCompiled = true;
+        chapterIndicies = args?.getIntArray(CHAPTERS_KEY)
+        project = args?.getParcelable(PROJECT_KEY)
+        val compiled = args?.getBooleanArray(COMPILED_KEY)
+        mAlreadyCompiled = false
+        for (i in compiled!!.indices) {
+            if (compiled[i]) {
+                mAlreadyCompiled = true
             }
         }
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // NOTE: This is commented out because we don't want the compile to execute without the user
         //    clicking "OK" on the dialog. If Joe agrees, he can delete this.
         // if(!mAlreadyCompiled){
         //     mListener.onPositiveClick(CompileDialog.this);
         // }
-        String message;
-        if (mAlreadyCompiled) {
-            message = getString(R.string.recompile_chapters_message);
+        val message = if (mAlreadyCompiled) {
+            getString(R.string.recompile_chapters_message)
         } else {
-            message = getString(R.string.compile_chapters_message);
+            getString(R.string.compile_chapters_message)
         }
-        return new AlertDialog.Builder(getActivity())
+        return AlertDialog.Builder(activity)
             .setTitle(getString(R.string.warning))
             .setMessage(message)
-            .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    mListener.onPositiveClick(CompileDialog.this);
-                }
-            })
-            .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    mListener.onNegativeClick(CompileDialog.this);
-                }
-            })
-            .create();
+            .setPositiveButton(
+                getString(R.string.label_ok)
+            ) { _, _ ->
+                mListener!!.onPositiveClick(
+                    this@CompileDialog
+                )
+            }
+            .setNegativeButton(
+                getString(R.string.title_cancel)
+            ) { _, _ ->
+                mListener!!.onNegativeClick(
+                    this@CompileDialog
+                )
+            }
+            .create()
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            mListener = (DialogListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement CompileDialogListener");
+            mListener = context as DialogListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement CompileDialogListener")
         }
     }
 
-    public int[] getChapterIndicies(){
-        return mChapterIndices;
-    }
+    companion object {
+        var CHAPTERS_KEY: String = "key_chapters"
+        var COMPILED_KEY: String = "key_compiled"
+        var PROJECT_KEY: String = "key_project"
 
-    public Project getProject(){
-        return mProject;
+        fun newInstance(
+            project: Project?,
+            chapterIndices: IntArray?,
+            isCompiled: BooleanArray?
+        ): CompileDialog {
+            val args = Bundle()
+            args.putIntArray(CHAPTERS_KEY, chapterIndices)
+            args.putParcelable(PROJECT_KEY, project)
+            args.putBooleanArray(COMPILED_KEY, isCompiled)
+            val check = CompileDialog()
+            check.arguments = args
+            return check
+        }
+
+        fun newInstance(project: Project?, chapterIndex: Int, isCompiled: Boolean): CompileDialog {
+            val chapterIndices = intArrayOf(chapterIndex)
+            val compiled = booleanArrayOf(isCompiled)
+            return newInstance(project, chapterIndices, compiled)
+        }
     }
 }

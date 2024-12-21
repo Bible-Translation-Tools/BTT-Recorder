@@ -1,162 +1,137 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.TYPE
+import org.wycliffeassociates.translationrecorder.databinding.FragmentFileViewBinding
+import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView
+import java.util.Locale
 
 /**
  * Created by sarabiaj on 11/4/2016.
  */
+class FragmentFileBar : Fragment() {
+    private var mInsertCallback: InsertCallback? = null
+    private var mUnitType: TYPE? = null
 
-public class FragmentFileBar extends Fragment {
-
-    private InsertCallback mInsertCallback;
-    private ChunkPlugin.TYPE mUnitType;
-
-    public void onRatingChanged(int mRating) {
-        mRateBtn.setStep(mRating);
+    fun onRatingChanged(mRating: Int) {
+        binding.btnRate.step = mRating
     }
 
-    public interface RerecordCallback {
-        void onRerecord();
+    interface RerecordCallback {
+        fun onRerecord()
     }
 
-    public interface RatingCallback {
-        void onOpenRating(FourStepImageView view);
+    interface RatingCallback {
+        fun onOpenRating(view: FourStepImageView?)
     }
 
-    public interface InsertCallback {
-        void onInsert();
+    interface InsertCallback {
+        fun onInsert()
     }
 
-    public static String KEY_LANGUAGE = "language";
-    public static String KEY_VERSION = "version";
-    public static String KEY_BOOK = "book";
-    public static String KEY_CHAPTER_LABEL = "chapter_label";
-    public static String KEY_CHAPTER_NUMBER = "chapter_number";
-    public static String KEY_UNIT_LABEL = "unit";
-    public static String KEY_UNIT_NUMBER = "unit_number";
-    public static String KEY_UNIT_TYPE = "unit_type";
+    private var mModeToggleCallback: VerseMarkerModeToggler? = null
+    private var mRatingCallback: RatingCallback? = null
+    private var mRerecordCallback: RerecordCallback? = null
 
-    private FourStepImageView mRateBtn;
+    private var _binding: FragmentFileViewBinding? = null
+    private val binding get() = _binding!!
 
-    TextView mLangView, mSourceView, mBookView, mChapterView, mChapterLabel, mUnitView, mUnitLabel;
-    ImageView mRerecordBtn, mInsertBtn;
-    private ImageButton mEnterVerseMarkerMode;
-
-
-    private VerseMarkerModeToggler mModeToggleCallback;
-    private RatingCallback mRatingCallback;
-    private RerecordCallback mRerecordCallback;
-
-    public static FragmentFileBar newInstance(String language, String version, String book, String chapterLabel,
-                                              String chapterNumber, String unitLabel, String unitNumber,
-                                              ChunkPlugin.TYPE unitType){
-        FragmentFileBar f = new FragmentFileBar();
-        Bundle args = new Bundle();
-        args.putString(KEY_LANGUAGE, language.toUpperCase());
-        args.putString(KEY_VERSION, version.toUpperCase());
-        args.putString(KEY_BOOK, book.toUpperCase());
-        args.putString(KEY_CHAPTER_LABEL, chapterLabel);
-        args.putString(KEY_CHAPTER_NUMBER, chapterNumber);
-        args.putString(KEY_UNIT_LABEL, unitLabel);
-        args.putString(KEY_UNIT_NUMBER, unitNumber);
-        args.putSerializable(KEY_UNIT_TYPE, unitType);
-        f.setArguments(args);
-        return f;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentFileViewBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_file_view, container, false);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setText()
+        setClickListeners()
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        findViews();
-        setText();
-        setClickListeners();
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    private void setText(){
-        Bundle args = getArguments();
-        mLangView.setText(args.getString(KEY_LANGUAGE));
-        mSourceView.setText(args.getString(KEY_VERSION));
-        mBookView.setText(args.getString(KEY_BOOK));
-        mChapterLabel.setText(args.getString(KEY_CHAPTER_LABEL));
-        mChapterView.setText(args.getString(KEY_CHAPTER_NUMBER));
-        mUnitLabel.setText(args.getString(KEY_UNIT_LABEL));
-        mUnitView.setText(args.getString(KEY_UNIT_NUMBER));
-        mUnitType = (ChunkPlugin.TYPE) args.getSerializable(KEY_UNIT_TYPE);
+    private fun setText() {
+        val args = arguments
+        binding.fileLanguage.text = args?.getString(KEY_LANGUAGE)
+        binding.fileProject.text = args?.getString(KEY_VERSION)
+        binding.fileBook.text = args?.getString(KEY_BOOK)
+        binding.fileChapterLabel.text = args?.getString(KEY_CHAPTER_LABEL)
+        binding.fileChapter.text = args?.getString(KEY_CHAPTER_NUMBER)
+        binding.fileUnitLabel.text = args?.getString(KEY_UNIT_LABEL)
+        binding.fileUnit.text = args?.getString(KEY_UNIT_NUMBER)
+        mUnitType = args?.getSerializable(KEY_UNIT_TYPE) as TYPE?
     }
 
-    private void findViews(){
-        View view = getView();
-        mLangView = (TextView) view.findViewById(R.id.file_language);
-        mSourceView = (TextView) view.findViewById(R.id.file_project);
-        mBookView = (TextView) view.findViewById(R.id.file_book);
-        mChapterView = (TextView) view.findViewById(R.id.file_chapter);
-        mChapterLabel = (TextView) view.findViewById(R.id.file_chapter_label);
-        mUnitView = (TextView) view.findViewById(R.id.file_unit);
-        mUnitLabel = (TextView) view.findViewById(R.id.file_unit_label);
-        mRerecordBtn = (ImageView) view.findViewById(R.id.btn_rerecord);
-        mInsertBtn = (ImageView) view.findViewById(R.id.btn_insert_record);
-        mRateBtn = (FourStepImageView) view.findViewById(R.id.btn_rate);
-
-        mEnterVerseMarkerMode = (ImageButton) view.findViewById(R.id.btn_enter_verse_marker_mode);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mModeToggleCallback = context as VerseMarkerModeToggler
+        mRerecordCallback = context as RerecordCallback
+        mRatingCallback = context as RatingCallback
+        mInsertCallback = context as InsertCallback
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mModeToggleCallback = (VerseMarkerModeToggler) activity;
-        mRerecordCallback = (RerecordCallback) activity;
-        mRatingCallback = (RatingCallback) activity;
-        mInsertCallback = (InsertCallback) activity;
+    private fun setClickListeners() {
+        binding.btnEnterVerseMarkerMode.setOnClickListener {
+            mModeToggleCallback?.onEnableVerseMarkerMode()
+        }
+
+        binding.btnRate.setOnClickListener {
+            mRatingCallback?.onOpenRating(binding.btnRate)
+        }
+
+        binding.btnRerecord.setOnClickListener {
+            mRerecordCallback?.onRerecord()
+        }
+        binding.btnInsertRecord.setOnClickListener {
+            mInsertCallback?.onInsert()
+        }
     }
 
-    private void setClickListeners(){
-        mEnterVerseMarkerMode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mModeToggleCallback.onEnableVerseMarkerMode();
-            }
-        });
+    companion object {
+        var KEY_LANGUAGE: String = "language"
+        var KEY_VERSION: String = "version"
+        var KEY_BOOK: String = "book"
+        var KEY_CHAPTER_LABEL: String = "chapter_label"
+        var KEY_CHAPTER_NUMBER: String = "chapter_number"
+        var KEY_UNIT_LABEL: String = "unit"
+        var KEY_UNIT_NUMBER: String = "unit_number"
+        var KEY_UNIT_TYPE: String = "unit_type"
 
-        mRateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRatingCallback.onOpenRating(mRateBtn);
-            }
-        });
-
-        mRerecordBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRerecordCallback.onRerecord();
-            }
-        });
-        mInsertBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mInsertCallback.onInsert();
-            }
-        });
+        fun newInstance(
+            language: String,
+            version: String,
+            book: String,
+            chapterLabel: String?,
+            chapterNumber: String?,
+            unitLabel: String?,
+            unitNumber: String?,
+            unitType: TYPE?
+        ): FragmentFileBar {
+            val f = FragmentFileBar()
+            val args = Bundle()
+            args.putString(KEY_LANGUAGE, language.uppercase(Locale.getDefault()))
+            args.putString(KEY_VERSION, version.uppercase(Locale.getDefault()))
+            args.putString(KEY_BOOK, book.uppercase(Locale.getDefault()))
+            args.putString(KEY_CHAPTER_LABEL, chapterLabel)
+            args.putString(KEY_CHAPTER_NUMBER, chapterNumber)
+            args.putString(KEY_UNIT_LABEL, unitLabel)
+            args.putString(KEY_UNIT_NUMBER, unitNumber)
+            args.putSerializable(KEY_UNIT_TYPE, unitType)
+            f.arguments = args
+            return f
+        }
     }
 }

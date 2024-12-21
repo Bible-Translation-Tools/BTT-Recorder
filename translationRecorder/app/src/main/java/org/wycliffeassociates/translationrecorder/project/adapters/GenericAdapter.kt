@@ -1,194 +1,176 @@
-package org.wycliffeassociates.translationrecorder.project.adapters;
+package org.wycliffeassociates.translationrecorder.project.adapters
 
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Filter
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentScrollListItemBinding
+import org.wycliffeassociates.translationrecorder.project.components.Mode
+import org.wycliffeassociates.translationrecorder.project.components.ProjectComponent
+import java.util.Locale
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.project.components.Mode;
-import org.wycliffeassociates.translationrecorder.project.components.ProjectComponent;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Created by joel on 9/4/2015.
  */
-public class GenericAdapter extends ArrayAdapter {
-    private ProjectComponent[] mProjectComponents;
-    private ProjectComponent[] mFilteredProjectComponents;
-    private ProjectComponentFilter mProjectComponentFilter;
+class GenericAdapter(
+    component: List<ProjectComponent>,
+    ctx: Context
+) : ArrayAdapter<Any?>(ctx, R.layout.fragment_scroll_list_item) {
+    private val mProjectComponents: MutableList<ProjectComponent> = arrayListOf()
+    private val mFilteredProjectComponents: MutableList<ProjectComponent> = arrayListOf()
+    private var mProjectComponentFilter: ProjectComponentFilter? = null
 
-    public GenericAdapter(ProjectComponent[] component, Context ctx) {
-        super(ctx, R.layout.fragment_scroll_list_item);
-        List<ProjectComponent> targetProjectComponentsList = Arrays.asList(component);
-        Collections.sort(targetProjectComponentsList);
-        mProjectComponents = targetProjectComponentsList.toArray(new ProjectComponent[targetProjectComponentsList.size()]);
-        mFilteredProjectComponents = mProjectComponents;
+    init {
+        mProjectComponents.addAll(component.sorted())
+        mFilteredProjectComponents.addAll(mProjectComponents)
     }
 
 
-    @Override
-    public int getCount() {
-        if(mFilteredProjectComponents != null) {
-            return mFilteredProjectComponents.length;
+    override fun getCount(): Int {
+        return mFilteredProjectComponents.size
+    }
+
+    override fun getItem(position: Int): ProjectComponent {
+        return mFilteredProjectComponents[position]
+    }
+
+    override fun getItemId(position: Int): Long {
+        return 0
+    }
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val context = parent.context
+        val holder: ViewHolder
+        val binding: FragmentScrollListItemBinding
+        if (convertView == null) {
+            binding = FragmentScrollListItemBinding.inflate(LayoutInflater.from(context))
+            holder = ViewHolder(binding)
         } else {
-            return 0;
-        }
-    }
-
-    @Override
-    public ProjectComponent getItem(int position) {
-        return mFilteredProjectComponents[position];
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
-        ViewHolder holder;
-
-        if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_scroll_list_item, null);
-            holder = new ViewHolder(v);
-        } else {
-            holder = (ViewHolder)v.getTag();
+            holder = convertView.tag as ViewHolder
         }
 
-        // render view
-        String label = getLocalizedModeLabel(getContext(), getItem(position).getLabel());
-        holder.mProjectComponentView.setText(label);
-        holder.mCodeView.setText(getItem(position).getSlug());
+        holder.bind(position)
 
-        LinearLayout ll = (LinearLayout)v.findViewById(R.id.scroll_list_item_layout);
-        if(!mFilteredProjectComponents[position].displayItemIcon()) {
-            ll.removeView(ll.findViewById(R.id.itemIcon));
-        }
-        LinearLayout rmll = (LinearLayout)ll.findViewById(R.id.rightmost_scroll_list_item_layout);
-        if(!mFilteredProjectComponents[position].displayMoreIcon()) {
-            rmll.removeView((rmll.findViewById(R.id.moreIcon)));
-        }
-
-
-        return v;
-    }
-
-    @Override
-    public void notifyDataSetChanged(){
-        super.notifyDataSetChanged();
+        return holder.binding.root
     }
 
     /**
      * Returns the target language filter
      * @return
      */
-    public Filter getFilter() {
-        if(mProjectComponentFilter == null) {
-            mProjectComponentFilter = new ProjectComponentFilter();
+    override fun getFilter(): Filter {
+        if (mProjectComponentFilter == null) {
+            mProjectComponentFilter = ProjectComponentFilter()
         }
-        return mProjectComponentFilter;
+        return mProjectComponentFilter!!
     }
 
-    public static class ViewHolder {
-        public TextView mProjectComponentView;
-        public TextView mCodeView;
-
-        public ViewHolder(View view) {
-            mProjectComponentView = (TextView) view.findViewById(R.id.majorText);
-            mCodeView = (TextView) view.findViewById(R.id.minorText);
-            view.setTag(this);
-        }
-    }
-
-    private class ProjectComponentFilter extends Filter {
-
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            FilterResults results = new FilterResults();
-            if(charSequence == null || charSequence.length() == 0) {
+    private inner class ProjectComponentFilter : Filter() {
+        override fun performFiltering(charSequence: CharSequence?): FilterResults {
+            val results = FilterResults()
+            if (charSequence.isNullOrEmpty()) {
                 // no filter
-                results.values = Arrays.asList(mProjectComponents);
-                results.count = mProjectComponents.length;
+                results.values = mProjectComponents
+                results.count = mProjectComponents.size
             } else {
                 // perform filter
-                List<ProjectComponent> filteredCategories = new ArrayList<>();
-                for(ProjectComponent language:mProjectComponents) {
+                val filteredCategories: MutableList<ProjectComponent> = ArrayList()
+                for (language in mProjectComponents) {
                     // match the target language id
-                    boolean match = language.getSlug().toLowerCase().startsWith(charSequence.toString().toLowerCase());
-                    if(!match) {
-                        if (language.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                    var match = language.slug.lowercase(Locale.getDefault()).startsWith(
+                        charSequence.toString().lowercase(
+                            Locale.getDefault()
+                        )
+                    )
+                    if (!match) {
+                        if (language.name.lowercase(Locale.getDefault()).startsWith(
+                                charSequence.toString().lowercase(
+                                    Locale.getDefault()
+                                )
+                            )
+                        ) {
                             // match the target language name
-                            match = true;
+                            match = true
                         }
                     }
-                    if(match) {
-                        filteredCategories.add(language);
+                    if (match) {
+                        filteredCategories.add(language)
                     }
                 }
-                results.values = filteredCategories;
-                results.count = filteredCategories.size();
+                results.values = filteredCategories
+                results.count = filteredCategories.size
             }
-            return results;
+            return results
         }
 
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<ProjectComponent> filteredProjectComponents = (List<ProjectComponent>)filterResults.values;
-            if(charSequence != null && charSequence.length() > 0) {
-                sortProjectComponents(filteredProjectComponents, charSequence);
+        override fun publishResults(charSequence: CharSequence?, filterResults: FilterResults) {
+            var filteredProjectComponents = filterResults.values as List<ProjectComponent>
+            if (!charSequence.isNullOrEmpty()) {
+                filteredProjectComponents = sortProjectComponents(filteredProjectComponents, charSequence)
             }
-            mFilteredProjectComponents = filteredProjectComponents.toArray(new ProjectComponent[filteredProjectComponents.size()]);
-            notifyDataSetChanged();
+            mFilteredProjectComponents.clear()
+            mFilteredProjectComponents.addAll(filteredProjectComponents)
+            notifyDataSetChanged()
         }
     }
 
-    /**
-     * Sorts target languages by id
-     * @param languages
-     * @param referenceId languages are sorted according to the reference id
-     */
-    private static void sortProjectComponents(List<ProjectComponent> languages, final CharSequence referenceId) {
-        Collections.sort(languages, new Comparator<ProjectComponent>() {
-            @Override
-            public int compare(ProjectComponent lhs, ProjectComponent rhs) {
-                String lhId = lhs.getSlug();
-                String rhId = rhs.getSlug();
+    private fun getLocalizedModeLabel(ctx: Context, label: String): String {
+        val chunk = ctx.getString(R.string.chunk_title)
+        val verse = ctx.getString(R.string.title_verse)
+
+        return when (label) {
+            Mode.CHUNK -> chunk
+            Mode.VERSE -> verse
+            else -> label
+        }
+    }
+
+    private inner class ViewHolder(val binding: FragmentScrollListItemBinding) {
+        init {
+            binding.root.tag = this
+        }
+
+        fun bind(position: Int) {
+            // render view
+            val label = getLocalizedModeLabel(context, getItem(position).label)
+            binding.majorText.text = label
+            binding.minorText.text = getItem(position).slug
+
+            if (!mFilteredProjectComponents[position].displayItemIcon()) {
+                binding.scrollListItemLayout.removeView(binding.itemIcon)
+            }
+            if (!mFilteredProjectComponents[position].displayMoreIcon()) {
+                binding.rightmostScrollListItemLayout.removeView((binding.moreIcon))
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * Sorts components by id
+         * @param components
+         * @param referenceId languages are sorted according to the reference id
+         */
+        private fun sortProjectComponents(
+            components: List<ProjectComponent>,
+            referenceId: CharSequence
+        ): List<ProjectComponent> {
+            return components.sortedWith { lhs, rhs ->
+                var lhId = lhs.slug
+                var rhId = rhs.slug
                 // give priority to matches with the reference
-                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
-                    lhId = "!" + lhId;
+                if (lhId.startsWith(referenceId.toString().lowercase(Locale.getDefault()))) {
+                    lhId = "!$lhId"
                 }
-                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
-                    rhId = "!" + rhId;
+                if (rhId.startsWith(referenceId.toString().lowercase(Locale.getDefault()))) {
+                    rhId = "!$rhId"
                 }
-                return lhId.compareToIgnoreCase(rhId);
+                lhId.compareTo(rhId, ignoreCase = true)
             }
-        });
-    }
-
-    private String getLocalizedModeLabel(Context ctx, String label) {
-        String chunk = ctx.getString(R.string.chunk_title);
-        String verse = ctx.getString(R.string.title_verse);
-
-        switch (label) {
-            case Mode.CHUNK:
-                return chunk;
-            case Mode.VERSE:
-                return verse;
-            default:
-                return label;
         }
     }
 }

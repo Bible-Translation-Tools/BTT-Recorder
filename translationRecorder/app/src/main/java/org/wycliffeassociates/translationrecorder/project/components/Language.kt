@@ -1,54 +1,41 @@
-package org.wycliffeassociates.translationrecorder.project.components;
+package org.wycliffeassociates.translationrecorder.project.components
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Parcel
+import android.os.Parcelable
+import org.wycliffeassociates.translationrecorder.Utils
 
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
+class Language : ProjectComponent, Parcelable {
+    constructor(slug: String?, name: String?) : super(slug, name)
 
-public class Language extends ProjectComponent implements Parcelable {
-
-    public Language(String slug, String name){
-        super(slug, name);
+    override fun getLabel(): String {
+        return Utils.capitalizeFirstLetter(mName)
     }
 
-    public static Language[] getLanguages(ProjectDatabaseHelper db) {
-        Language[] languages =  db.getLanguages();
-        return languages;
+    override fun displayItemIcon(): Boolean {
+        return false
     }
 
-    @Override
-    public String getLabel(){
-        return Utils.capitalizeFirstLetter(mName);
+    override fun describeContents(): Int {
+        return 0
     }
 
-    @Override
-    public boolean displayItemIcon() {
-        return false;
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeString(mSlug)
+        dest.writeString(mName)
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
+    constructor(parcel: Parcel) : super(parcel)
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mSlug);
-        dest.writeString(mName);
-    }
+    companion object {
+        @JvmField
+        val CREATOR: Parcelable.Creator<Language> = object : Parcelable.Creator<Language> {
+            override fun createFromParcel(parcel: Parcel): Language {
+                return Language(parcel)
+            }
 
-    public static final Parcelable.Creator<Language> CREATOR = new Parcelable.Creator<Language>() {
-        public Language createFromParcel(Parcel in) {
-            return new Language(in);
+            override fun newArray(size: Int): Array<Language?> {
+                return arrayOfNulls(size)
+            }
         }
-
-        public Language[] newArray(int size) {
-            return new Language[size];
-        }
-    };
-
-    public Language(Parcel in) {
-        super(in);
     }
 }

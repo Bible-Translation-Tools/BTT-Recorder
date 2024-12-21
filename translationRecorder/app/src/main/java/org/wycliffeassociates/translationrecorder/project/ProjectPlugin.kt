@@ -1,296 +1,264 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.content.Context;
-import android.util.JsonReader;
-
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.components.Book;
-import org.wycliffeassociates.translationrecorder.project.components.Mode;
-import org.wycliffeassociates.translationrecorder.project.components.Version;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
+import android.util.JsonReader
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.project.components.Book
+import org.wycliffeassociates.translationrecorder.project.components.Mode
+import org.wycliffeassociates.translationrecorder.project.components.Version
+import java.io.File
+import java.io.FileReader
+import java.io.IOException
+import java.io.Reader
 
 /**
  * Created by sarabiaj on 3/20/2017.
  */
-
-public class ProjectPlugin {
-
-    File pluginDir;
-
-    String resource;
-    String slug;
-    String name;
-    String regex;
-    String groups;
-    String mask;
-    String booksPath;
-    String chunksPath;
-    String jarPath;
-    String className;
-    String versionsPath;
-    int sort;
+class ProjectPlugin(
+    private val pluginDir: File,
+    plugin: File,
+    private val db: IProjectDatabaseHelper
+) {
+    var resource: String? = null
+    var slug: String? = null
+    var name: String? = null
+    var regex: String? = null
+    var groups: String? = null
+    var mask: String? = null
+    var booksPath: String? = null
+    var chunksPath: String? = null
+    var jarPath: String? = null
+    var className: String? = null
+    var versionsPath: String? = null
+    var sort: Int = 0
 
     //groups
-    int language = -1;
-    int version = -1;
-    int bookNumber = -1;
-    int book = -1;
-    int chapter = -1;
-    int startVerse = -1;
+    var language: Int = -1
+    var version: Int = -1
+    var bookNumber: Int = -1
+    var book: Int = -1
+    var chapter: Int = -1
+    var startVerse: Int = -1
 
-    int endVerse = -1;
-    int take = -1;
-    List<Mode> modes = new ArrayList<>();
+    var endVerse: Int = -1
+    var take: Int = -1
+    var modes: MutableList<Mode> = ArrayList()
 
 
-    public ProjectPlugin(File pluginDir, File plugin) throws IOException {
-        this.pluginDir = pluginDir;
-        Reader reader = new FileReader(plugin);
-        init(reader);
+    init {
+        val reader: Reader = FileReader(plugin)
+        init(reader)
     }
 
-    public void importProjectPlugin(File pluginDir, ProjectDatabaseHelper db) throws IOException {
-        Reader bookReader = new FileReader(new File(pluginDir, "Books/" + booksPath));
-        List<Book> books = readBooks(new JsonReader(bookReader));
-        Reader versionReader = new FileReader(new File(pluginDir, "Versions/" + versionsPath));
-        List<Version> versions = readVersions(new JsonReader(versionReader));
+    @Throws(IOException::class)
+    fun importProjectPlugin() {
+        val bookReader: Reader = FileReader(
+            File(pluginDir, "books/$booksPath")
+        )
+        val books = readBooks(JsonReader(bookReader))
+        val versionReader: Reader = FileReader(
+            File(pluginDir, "versions/$versionsPath")
+        )
+        val versions = readVersions(JsonReader(versionReader))
+
 //        Reader chunksReader = new FileReader(new File(pluginDir, "Chunks/" + chunksPath));
 //        readChunks(new JsonReader(chunksReader));
-
         importPluginToDatabase(
-                books.toArray(new Book[books.size()]),
-                versions.toArray(new Version[versions.size()]),
-                modes.toArray(new Mode[modes.size()]),
-                db
-        );
+            books,
+            versions,
+            modes,
+            db
+        )
     }
 
-    private void init(Reader reader) throws IOException {
-        JsonReader jsonReader = new JsonReader(reader);
-        readPlugin(jsonReader);
-        groups = createMatchGroups();
+    @Throws(IOException::class)
+    private fun init(reader: Reader) {
+        val jsonReader = JsonReader(reader)
+        readPlugin(jsonReader)
+        groups = createMatchGroups()
     }
 
-    private List<Book> readBooks(JsonReader jsonReader) throws IOException {
-        List<Book> bookList = new ArrayList<>();
-        jsonReader.beginArray();
+    @Throws(IOException::class)
+    private fun readBooks(jsonReader: JsonReader): List<Book> {
+        val bookList: MutableList<Book> = ArrayList()
+        jsonReader.beginArray()
         while (jsonReader.hasNext()) {
-            jsonReader.beginObject();
-            String slug = null;
-            int num = 0;
-            String anth = null;
-            String name = null;
+            jsonReader.beginObject()
+            var slug: String? = null
+            var num = 0
+            var anth: String? = null
+            var name: String? = null
             while (jsonReader.hasNext()) {
-                String key = jsonReader.nextName();
-                if (key.equals("slug")) {
-                    slug = jsonReader.nextString();
-                } else if (key.equals("num")) {
-                    num = jsonReader.nextInt();
-                } else if (key.equals("anth")) {
-                    anth = jsonReader.nextString();
-                } else if (key.equals("name")) {
-                    name = jsonReader.nextString();
+                val key = jsonReader.nextName()
+                when (key) {
+                    "slug" -> slug = jsonReader.nextString()
+                    "num" -> num = jsonReader.nextInt()
+                    "anth" -> anth = jsonReader.nextString()
+                    "name" -> name = jsonReader.nextString()
                 }
             }
-            bookList.add(new Book(slug, name, anth, num));
-            jsonReader.endObject();
+            bookList.add(Book(slug, name, anth, num))
+            jsonReader.endObject()
         }
-        jsonReader.endArray();
-        return bookList;
+        jsonReader.endArray()
+        return bookList
     }
 
-    private void readChunks(JsonReader jsonReader) {
-
-    }
-
-    private List<Version> readVersions(JsonReader jsonReader) throws IOException {
-        List<Version> versionList = new ArrayList<>();
-        jsonReader.beginArray();
+    @Throws(IOException::class)
+    private fun readVersions(jsonReader: JsonReader): List<Version> {
+        val versionList: MutableList<Version> = ArrayList()
+        jsonReader.beginArray()
         while (jsonReader.hasNext()) {
-            jsonReader.beginObject();
-            String slug = null;
-            String name = null;
+            jsonReader.beginObject()
+            var slug: String? = null
+            var name: String? = null
             while (jsonReader.hasNext()) {
-                String key = jsonReader.nextName();
-                if (key.equals("slug")) {
-                    slug = jsonReader.nextString();
-                } else if (key.equals("name")) {
-                    name = jsonReader.nextString();
+                val key = jsonReader.nextName()
+                if (key == "slug") {
+                    slug = jsonReader.nextString()
+                } else if (key == "name") {
+                    name = jsonReader.nextString()
                 }
             }
-            versionList.add(new Version(slug, name));
-            jsonReader.endObject();
+            versionList.add(Version(slug, name))
+            jsonReader.endObject()
         }
-        jsonReader.endArray();
-        return versionList;
+        jsonReader.endArray()
+        return versionList
     }
 
-    private void importPluginToDatabase(
-            Book[] books,
-            Version[] versions,
-            Mode[] modes,
-            ProjectDatabaseHelper db
+    private fun importPluginToDatabase(
+        books: List<Book>,
+        versions: List<Version>,
+        modes: List<Mode>,
+        db: IProjectDatabaseHelper
     ) {
-        db.addAnthology(slug, name, resource, sort, regex, groups, mask, jarPath, className);
-        db.addBooks(books);
-        db.addVersions(versions);
-        db.addModes(modes, slug);
-        db.addVersionRelationships(slug, versions);
+        db.addAnthology(slug, name, resource, sort, regex, groups, mask, jarPath, className)
+        db.addBooks(books)
+        db.addVersions(versions)
+        db.addModes(modes, slug!!)
+        db.addVersionRelationships(slug!!, versions)
         //db.addModeRelationships(slug, modes);
     }
 
-    private String createMatchGroups() {
-        StringBuilder groups = new StringBuilder();
-        groups.append(language);
-        groups.append(" ");
-        groups.append(version);
-        groups.append(" ");
-        groups.append(bookNumber);
-        groups.append(" ");
-        groups.append(book);
-        groups.append(" ");
-        groups.append(chapter);
-        groups.append(" ");
-        groups.append(startVerse);
-        groups.append(" ");
-        groups.append(endVerse);
-        groups.append(" ");
-        groups.append(take);
-        return groups.toString();
+    private fun createMatchGroups(): String {
+        val groups = StringBuilder()
+        groups.append(language)
+        groups.append(" ")
+        groups.append(version)
+        groups.append(" ")
+        groups.append(bookNumber)
+        groups.append(" ")
+        groups.append(book)
+        groups.append(" ")
+        groups.append(chapter)
+        groups.append(" ")
+        groups.append(startVerse)
+        groups.append(" ")
+        groups.append(endVerse)
+        groups.append(" ")
+        groups.append(take)
+        return groups.toString()
     }
 
-    private void readPlugin(JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    private fun readPlugin(jsonReader: JsonReader) {
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("resource")) {
-                resource = jsonReader.nextString();
-            } else if (key.equals("books")) {
-                booksPath = jsonReader.nextString();
-            } else if (key.equals("chunks")) {
-                chunksPath = jsonReader.nextString();
-            } else if (key.equals("versions")) {
-                versionsPath = jsonReader.nextString();
-            } else if (key.equals("anthology")) {
-                readAnthologySection(jsonReader);
-            } else if (key.equals("modes")) {
-                readModesSection(jsonReader);
-            } else  if (key.equals("chunk_plugin")) {
-                readChunkSection(jsonReader);
-            } else  if (key.equals("sort")) {
-                sort = jsonReader.nextInt();
+            val key = jsonReader.nextName()
+            when (key) {
+                "resource" -> resource = jsonReader.nextString()
+                "books" -> booksPath = jsonReader.nextString()
+                "chunks" -> chunksPath = jsonReader.nextString()
+                "versions" -> versionsPath = jsonReader.nextString()
+                "anthology" -> readAnthologySection(jsonReader)
+                "modes" -> readModesSection(jsonReader)
+                "chunk_plugin" -> readChunkSection(jsonReader)
+                "sort" -> sort = jsonReader.nextInt()
             }
         }
-        jsonReader.endObject();
+        jsonReader.endObject()
     }
 
-    private void readAnthologySection(JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    private fun readAnthologySection(jsonReader: JsonReader) {
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("slug")) {
-                slug = jsonReader.nextString();
-            } else if (key.equals("name")) {
-                name = jsonReader.nextString();
-            } else if (key.equals("file_conv")) {
-                mask = jsonReader.nextString();
-            } else if (key.equals("parser")) {
-                readParserSection(jsonReader);
+            val key = jsonReader.nextName()
+            when (key) {
+                "slug" -> slug = jsonReader.nextString()
+                "name" -> name = jsonReader.nextString()
+                "file_conv" -> mask = jsonReader.nextString()
+                "parser" -> readParserSection(jsonReader)
             }
         }
-        jsonReader.endObject();
+        jsonReader.endObject()
     }
 
-    private void readParserSection(JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    private fun readParserSection(jsonReader: JsonReader) {
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("regex")) {
-                regex = jsonReader.nextString();
-            } else if (key.equals("groups")) {
-                readGroupsSection(jsonReader);
+            val key = jsonReader.nextName()
+            if (key == "regex") {
+                regex = jsonReader.nextString()
+            } else if (key == "groups") {
+                readGroupsSection(jsonReader)
             }
         }
-        jsonReader.endObject();
+        jsonReader.endObject()
     }
 
-    private void readGroupsSection(JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    private fun readGroupsSection(jsonReader: JsonReader) {
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (key.equals("language")) {
-                language = jsonReader.nextInt();
-            } else if (key.equals("version")) {
-                version = jsonReader.nextInt();
-            } else if (key.equals("book_number")) {
-                bookNumber = jsonReader.nextInt();
-            } else if (key.equals("book")) {
-                book = jsonReader.nextInt();
-            } else if (key.equals("chapter")) {
-                chapter = jsonReader.nextInt();
-            } else if (key.equals("start_verse")) {
-                startVerse = jsonReader.nextInt();
-            } else if (key.equals("end_verse")) {
-                endVerse = jsonReader.nextInt();
-            } else if (key.equals("take")) {
-                take = jsonReader.nextInt();
+            val key = jsonReader.nextName()
+            when (key) {
+                "language" -> language = jsonReader.nextInt()
+                "version" -> version = jsonReader.nextInt()
+                "book_number" -> bookNumber = jsonReader.nextInt()
+                "book" -> book = jsonReader.nextInt()
+                "chapter" -> chapter = jsonReader.nextInt()
+                "start_verse" -> startVerse = jsonReader.nextInt()
+                "end_verse" -> endVerse = jsonReader.nextInt()
+                "take" -> take = jsonReader.nextInt()
             }
         }
-        jsonReader.endObject();
+        jsonReader.endObject()
     }
 
-    public void readModesSection(JsonReader jsonReader) throws IOException {
-        jsonReader.beginArray();
+    @Throws(IOException::class)
+    fun readModesSection(jsonReader: JsonReader) {
+        jsonReader.beginArray()
         while (jsonReader.hasNext()) {
-            jsonReader.beginObject();
-            String name = null;
-            String type = null;
+            jsonReader.beginObject()
+            var name: String? = null
+            var type: String? = null
             while (jsonReader.hasNext()) {
-                String key = jsonReader.nextName();
-                if (key.equals("name")) {
-                    name = jsonReader.nextString();
-                } else if (key.equals("type")) {
-                    type = jsonReader.nextString();
+                val key = jsonReader.nextName()
+                if (key == "name") {
+                    name = jsonReader.nextString()
+                } else if (key == "type") {
+                    type = jsonReader.nextString()
                 }
             }
-            jsonReader.endObject();
-            modes.add(new Mode(name, name, type));
+            jsonReader.endObject()
+            modes.add(Mode(name, name, type))
         }
-        jsonReader.endArray();
+        jsonReader.endArray()
     }
 
-    public void readChunkSection(JsonReader jsonReader) throws IOException
-    {
-        jsonReader.beginObject();
+    @Throws(IOException::class)
+    fun readChunkSection(jsonReader: JsonReader) {
+        jsonReader.beginObject()
         while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if(key.equals("jar")) {
-                jarPath = jsonReader.nextString();
-            } else if (key.equals("class")) {
-                className = jsonReader.nextString();
+            val key = jsonReader.nextName()
+            if (key == "jar") {
+                jarPath = jsonReader.nextString()
+            } else if (key == "class") {
+                className = jsonReader.nextString()
             }
         }
-        jsonReader.endObject();
-    }
-    public String getBooksPath() {
-        return booksPath;
-    }
-
-    public String getChunksPath() {
-        return chunksPath;
-    }
-
-    public String getVersionsPath() {
-        return versionsPath;
-    }
-
-    public String getJarPath() {
-        return jarPath;
+        jsonReader.endObject()
     }
 }

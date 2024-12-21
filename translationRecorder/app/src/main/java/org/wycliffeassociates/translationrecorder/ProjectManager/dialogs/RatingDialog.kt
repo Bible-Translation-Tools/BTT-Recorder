@@ -1,149 +1,114 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs;
+package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Context
+import android.os.Bundle
+import androidx.fragment.app.DialogFragment
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.DialogRatingBinding
+import org.wycliffeassociates.translationrecorder.project.TakeInfo
 
 /**
  * Created by leongv on 8/9/2016.
  */
-public class RatingDialog extends DialogFragment {
-
-    public static String TAKE_INFO = "key_take_info";
-    public static String CURRENT_RATING_KEY = "key_current_rating";
-
-    public interface DialogListener {
-        void onPositiveClick(RatingDialog dialog);
-        void onNegativeClick(RatingDialog dialog);
+class RatingDialog : DialogFragment() {
+    interface DialogListener {
+        fun onPositiveClick(dialog: RatingDialog)
+        fun onNegativeClick(dialog: RatingDialog)
     }
 
-    private int mRating;
-    private DialogListener mListener;
-    private TakeInfo mTakeInfo;
+    private var listener: DialogListener? = null
+    lateinit var takeInfo: TakeInfo
+        private set
 
-    private FourStepImageView mOneStar, mTwoStar, mThreeStar;
+    private var _binding: DialogRatingBinding? = null
+    private val binding get() = _binding!!
 
-    public static RatingDialog newInstance(TakeInfo takeInfo, int currentRating){
-        RatingDialog rate = new RatingDialog();
-        Bundle args = new Bundle();
-        args.putParcelable(TAKE_INFO, takeInfo);
-        args.putInt(CURRENT_RATING_KEY, currentRating);
-        rate.setArguments(args);
-        return rate;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-        mTakeInfo = args.getParcelable(TAKE_INFO);
-        mRating = args.getInt(CURRENT_RATING_KEY);
-    }
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-
-        AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-            .setTitle(getString(R.string.rate_take))
-            .setView(inflater.inflate(R.layout.dialog_rating, null))
-            .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    mListener.onPositiveClick(RatingDialog.this);
+    private var _rating = 0
+    var rating: Int
+        get() = _rating
+        private set(rating) {
+            _rating = rating
+            when (_rating) {
+                1 -> {
+                    binding.oneStarRating.step = 1
+                    binding.twoStarRating.step = 0
+                    binding.threeStarRating.step = 0
                 }
-            })
-            .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    mListener.onNegativeClick(RatingDialog.this);
+                2 -> {
+                    binding.oneStarRating.step = 2
+                    binding.twoStarRating.step = 2
+                    binding.threeStarRating.step = 0
                 }
-            })
-            .create();
 
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                AlertDialog alertDialog= (AlertDialog) dialog;
-                mOneStar = (FourStepImageView) alertDialog.findViewById(R.id.one_star_rating);
-                mTwoStar = (FourStepImageView) alertDialog.findViewById(R.id.two_star_rating);
-                mThreeStar = (FourStepImageView) alertDialog.findViewById(R.id.three_star_rating);
+                3 -> {
+                    binding.oneStarRating.step = 3
+                    binding.twoStarRating.step = 3
+                    binding.threeStarRating.step = 3
+                }
 
-                mOneStar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setRating(1);
-                    }
-                });
-
-                mTwoStar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setRating(2);
-                    }
-                });
-
-                mThreeStar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setRating(3);
-                    }
-                });
-
-                setRating(mRating);
+                else -> {
+                    binding.oneStarRating.step = 0
+                    binding.twoStarRating.step = 0
+                    binding.threeStarRating.step = 0
+                }
             }
-        });
+        }
 
-        return alertDialog;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val args = arguments
+        takeInfo = args?.getParcelable(TAKE_INFO)!!
+        _rating = args.getInt(CURRENT_RATING_KEY)
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = DialogRatingBinding.inflate(layoutInflater)
+
+        val alertDialog = AlertDialog.Builder(activity)
+            .setTitle(getString(R.string.rate_take))
+            .setView(binding.root)
+            .setPositiveButton(
+                getString(R.string.label_ok)
+            ) { _, _ -> listener?.onPositiveClick(this@RatingDialog) }
+            .setNegativeButton(
+                getString(R.string.title_cancel)
+            ) { _, _ -> listener?.onNegativeClick(this@RatingDialog) }
+            .create()
+
+        alertDialog.setOnShowListener {
+            binding.oneStarRating.setOnClickListener { rating = 1 }
+            binding.twoStarRating.setOnClickListener { rating = 2 }
+            binding.threeStarRating.setOnClickListener { rating = 3 }
+
+            rating = _rating
+        }
+
+        return alertDialog
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            mListener = (DialogListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement RatingDialogListener");
+            listener = context as DialogListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement RatingDialogListener")
         }
     }
 
-    private void setRating(int rating) {
-        mRating = rating;
-        switch (mRating) {
-            case 1:
-                mOneStar.setStep(1);
-                mTwoStar.setStep(0);
-                mThreeStar.setStep(0);
-                break;
-            case 2:
-                mOneStar.setStep(2);
-                mTwoStar.setStep(2);
-                mThreeStar.setStep(0);
-                break;
-            case 3:
-                mOneStar.setStep(3);
-                mTwoStar.setStep(3);
-                mThreeStar.setStep(3);
-                break;
-            default:
-                mOneStar.setStep(0);
-                mTwoStar.setStep(0);
-                mThreeStar.setStep(0);
+    companion object {
+        var TAKE_INFO: String = "key_take_info"
+        var CURRENT_RATING_KEY: String = "key_current_rating"
+
+        @JvmStatic
+        fun newInstance(takeInfo: TakeInfo?, currentRating: Int): RatingDialog {
+            val rate = RatingDialog()
+            val args = Bundle()
+            args.putParcelable(TAKE_INFO, takeInfo)
+            args.putInt(CURRENT_RATING_KEY, currentRating)
+            rate.arguments = args
+            return rate
         }
-    }
-
-    public int getRating() {
-        return mRating;
-    }
-
-    public TakeInfo getTakeInfo(){
-        return mTakeInfo;
     }
 }

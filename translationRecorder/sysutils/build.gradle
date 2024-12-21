@@ -2,11 +2,10 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.door43.sysutils'
-
     defaultConfig {
-        compileSdk 31
-        minSdkVersion 21
-        targetSdk 28
+        compileSdk 35
+        minSdk 22
+        targetSdk 35
     }
     buildTypes {
         release {
@@ -19,13 +18,19 @@ android {
         disable += ['ExpiredTargetSdkVersion','MissingTranslation']
     }
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation project(':com.door43.tools.reporting')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'org.unfoldingword.tools:gogs-client:1.4.0'
+    implementation 'org.unfoldingword.tools:gogs-client:1.6.1'
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:core:1.5.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 }

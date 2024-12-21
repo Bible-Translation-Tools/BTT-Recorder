@@ -1,19 +1,14 @@
-package org.wycliffeassociates.translationrecorder.utilities;
+package org.wycliffeassociates.translationrecorder.utilities
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.ProgressDialog;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-
-import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
-/**
- * Created by sarabiaj on 9/23/2016.
- */
+import android.app.Activity
+import android.app.ProgressDialog
+import android.content.Context
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import androidx.fragment.app.Fragment
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.concurrent.Volatile
 
 /**
  * TaskFragment allows for the hosting of an arbitrary number of threads that need to block the UI and
@@ -21,61 +16,58 @@ import java.util.concurrent.atomic.AtomicLong;
  * dialog for each running task, and provide a callback to the activity on completion of the task using the OnTaskComplete
  * interface.
  */
-public class TaskFragment extends Fragment implements OnTaskProgressListener {
-
+class TaskFragment : Fragment(), OnTaskProgressListener {
     //provides a callback for the activity that initiated the task
-    public interface OnTaskComplete {
-        void onTaskComplete(int taskTag, int resultCode);
+    interface OnTaskComplete {
+        fun onTaskComplete(taskTag: Int, resultCode: Int)
     }
 
-    public static int STATUS_OK = 1;
-    private static int STATUS_CANCEL = 0;
-    public static int STATUS_ERROR = -1;
+    @Volatile
+    var mIdGenerator: AtomicLong = AtomicLong(0)
 
-    volatile AtomicLong mIdGenerator = new AtomicLong(0);
+    var handler: Handler? = null
+    private var taskCompleteDelegator: OnTaskComplete? = null
+    private val taskHolder: HashMap<Long, TaskHolder> = hashMapOf()
 
-    Handler mHandler;
-    OnTaskComplete mActivity;
-    volatile HashMap<Long, TaskHolder> mTaskHolder = new HashMap<>();
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
     }
 
-    @Override
-    public synchronized void onAttach(Activity activity) throws IllegalArgumentException {
-        super.onAttach(activity);
-        if (activity instanceof OnTaskComplete) {
-            mActivity = (OnTaskComplete) activity;
+    @Synchronized
+    @Throws(IllegalArgumentException::class)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnTaskComplete) {
+            taskCompleteDelegator = context
         } else {
-            throw new IllegalArgumentException("Activity does not implement OnTaskComplete");
+            throw IllegalArgumentException("Activity does not implement OnTaskComplete")
         }
-        if (mHandler == null) {
-            mHandler = new Handler(Looper.getMainLooper());
+        if (handler == null) {
+            handler = Handler(Looper.getMainLooper())
         } else {
-            //Post to the handler so that dialogfragments will be attached to the activity prior to
+            //Post to the handler so that dialog fragments will be attached to the activity prior to
             //these progress dialogs.
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (mTaskHolder) {
-                        Set<Long> keys = mTaskHolder.keySet();
-                        for (final Long id : keys) {
-                            //duplicate code from configure progress dialog, however, it appears to be necessary for the dialog to display and set progress properly
-                            TaskHolder task = mTaskHolder.get(id);
-                            task.dismissDialog();
-                            ProgressDialog pd = configureProgressDialog(task.mTitle, task.mMessage, task.getProgress(), task.isIndeterminate());
-                            task.setProgressDialog(pd);
-                            task.showProgress();
-                            task.getProgressDialog().setProgress(task.getProgress());
-                        }
+            handler!!.post {
+                synchronized(taskHolder) {
+                    val keys: Set<Long> = taskHolder.keys
+                    for (id in keys) {
+                        //duplicate code from configure progress dialog, however, it appears to be necessary for the dialog to display and set progress properly
+                        val task = taskHolder[id]
+                        task!!.dismissDialog()
+                        val pd = configureProgressDialog(
+                            task.mTitle,
+                            task.mMessage,
+                            task.progress,
+                            task.isIndeterminate
+                        )
+                        task.progressDialog = pd
+                        task.showProgress()
+                        task.progressDialog?.progress = task.progress
                     }
                 }
-            });
+            }
         }
-
     }
 
     /**
@@ -84,21 +76,18 @@ public class TaskFragment extends Fragment implements OnTaskProgressListener {
      * on the UI thread and therefore the activity reference will not be null, so posting to the UI Thread
      * here is safe.
      */
-    @Override
-    public synchronized void onDetach() {
-        super.onDetach();
-        ((Activity) mActivity).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mTaskHolder) {
-                    Set<Long> keys = mTaskHolder.keySet();
-                    for (final Long id : keys) {
-                        //duplicate code from configure progress dialog, however, it appears to be necessary for the dialog to display and set progress properly
-                        mTaskHolder.get(id).dismissDialog();
-                    }
+    @Synchronized
+    override fun onDetach() {
+        super.onDetach()
+        (taskCompleteDelegator as Activity).runOnUiThread {
+            synchronized(taskHolder) {
+                val keys: Set<Long> = taskHolder.keys
+                for (id in keys) {
+                    //duplicate code from configure progress dialog, however, it appears to be necessary for the dialog to display and set progress properly
+                    taskHolder[id]?.dismissDialog()
                 }
             }
-        });
+        }
     }
 
     /**
@@ -109,137 +98,107 @@ public class TaskFragment extends Fragment implements OnTaskProgressListener {
      * @param progressMessage The message of the progress dialog to be created for the provided task
      * @param indeterminate   Whether the progress dialog should display progress or is indeterminate for the provided task
      */
-    public synchronized void executeRunnable(final Task task, final String progressTitle, final String progressMessage, final boolean indeterminate) {
-        synchronized (mTaskHolder) {
-            final Long id = mIdGenerator.incrementAndGet();
-            task.setOnTaskProgressListener(TaskFragment.this, id);
-            final TaskHolder th = new TaskHolder(task, progressTitle, progressMessage);
-            mTaskHolder.put(id, th);
-            ProgressDialog pd = configureProgressDialog(progressTitle, progressMessage, 0, indeterminate);
-            th.setProgressDialog(pd);
-            th.setIsIndeterminate(indeterminate);
-            th.showProgress();
-            th.startTask();
+    @Synchronized
+    fun executeRunnable(
+        task: Task,
+        progressTitle: String,
+        progressMessage: String,
+        indeterminate: Boolean
+    ) {
+        synchronized(taskHolder) {
+            val id = mIdGenerator.incrementAndGet()
+            task.setOnTaskProgressListener(this@TaskFragment, id)
+            val th = TaskHolder(task, progressTitle, progressMessage)
+            taskHolder[id] = th
+            val pd = configureProgressDialog(progressTitle, progressMessage, 0, indeterminate)
+            th.progressDialog = pd
+            th.isIndeterminate = indeterminate
+            th.showProgress()
+            th.startTask()
         }
     }
 
-    private ProgressDialog configureProgressDialog(String title, String message, int progress, boolean indeterminate) {
-        ProgressDialog pd = new ProgressDialog(getActivity());
-        pd.setIndeterminate(indeterminate);
+    private fun configureProgressDialog(
+        title: String,
+        message: String,
+        progress: Int,
+        indeterminate: Boolean
+    ): ProgressDialog {
+        val pd = ProgressDialog(activity)
+        pd.isIndeterminate = indeterminate
         if (!indeterminate) {
-            pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            pd.setProgress(progress);
-            pd.setMax(100);
+            pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+            pd.progress = progress
+            pd.max = 100
         }
-        pd.setTitle(title);
-        pd.setMessage(message);
-        pd.setCancelable(false);
-        return pd;
+        pd.setTitle(title)
+        pd.setMessage(message)
+        pd.setCancelable(false)
+        return pd
     }
 
 
-    @Override
-    public void onTaskProgressUpdate(final Long id, final int progress) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mTaskHolder) {
-                    TaskHolder task = mTaskHolder.get(id);
-                    task.getProgressDialog().setProgress(progress);
-                }
-            }
-        });
-    }
-
-    private synchronized void endTask(final Long id, final int status) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mTaskHolder) {
-                    TaskHolder task = mTaskHolder.get(id);
-                    task.dismissDialog();
-                    mActivity.onTaskComplete(task.getTaskTag(), status);
-                    mTaskHolder.remove(id);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onTaskComplete(final Long id) {
-        endTask(id, STATUS_OK);
-    }
-
-    @Override
-    public void onTaskCancel(Long id) {
-        endTask(id, STATUS_CANCEL);
-    }
-
-    @Override
-    public void onTaskError(Long id) {
-        endTask(id, STATUS_ERROR);
-    }
-
-    private class TaskHolder {
-        Task mTask;
-        ProgressDialog mPd;
-        int mProgress;
-        String mTitle;
-        String mMessage;
-        Thread mThread;
-        boolean mIsIndeterminate = true;
-
-        TaskHolder(Task task, String title, String message) {
-            mTask = task;
-            mTitle = title;
-            mMessage = message;
-            mThread = new Thread(task);
-            mProgress = 0;
-        }
-
-        public int getTaskTag() {
-            return mTask.getTag();
-        }
-
-        public void setProgressDialog(ProgressDialog pd) {
-            mPd = pd;
-        }
-
-        public ProgressDialog getProgressDialog() {
-            return mPd;
-        }
-
-        public int getProgress() {
-            return mProgress;
-        }
-
-        public void setProgress(int progress) {
-            mProgress = progress;
-        }
-
-        public void setIsIndeterminate(boolean indeterminate) {
-            mIsIndeterminate = indeterminate;
-        }
-
-        public boolean isIndeterminate() {
-            return mIsIndeterminate;
-        }
-
-        public void startTask() {
-            mThread.start();
-        }
-
-        public void dismissDialog() {
-            if (mPd != null && mPd.isShowing()) {
-                mPd.dismiss();
-            }
-        }
-
-        public void showProgress() {
-            if (mPd != null && !mPd.isShowing()) {
-                mPd.show();
+    override fun onTaskProgressUpdate(id: Long, progress: Int) {
+        handler!!.post {
+            synchronized(taskHolder) {
+                val task = taskHolder[id]
+                task?.progressDialog?.progress = progress
             }
         }
     }
 
+    @Synchronized
+    private fun endTask(id: Long, status: Int) {
+        handler!!.post {
+            synchronized(taskHolder) {
+                val task = taskHolder[id]
+                task?.dismissDialog()
+                taskCompleteDelegator?.onTaskComplete(task!!.taskTag, status)
+                taskHolder.remove(id)
+            }
+        }
+    }
+
+    override fun onTaskComplete(id: Long) {
+        endTask(id, STATUS_OK)
+    }
+
+    override fun onTaskCancel(id: Long) {
+        endTask(id, STATUS_CANCEL)
+    }
+
+    override fun onTaskError(id: Long) {
+        endTask(id, STATUS_ERROR)
+    }
+
+    inner class TaskHolder(var mTask: Task, var mTitle: String, var mMessage: String) {
+        var progressDialog: ProgressDialog? = null
+        var progress: Int = 0
+        var mThread: Thread = Thread(mTask)
+        var isIndeterminate: Boolean = true
+
+        val taskTag: Int
+            get() = mTask.tag
+
+        fun startTask() {
+            mThread.start()
+        }
+
+        fun dismissDialog() {
+            progressDialog?.dismiss()
+        }
+
+        fun showProgress() {
+            if (progressDialog?.isShowing == false) {
+                progressDialog?.show()
+            }
+        }
+    }
+
+    companion object {
+        private const val STATUS_CANCEL = 0
+        @JvmField
+        var STATUS_OK: Int = 1
+        var STATUS_ERROR: Int = -1
+    }
 }

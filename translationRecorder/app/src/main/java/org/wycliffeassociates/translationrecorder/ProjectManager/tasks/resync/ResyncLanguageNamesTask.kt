@@ -1,142 +1,145 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync;
+package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync
 
-import android.content.Context;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
-import org.wycliffeassociates.translationrecorder.project.ParseJSON;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileNotFoundException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import android.content.Context
+import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import org.json.JSONArray
+import org.json.JSONException
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.project.ParseJSON
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import java.io.BufferedInputStream
+import java.io.BufferedReader
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
 
 /**
  * Created by sarabiaj on 12/14/2016.
  */
+class ResyncLanguageNamesTask private constructor(
+    taskTag: Int,
+    private val mCtx: Context,
+    private val db: IProjectDatabaseHelper,
+    private val assetsProvider: AssetsProvider
+) : Task(taskTag) {
+    private var isLocal: Boolean = false
+    private var localFile: Uri? = null
+    private var remoteUrl: String? = null
+    private val handler: Handler = Handler(Looper.getMainLooper())
 
-public class ResyncLanguageNamesTask extends Task {
-    Context mCtx;
-    ProjectDatabaseHelper db;
-    boolean isLocal = false;
-    Uri localFile;
-    String remoteUrl;
-    Handler handler = new Handler(Looper.getMainLooper());
-
-    private ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db) {
-        super(taskTag);
-        mCtx = ctx;
-        this.db = db;
+    constructor(
+        taskTag: Int,
+        ctx: Context,
+        db: IProjectDatabaseHelper,
+        assetsProvider: AssetsProvider,
+        url: String?
+    ) : this(taskTag, ctx, db, assetsProvider) {
+        this.remoteUrl = url
     }
 
-    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, String url) {
-        this(taskTag, ctx, db);
-        this.remoteUrl = url;
+    constructor(
+        taskTag: Int,
+        ctx: Context,
+        db: IProjectDatabaseHelper,
+        assetsProvider: AssetsProvider,
+        uri: Uri?
+    ) : this(
+        taskTag,
+        ctx,
+        db,
+        assetsProvider
+    ) {
+        this.isLocal = true
+        this.localFile = uri
     }
 
-    public ResyncLanguageNamesTask(int taskTag, Context ctx, ProjectDatabaseHelper db, Uri uri) {
-        this(taskTag, ctx, db);
-        this.isLocal = true;
-        this.localFile = uri;
-    }
-
-    @Override
-    public void run() {
-        String json = isLocal ? loadJsonFromFile() : loadJsonFromUrl();
+    override fun run() {
+        val json = if (isLocal) loadJsonFromFile() else loadJsonFromUrl()
         try {
-            JSONArray jsonObject = new JSONArray(json);
-            ParseJSON parseJSON = new ParseJSON(mCtx);
-            Language[] languages = parseJSON.pullLangNames(jsonObject);
-            db.addLanguages(languages);
-            onTaskCompleteDelegator();
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mCtx, mCtx.getString(R.string.languages_updated), Toast.LENGTH_SHORT).show();
-                }
-            });
-        } catch (final JSONException e) {
-            e.printStackTrace();
-            onTaskErrorDelegator();
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mCtx, mCtx.getString(R.string.invalid_json), Toast.LENGTH_SHORT).show();
-                }
-            });
+            val jsonObject = JSONArray(json)
+            val parseJSON = ParseJSON(assetsProvider)
+            val languages: List<Language> = parseJSON.pullLangNames(jsonObject)
+            db.addLanguages(languages)
+            onTaskCompleteDelegator()
+            handler.post {
+                Toast.makeText(
+                    mCtx,
+                    mCtx.getString(R.string.languages_updated),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } catch (e: JSONException) {
+            e.printStackTrace()
+            onTaskErrorDelegator()
+            handler.post {
+                Toast.makeText(
+                    mCtx,
+                    mCtx.getString(R.string.invalid_json),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
-    private String loadJsonFromUrl() {
+    private fun loadJsonFromUrl(): String {
         try {
-            URL url = new URL(this.remoteUrl);
-            HttpURLConnection urlConnection = null;
+            val url = URL(this.remoteUrl)
+            var urlConnection: HttpURLConnection? = null
 
             try {
-                urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                StringBuilder json = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    json.append(line);
+                urlConnection = url.openConnection() as HttpURLConnection
+                val `in`: InputStream = BufferedInputStream(urlConnection.inputStream)
+                val reader = BufferedReader(InputStreamReader(`in`))
+                val json = StringBuilder()
+                var line: String?
+                while ((reader.readLine().also { line = it }) != null) {
+                    json.append(line)
                 }
-                reader.close();
-                return json.toString();
-            } catch (final IOException e) {
-                e.printStackTrace();
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mCtx, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                return "";
+                reader.close()
+                return json.toString()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                handler.post { Toast.makeText(mCtx, e.message, Toast.LENGTH_SHORT).show() }
+                return ""
             } finally {
-                urlConnection.disconnect();
+                urlConnection!!.disconnect()
             }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return "";
+        } catch (e: MalformedURLException) {
+            e.printStackTrace()
+            return ""
         }
     }
 
-    private String loadJsonFromFile() {
-        try (InputStream is = mCtx.getContentResolver().openInputStream(localFile)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            StringBuilder json = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                json.append(line);
-            }
-            reader.close();
-            return json.toString();
-        } catch (final FileNotFoundException e) {
-            e.printStackTrace();
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mCtx, e.getMessage(), Toast.LENGTH_SHORT).show();
+    private fun loadJsonFromFile(): String {
+        try {
+            mCtx.contentResolver.openInputStream(localFile!!).use { `is` ->
+                val reader = BufferedReader(InputStreamReader(`is`))
+                val json = StringBuilder()
+                var line: String?
+                while ((reader.readLine().also { line = it }) != null) {
+                    json.append(line)
                 }
-            });
-            return "";
-        } catch (IOException e) {
-            e.printStackTrace();
-            onTaskErrorDelegator();
-            return "";
+                reader.close()
+                return json.toString()
+            }
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+            handler.post { Toast.makeText(mCtx, e.message, Toast.LENGTH_SHORT).show() }
+            return ""
+        } catch (e: IOException) {
+            e.printStackTrace()
+            onTaskErrorDelegator()
+            return ""
         }
     }
 }

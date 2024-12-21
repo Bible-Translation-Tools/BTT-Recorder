@@ -1,267 +1,200 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.preference.PreferenceManager;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.components.Anthology;
-import org.wycliffeassociates.translationrecorder.project.components.Book;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
-import org.wycliffeassociates.translationrecorder.project.components.Mode;
-import org.wycliffeassociates.translationrecorder.project.components.Version;
-
-import java.io.IOException;
-import java.io.InputStream;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.TYPE
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
+import org.wycliffeassociates.translationrecorder.project.components.Anthology
+import org.wycliffeassociates.translationrecorder.project.components.Book
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import org.wycliffeassociates.translationrecorder.project.components.Mode
+import org.wycliffeassociates.translationrecorder.project.components.Version
+import java.io.IOException
+import java.io.InputStream
 
 /**
  * Created by sarabiaj on 5/10/2016.
  */
-public class Project implements Parcelable {
+class Project(
+    val targetLanguage: Language,
+    val anthology: Anthology,
+    val book: Book,
+    val version: Version,
+    val mode: Mode,
+    val contributors: String? = null,
+    var sourceLanguage: Language? = null,
+    var sourceAudioPath: String? = null
+) : Parcelable {
 
-    public static final String PROJECT_EXTRA = "project_extra";
+    private val fileName: FileName = FileName(targetLanguage, anthology, version, book)
 
-    public Language mTargetLanguage;
-    public Language mSourceLanguage;
-    public Anthology mAnthology;
-    public Book mBook;
-    public Version mVersion;
-    public Mode mMode;
-    public FileName mFileName;
-
-
-    String mContributors;
-    String mSourceAudioPath;
-
-    public interface ProjectPluginLoader {
-        ChunkPlugin loadChunkPlugin(Anthology anthology, Book book, ChunkPlugin.TYPE type);
-        InputStream chunksInputStream(Anthology anthology, Book book);
+    interface ProjectPluginLoader {
+        fun loadChunkPlugin(anthology: Anthology, book: Book, type: TYPE): ChunkPlugin
+        fun chunksInputStream(anthology: Anthology, book: Book): InputStream?
     }
 
-    public Project() {
+    constructor(parcel: Parcel) : this(
+        parcel.readParcelable(Language::class.java.classLoader)!!,
+        parcel.readParcelable(Anthology::class.java.classLoader)!!,
+        parcel.readParcelable(Book::class.java.classLoader)!!,
+        parcel.readParcelable(Version::class.java.classLoader)!!,
+        parcel.readParcelable(Mode::class.java.classLoader)!!,
+        parcel.readString(),
+        parcel.readParcelable(Language::class.java.classLoader),
+        parcel.readString()
+    )
+
+    val isOBS: Boolean get() = anthologySlug == "obs"
+
+    val projectSlugs: ProjectSlugs
+        get() = ProjectSlugs(
+            targetLanguageSlug,
+            versionSlug,
+            bookNumber.toInt(),
+            bookSlug
+        )
+
+    val targetLanguageSlug: String
+        get() = targetLanguage.slug
+
+    val sourceLanguageSlug: String
+        get() = sourceLanguage?.slug ?: ""
+
+    val anthologySlug: String
+        get() = anthology.slug
+
+    val bookSlug: String
+        get() = book.slug
+
+    val bookName: String
+        get() = book.name
+
+    val versionSlug: String
+        get() = version.slug
+
+    val modeSlug: String
+        get() = mode.slug
+
+    val modeType: TYPE
+        get() = mode.type
+
+    val modeName: String
+        get() = mode.name
+
+    val bookNumber: String
+        get() = book.order.toString()
+
+    val patternMatcher: ProjectPatternMatcher
+        get() = ProjectPatternMatcher(anthology.regex, anthology.matchGroups)
+
+    @Throws(IOException::class)
+    fun getChunkPlugin(pluginLoader: ProjectPluginLoader): ChunkPlugin {
+        return pluginLoader.loadChunkPlugin(anthology, book, modeType)
     }
 
-    public Project(Language target, Anthology anthology, Book book, Version version, Mode mode) {
-        mTargetLanguage = target;
-        mAnthology = anthology;
-        mBook = book;
-        mVersion = version;
-        mMode = mode;
-        mFileName = new FileName(target, anthology, version, book);
+    fun loadProjectIntoPreferences(
+        db: IProjectDatabaseHelper,
+        prefs: IPreferenceRepository
+    ) {
+        if (db.projectExists(this)) {
+            val projectId: Int = db.getProjectId(this)
+            prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, projectId)
+        }
     }
 
-    public Project(Language target, Anthology anthology, Book book, Version version, Mode mode, String sourceAudioPath) {
-        this(target, anthology, book, version, mode);
-        mSourceAudioPath = sourceAudioPath;
+    @SuppressLint("DefaultLocale")
+    fun getChapterFileName(chapter: Int): String {
+        val chapterFileName: String = targetLanguage.slug +
+                "_" + anthology.slug +
+                "_" + version.slug +
+                "_" + book.slug +
+                "_c" + String.format("%02d", chapter) +
+                ".wav"
+        return chapterFileName
     }
 
-    public boolean equals(Project p) {
-        if (p != null) {
-            if (mTargetLanguage != null  && mTargetLanguage.getSlug() != null && mTargetLanguage.getSlug().equals(p.getTargetLanguageSlug())
-                    && mBook != null && mBook.getSlug() != null && mBook.getSlug().equals(p.getBookSlug())
-                    && mVersion != null && mVersion.getSlug() != null && mVersion.getSlug().equals(p.getVersionSlug())
-                    && mMode != null && mMode.getSlug() != null && mMode.getSlug().equals(p.getModeSlug())) {
-                return true;
+    fun getFileName(chapter: Int, vararg verses: Int): String {
+        return fileName.getFileName(chapter, *verses)
+    }
+
+    fun getLocalizedModeName(ctx: Context): String {
+        val chunk: String = ctx.getString(R.string.chunk_title)
+        val verse: String = ctx.getString(R.string.title_verse)
+
+        return when (modeName) {
+            Mode.CHUNK -> chunk
+            Mode.VERSE -> verse
+            else -> modeName
+        }
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeParcelable(targetLanguage, flags)
+        dest.writeParcelable(anthology, flags)
+        dest.writeParcelable(book, flags)
+        dest.writeParcelable(version, flags)
+        dest.writeParcelable(mode, flags)
+        dest.writeString(contributors)
+        dest.writeParcelable(sourceLanguage, flags)
+        dest.writeString(sourceAudioPath)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other != null && other is Project) {
+            if (targetLanguage.slug == other.targetLanguageSlug
+                && book.slug == other.bookSlug
+                && version.slug == other.versionSlug
+                && mode.slug == other.modeSlug
+            ) {
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    public ChunkPlugin getChunkPlugin(ProjectPluginLoader pluginLoader) throws IOException {
-        return pluginLoader.loadChunkPlugin(mAnthology, mBook, getModeType());
+    override fun hashCode(): Int {
+        var result = targetLanguage.hashCode()
+        result = 31 * result + anthology.hashCode()
+        result = 31 * result + book.hashCode()
+        result = 31 * result + version.hashCode()
+        result = 31 * result + mode.hashCode()
+        return result
     }
 
-    public static Project getProjectFromPreferences(Context ctx, ProjectDatabaseHelper db) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
-        int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
-        Project project = db.getProject(projectId);
-        return project;
-    }
+    companion object {
+        const val PROJECT_EXTRA: String = "project_extra"
+        const val SOURCE_LANGUAGE_EXTRA: String = "source_language_extra"
+        const val SOURCE_LOCATION_EXTRA: String = "source_location_extra"
 
-    public void loadProjectIntoPreferences(Context ctx, ProjectDatabaseHelper db) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
-        if(db.projectExists(this)) {
-            int projectId = db.getProjectId(this);
-            pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, projectId).commit();
-        }
-    }
-
-    public boolean isOBS() {
-        if (getAnthologySlug().compareTo("obs") == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public String getChapterFileName(int chapter) {
-        String chapterFileName = mTargetLanguage.getSlug() +
-                "_" + mAnthology.getSlug() +
-                "_" + mVersion.getSlug() +
-                "_" + mBook.getSlug() +
-                "_c" + String.format("%02d", chapter) +
-                ".wav";
-        return chapterFileName;
-    }
-
-    public String getFileName(int chapter, int ... verses){
-        if(mFileName == null) {
-            mFileName = new FileName(mTargetLanguage, mAnthology, mVersion, mBook);
-        }
-        return mFileName.getFileName(chapter, verses);
-    }
-
-    public ProjectSlugs getProjectSlugs(){
-        return new ProjectSlugs(getTargetLanguageSlug(), getVersionSlug(), Integer.parseInt(getBookNumber()), getBookSlug());
-    }
-
-    public String getTargetLanguageSlug() {
-        return (mTargetLanguage == null) ? "" : mTargetLanguage.getSlug();
-    }
-
-    public String getSourceLanguageSlug() {
-        return (mSourceLanguage == null) ? "" : mSourceLanguage.getSlug();
-    }
-
-    public String getAnthologySlug() {
-        return (mAnthology == null) ? "" : mAnthology.getSlug();
-    }
-
-    public String getBookSlug() {
-        return (mBook == null) ? "" : mBook.getSlug();
-    }
-
-    public String getBookName() {
-        return (mBook == null) ? "" : mBook.getName();
-    }
-
-    public String getVersionSlug() {
-        return (mVersion == null) ? "" : mVersion.getSlug();
-    }
-
-    public String getModeSlug() {
-        return (mMode == null) ? "" : mMode.getSlug();
-    }
-
-    public ChunkPlugin.TYPE getModeType() {
-        return (mMode == null) ? null : mMode.getType();
-    }
-
-    public String getModeName() {
-        return (mMode == null) ? "" : mMode.getName();
-    }
-
-    public String getLocalizedModeName(Context ctx) {
-        String chunk = ctx.getString(R.string.chunk_title);
-        String verse = ctx.getString(R.string.title_verse);
-        String modeName = getModeName();
-
-        switch (modeName) {
-            case Mode.CHUNK:
-                return chunk;
-            case Mode.VERSE:
-                return verse;
-            default:
-                return modeName;
-        }
-    }
-
-    public String getContributors() {
-        return (mContributors == null) ? "" : mContributors;
-    }
-
-    public String getBookNumber() {
-        return (mBook == null) ? "" : String.valueOf(mBook.getOrder());
-    }
-
-    public String getSourceAudioPath() {
-        return (mSourceAudioPath == null) ? "" : mSourceAudioPath;
-    }
-
-    public void setTargetLanguage(Language target) {
-        mTargetLanguage = target;
-    }
-
-    public void setSourceLanguage(Language source) {
-        mSourceLanguage = source;
-    }
-
-    public void setBook(Book book) {
-        mBook = book;
-    }
-
-    public void setVersion(Version version) {
-        mVersion = version;
-    }
-
-    public void setAnthology(Anthology anthology) {
-        mAnthology = anthology;
-    }
-
-    public void setMode(Mode mode) {
-        mMode = mode;
-    }
-
-    public void setContributors(String contributors) {
-        mContributors = contributors;
-    }
-
-    public void setSourceAudioPath(String sourceAudioPath) {
-        mSourceAudioPath = sourceAudioPath;
-    }
-
-    public ProjectPatternMatcher getPatternMatcher(){
-        return new ProjectPatternMatcher(mAnthology.getRegex(), mAnthology.getMatchGroups());
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(mTargetLanguage, flags);
-        if(mSourceLanguage != null) {
-            dest.writeInt(1);
-            dest.writeParcelable(mSourceLanguage, flags);
-        } else {
-            dest.writeInt(0);
-        }
-        dest.writeParcelable(mBook, flags);
-        dest.writeParcelable(mVersion, flags);
-        dest.writeParcelable(mMode, flags);
-        dest.writeParcelable(mAnthology, flags);
-        dest.writeString(mContributors);
-        dest.writeString(mSourceAudioPath);
-    }
-
-    public static final Parcelable.Creator<Project> CREATOR = new Parcelable.Creator<Project>() {
-        public Project createFromParcel(Parcel in) {
-            return new Project(in);
+        fun getProjectFromPreferences(
+            db: IProjectDatabaseHelper,
+            prefs: IPreferenceRepository
+        ): Project? {
+            val projectId: Int = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
+            val project: Project? = db.getProject(projectId)
+            return project
         }
 
-        public Project[] newArray(int size) {
-            return new Project[size];
+        @JvmField
+        val CREATOR: Parcelable.Creator<Project?> = object : Parcelable.Creator<Project?> {
+            override fun createFromParcel(parcel: Parcel): Project {
+                return Project(parcel)
+            }
+            override fun newArray(size: Int): Array<Project?> {
+                return arrayOfNulls(size)
+            }
         }
-    };
-
-    public Project(Parcel in) {
-        mTargetLanguage = in.readParcelable(Language.class.getClassLoader());
-        int hasSourceLanguage = in.readInt();
-        if(hasSourceLanguage == 1) {
-            mSourceLanguage = in.readParcelable(Language.class.getClassLoader());
-        }
-        mBook = in.readParcelable(Book.class.getClassLoader());
-        mVersion = in.readParcelable(Version.class.getClassLoader());
-        mMode = in.readParcelable(Mode.class.getClassLoader());
-        mAnthology = in.readParcelable(Anthology.class.getClassLoader());
-        mContributors = in.readString();
-        mSourceAudioPath = in.readString();
     }
 }

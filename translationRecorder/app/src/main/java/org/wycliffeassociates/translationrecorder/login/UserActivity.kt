@@ -1,24 +1,35 @@
 package org.wycliffeassociates.translationrecorder.login
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pixplicity.sharp.Sharp
+import dagger.hilt.android.AndroidEntryPoint
 import jdenticon.Jdenticon
+import org.wycliffeassociates.translationrecorder.MainMenu
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityUserBinding
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.project.components.User
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 3/9/2018.
  */
-
+@AndroidEntryPoint
 class UserActivity : AppCompatActivity() {
+
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
 
     private lateinit var binding: ActivityUserBinding
 
@@ -37,19 +48,18 @@ class UserActivity : AppCompatActivity() {
         with(binding) {
             recycler.layoutManager = layoutManager
             recycler.itemAnimator = DefaultItemAnimator()
-            val adapter = UserAdapter(this@UserActivity, userList())
+            val adapter = UserAdapter(userList(), ::onItemClick)
             recycler.adapter = adapter
         }
     }
 
     private fun userList(): List<Pair<User, Drawable>> {
-        val db = (application as TranslationRecorderApp).database
-        var userList = arrayListOf<Pair<User, Drawable>>()
+        val userList = arrayListOf<Pair<User, Drawable>>()
         val newEmptyUser = User(0, null, null)
         userList.add(Pair(newEmptyUser, resources.getDrawable(R.drawable.ic_person_add_black_48dp)))
         val users = db.allUsers
         for (user in users) {
-            var identicon = generateIdenticon(user.hash)
+            val identicon = generateIdenticon(user.hash)
             userList.add(Pair(user, identicon))
         }
         return userList
@@ -58,6 +68,14 @@ class UserActivity : AppCompatActivity() {
     private fun generateIdenticon(hash: String): Drawable {
         val svg = Jdenticon.toSvg(hash, 512, 0f)
         return Sharp.loadString(svg).drawable
+    }
+
+    private fun onItemClick(user: User, position: Int) {
+        Toast.makeText(this, "Identicon $position", Toast.LENGTH_LONG).show()
+        prefs.setDefaultPref(Settings.KEY_PROFILE, user.id)
+        val mainActivityIntent = Intent(this, MainMenu::class.java)
+        startActivity(mainActivityIntent)
+        finish()
     }
 
 }

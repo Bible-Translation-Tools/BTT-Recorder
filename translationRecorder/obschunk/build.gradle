@@ -3,7 +3,7 @@ apply plugin: 'java'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(path: ':chunkplugin')
-    implementation 'com.google.code.gson:gson:2.8.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 java {
@@ -11,7 +11,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-libsDirName = "$rootDir/app/src/main/assets/Plugins/Jars"
+libsDirName = "$rootDir/app/src/main/assets/plugins/jars"
 
 artifacts {
     archives jar

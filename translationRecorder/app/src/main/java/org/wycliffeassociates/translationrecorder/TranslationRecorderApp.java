@@ -9,10 +9,7 @@ import android.media.AudioTrack;
 import net.gotev.uploadservice.UploadService;
 import net.gotev.uploadservice.okhttp.OkHttpStack;
 
-import org.wycliffeassociates.translationrecorder.FilesPage.DirectoryProvider;
-
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -29,14 +26,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import dagger.hilt.android.HiltAndroidApp;
 import okhttp3.OkHttpClient;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 
 /**
  * Created by sarabiaj on 11/28/2017.
  */
-
-public class TranslationRecorderApp extends Application implements DirectoryProvider {
+@HiltAndroidApp
+public class TranslationRecorderApp extends Application {
 
     private static Context context;
 
@@ -54,8 +51,6 @@ public class TranslationRecorderApp extends Application implements DirectoryProv
             minBufferSize,
             AudioTrack.MODE_STREAM
     );
-
-    ProjectDatabaseHelper database = new ProjectDatabaseHelper(this);
 
     @Override
     public void onCreate() {
@@ -112,20 +107,12 @@ public class TranslationRecorderApp extends Application implements DirectoryProv
         return context.getSocketFactory();
     }
 
-    public File getUploadDirectory() {
-        return new File(this.getExternalCacheDir(), "upload");
-    }
-
     public AudioTrack getAudioTrack() {
         return audioTrack;
     }
 
     public int getTrackBufferSize() {
         return minBufferSize;
-    }
-
-    public ProjectDatabaseHelper getDatabase() {
-        return database;
     }
 
     public static Context getContext() {

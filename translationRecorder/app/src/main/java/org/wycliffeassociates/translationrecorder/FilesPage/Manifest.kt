@@ -1,245 +1,250 @@
-package org.wycliffeassociates.translationrecorder.FilesPage;
+package org.wycliffeassociates.translationrecorder.FilesPage
 
-import android.content.Context;
-
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonWriter;
-
-import org.apache.commons.io.FileUtils;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.SimpleProgressCallback;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeDiff;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chunk;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.project.components.User;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson
+import com.google.gson.stream.JsonWriter
+import org.apache.commons.io.FileUtils
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.SimpleProgressCallback
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeDiff
+import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter
+import org.wycliffeassociates.translationrecorder.chunkplugin.Chunk
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
+import org.wycliffeassociates.translationrecorder.project.components.User
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 
 /**
  * Created by sarabiaj on 11/15/2017.
  */
+class Manifest(
+    private val project: Project,
+    private val projectDirectory: File,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider,
+    private val assetsProvider: AssetsProvider
+) {
+    private val takes: MutableList<File> = ArrayList()
+    private val users: MutableMap<Int, User> = HashMap()
+    private val projectFiles: Collection<File> = FileUtils.listFiles(
+        projectDirectory,
+        arrayOf("wav"),
+        true
+    )
+    private var progressCallback: SimpleProgressCallback? = null
+    private var chunksWritten: Int = 0
+    private var totalChunks: Int = 0
 
-public class Manifest {
-
-    protected Project mProject;
-    protected List<File> mTakes = new ArrayList<>();
-    protected Map<Integer, User> mUsers = new HashMap<>();
-    File mProjectDirectory;
-    Collection<File> mProjectFiles;
-    SimpleProgressCallback mProgressCallback;
-    int mChunksWritten = 0;
-    int mTotalChunks = 0;
-
-    public Manifest(Project project, File projectDirectory) {
-        mProject = project;
-        mProjectDirectory = projectDirectory;
-        mProjectFiles = FileUtils.listFiles(mProjectDirectory, new String[]{"wav"}, true);
-    }
-
-    public File createManifestFile(Context ctx, ProjectDatabaseHelper db) throws IOException {
-
-        ChunkPlugin plugin = mProject.getChunkPlugin(new ChunkPluginLoader(ctx));
-        List<Chapter> chapters = plugin.getChapters();
-        mTotalChunks = getTotalChunks(chapters);
-        Gson gson = new Gson();
-        File output = new File(mProjectDirectory, "manifest.json");
-        try (JsonWriter jw = gson.newJsonWriter(new FileWriter(output))) {
-            jw.beginObject();
-            writeLanguage(jw);
-            writeBook(jw);
-            writeVersion(jw);
-            writeAnthology(jw);
-            writeMode(jw);
-            writeChapters(db, chapters, jw);
-            writeUsers(jw);
-            jw.endObject();
+    @Throws(IOException::class)
+    fun createManifestFile(): File {
+        val plugin = project.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetsProvider))
+        val chapters = plugin.chapters
+        totalChunks = getTotalChunks(chapters)
+        val gson = Gson()
+        val output = File(projectDirectory, "manifest.json")
+        gson.newJsonWriter(FileWriter(output)).use { jw ->
+            jw.beginObject()
+            writeLanguage(jw)
+            writeBook(jw)
+            writeVersion(jw)
+            writeAnthology(jw)
+            writeMode(jw)
+            writeChapters(chapters, jw)
+            writeUsers(jw)
+            jw.endObject()
         }
-
-        return output;
+        return output
     }
 
-    public List<File> getTakesInManifest() {
-        return mTakes;
+    val takesInManifest: List<File>
+        get() = takes
+
+    fun setProgressCallback(progressCallback: SimpleProgressCallback?) {
+        this.progressCallback = progressCallback
     }
 
-    public void setProgressCallback(SimpleProgressCallback progressCallback) {
-        mProgressCallback = progressCallback;
+    @Throws(IOException::class)
+    private fun writeLanguage(jw: JsonWriter) {
+        jw.name("language")
+        jw.beginObject()
+        jw.name("slug").value(project.targetLanguageSlug)
+        jw.name("name").value(project.targetLanguage?.name)
+        jw.endObject()
     }
 
-    private void writeLanguage(JsonWriter jw) throws IOException {
-        jw.name("language");
-        jw.beginObject();
-        jw.name("slug").value(mProject.getTargetLanguageSlug());
-        jw.name("name").value(mProject.mTargetLanguage.getName());
-        jw.endObject();
+    @Throws(IOException::class)
+    private fun writeBook(jw: JsonWriter) {
+        jw.name("book")
+        jw.beginObject()
+        jw.name("name").value(project.bookName)
+        jw.name("slug").value(project.bookSlug)
+        jw.name("number").value(project.bookNumber)
+        jw.endObject()
     }
 
-    private void writeBook(JsonWriter jw) throws IOException {
-        jw.name("book");
-        jw.beginObject();
-        jw.name("name").value(mProject.getBookName());
-        jw.name("slug").value(mProject.getBookSlug());
-        jw.name("number").value(mProject.getBookNumber());
-        jw.endObject();
+    @Throws(IOException::class)
+    private fun writeMode(jw: JsonWriter) {
+        jw.name("mode")
+        jw.beginObject()
+        jw.name("name").value(project.modeName)
+        jw.name("slug").value(project.modeSlug)
+        jw.name("type").value(project.modeType.toString())
+        jw.endObject()
     }
 
-    private void writeMode(JsonWriter jw) throws IOException {
-        jw.name("mode");
-        jw.beginObject();
-        jw.name("name").value(mProject.getModeName());
-        jw.name("slug").value(mProject.getModeSlug());
-        jw.name("type").value(mProject.getModeType().toString());
-        jw.endObject();
+    @Throws(IOException::class)
+    private fun writeVersion(jw: JsonWriter) {
+        jw.name("version")
+        jw.beginObject()
+        jw.name("slug").value(project.versionSlug)
+        jw.name("name").value(project.version?.name)
+        jw.endObject()
     }
 
-    private void writeVersion(JsonWriter jw) throws IOException {
-        jw.name("version");
-        jw.beginObject();
-        jw.name("slug").value(mProject.getVersionSlug());
-        jw.name("name").value(mProject.mVersion.getName());
-        jw.endObject();
+    @Throws(IOException::class)
+    private fun writeAnthology(jw: JsonWriter) {
+        jw.name("anthology")
+        jw.beginObject()
+        jw.name("slug").value(project.anthologySlug)
+        jw.name("name").value(project.anthology?.name)
+        jw.endObject()
     }
 
-    private void writeAnthology(JsonWriter jw) throws IOException {
-        jw.name("anthology");
-        jw.beginObject();
-        jw.name("slug").value(mProject.getAnthologySlug());
-        jw.name("name").value(mProject.mAnthology.getName());
-        jw.endObject();
-    }
-
-    private void writeChapters(ProjectDatabaseHelper db, List<Chapter> chapters, JsonWriter jw) throws IOException {
-        jw.name("manifest");
-        jw.beginArray();
-        for (Chapter chapter : chapters) {
-            int number = chapter.getNumber();
-            int checkingLevel = 0;
-            if (db.chapterExists(mProject, number)) {
-                checkingLevel = db.getChapterCheckingLevel(mProject, number);
+    @Throws(IOException::class)
+    private fun writeChapters(chapters: List<Chapter>, jw: JsonWriter) {
+        jw.name("manifest")
+        jw.beginArray()
+        for (chapter in chapters) {
+            val number = chapter.number
+            var checkingLevel = 0
+            if (db.chapterExists(project, number)) {
+                checkingLevel = db.getChapterCheckingLevel(project, number)
             }
-            jw.beginObject();
-            jw.name("chapter").value(number);
-            jw.name("checking_level").value(checkingLevel);
-            writeChunks(db, chapter.getChunks(), number, jw);
-            jw.endObject();
+            jw.beginObject()
+            jw.name("chapter").value(number.toLong())
+            jw.name("checking_level").value(checkingLevel.toLong())
+            writeChunks(chapter.chunks, number, jw)
+            jw.endObject()
         }
-        jw.endArray();
+        jw.endArray()
     }
 
-    private void writeChunks(ProjectDatabaseHelper db, List<Chunk> chunks, int chapter, JsonWriter jw) throws IOException {
-        jw.name("chunks");
-        jw.beginArray();
-        for (Chunk chunk : chunks) {
-            int startv = chunk.getStartVerse();
-            int endv = chunk.getEndVerse();
-            jw.beginObject();
-            jw.name("startv").value(startv);
-            jw.name("endv").value(endv);
-            writeTakes(db, chapter, startv, endv, jw);
-            jw.endObject();
+    @Throws(IOException::class)
+    private fun writeChunks(
+        chunks: List<Chunk>,
+        chapter: Int,
+        jw: JsonWriter
+    ) {
+        jw.name("chunks")
+        jw.beginArray()
+        for (chunk in chunks) {
+            val startv = chunk.startVerse
+            val endv = chunk.endVerse
+            jw.beginObject()
+            jw.name("startv").value(startv.toLong())
+            jw.name("endv").value(endv.toLong())
+            writeTakes(chapter, startv, endv, jw)
+            jw.endObject()
 
-            mChunksWritten++;
+            chunksWritten++
 
-            if (mProgressCallback != null) {
-                mProgressCallback.setUploadProgress(TranslationExchangeDiff.DIFF_ID, getManifestProgress());
-            }
+            progressCallback?.setUploadProgress(
+                TranslationExchangeDiff.DIFF_ID,
+                manifestProgress
+            )
         }
-        jw.endArray();
+        jw.endArray()
     }
 
-    private void writeTakes(ProjectDatabaseHelper db, int chapter, int startv, int endv, JsonWriter jw) throws IOException {
-        List<File> takes = getTakesList(chapter, startv, endv);
-        jw.name("takes");
-        jw.beginArray();
-        for (Iterator<File> i = takes.iterator(); i.hasNext(); ) {
-            File take = i.next();
-            ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-            ppm.match(take);
+    @Throws(IOException::class)
+    private fun writeTakes(
+        chapter: Int,
+        startv: Int,
+        endv: Int,
+        jw: JsonWriter
+    ) {
+        val takes = getTakesList(chapter, startv, endv)
+        jw.name("takes")
+        jw.beginArray()
+        val i = takes.iterator()
+        while (i.hasNext()) {
+            val take = i.next()
+            val ppm = project.patternMatcher
+            ppm.match(take)
             if (ppm.matched()) {
-                TakeInfo info = ppm.getTakeInfo();
-                int rating = db.getTakeRating(info);
-                User user = db.getTakeUser(info);
-                if(!mUsers.containsKey(user.getId())) {
-                    mUsers.put(user.getId(), user);
+                val info = ppm.takeInfo
+                val rating = db.getTakeRating(info)
+                val user = db.getTakeUser(info)
+                if (!users.containsKey(user.id)) {
+                    users[user.id] = user
                 }
-                jw.beginObject();
-                jw.name("name").value(take.getName());
-                jw.name("rating").value(rating);
-                jw.name("user_id").value(user.getId());
-                jw.endObject();
+                jw.beginObject()
+                jw.name("name").value(take.name)
+                jw.name("rating").value(rating.toLong())
+                jw.name("user_id").value(user.id.toLong())
+                jw.endObject()
             } else {
-                i.remove();
+                i.remove()
             }
         }
-        jw.endArray();
-        mTakes.addAll(takes);
+        jw.endArray()
+        this.takes.addAll(takes)
     }
 
-    private void writeUsers(JsonWriter jw) throws IOException {
-        jw.name("users");
-        jw.beginArray();
-        for (User user : mUsers.values()) {
-            jw.beginObject();
-            jw.name("name_audio").value(user.getAudio().getName());
-            jw.name("icon_hash").value(user.getHash());
-            jw.name("id").value(user.getId());
-            jw.endObject();
+    @Throws(IOException::class)
+    private fun writeUsers(jw: JsonWriter) {
+        jw.name("users")
+        jw.beginArray()
+        for (user in users.values) {
+            jw.beginObject()
+            jw.name("name_audio").value(user.audio.name)
+            jw.name("icon_hash").value(user.hash)
+            jw.name("id").value(user.id.toLong())
+            jw.endObject()
         }
-        jw.endArray();
+        jw.endArray()
     }
 
-    private int getTotalChunks(List<Chapter> chapters) {
-        int total = 0;
-        for (Chapter chapter: chapters) {
-            total += chapter.getChunks().size();
+    private fun getTotalChunks(chapters: List<Chapter>): Int {
+        var total = 0
+        for (chapter in chapters) {
+            total += chapter.chunks.size
         }
-        return total;
+        return total
     }
 
-    private int getManifestProgress() {
-        if(mTotalChunks <= 0) return 0;
-        return Math.round((float) mChunksWritten / (float) mTotalChunks * 100);
-    }
+    private val manifestProgress: Int
+        get() {
+            if (totalChunks <= 0) return 0
+            return Math.round(chunksWritten.toFloat() / totalChunks.toFloat() * 100)
+        }
 
-    private List<File> getTakesList(int chapter, int startv, int endv) {
-        ProjectPatternMatcher ppm;
+    private fun getTakesList(chapter: Int, startv: Int, endv: Int): MutableList<File> {
+        var ppm: ProjectPatternMatcher
         //Get only the files of the appropriate unit
-        List<File> resultFiles = new ArrayList<>();
-        if (mProjectFiles != null) {
-            for (File file : mProjectFiles) {
-                ppm = mProject.getPatternMatcher();
-                ppm.match(file);
-                TakeInfo ti = ppm.getTakeInfo();
-                if (ti != null
-                        && ti.getChapter() == chapter
-                        && ti.getStartVerse() == startv
-                        && ti.getEndVerse() == endv
-                        ) {
-                    resultFiles.add(file);
-                }
+        val resultFiles: MutableList<File> = ArrayList()
+        for (file in projectFiles) {
+            ppm = project.patternMatcher
+            ppm.match(file)
+            val ti = ppm.takeInfo
+            if (ti != null && ti.chapter == chapter && ti.startVerse == startv && ti.endVerse == endv
+            ) {
+                resultFiles.add(file)
             }
         }
-        return resultFiles;
+        return resultFiles
     }
 
-    public List<File> getUserFiles() {
-        List<File> userAudioFiles = new ArrayList<>();
-        for(User user: mUsers.values()) {
-            userAudioFiles.add(user.getAudio());
+    val userFiles: List<File>
+        get() {
+            val userAudioFiles: MutableList<File> = arrayListOf()
+            for (user in users.values) {
+                userAudioFiles.add(user.audio)
+            }
+            return userAudioFiles
         }
-        return userAudioFiles;
-    }
 }

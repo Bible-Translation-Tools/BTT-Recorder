@@ -8,6 +8,7 @@ import com.door43.tools.reporting.Logger;
 
 import org.json.JSONException;
 import org.wycliffeassociates.translationrecorder.AudioInfo;
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 
@@ -481,8 +482,13 @@ public class WavFile implements Parcelable {
         return mMetadata;
     }
 
-    public static WavFile compileChapter(Project project, int chapter, List<WavFile> toCompile) {
-        File root = ProjectFileUtils.getParentDirectory(project, chapter);
+    public static WavFile compileChapter(
+            Project project,
+            int chapter,
+            List<WavFile> toCompile,
+            IDirectoryProvider directoryProvider
+    ) {
+        File root = ProjectFileUtils.getParentDirectory(project, chapter, directoryProvider);
         File chap = new File(root, project.getChapterFileName(chapter));
         chap.delete();
         String chapterString = ProjectFileUtils.chapterIntToString(project, chapter);

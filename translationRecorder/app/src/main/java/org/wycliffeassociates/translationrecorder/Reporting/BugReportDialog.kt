@@ -1,55 +1,52 @@
-package org.wycliffeassociates.translationrecorder.Reporting;
+package org.wycliffeassociates.translationrecorder.Reporting
 
-import android.app.DialogFragment;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-
-import org.wycliffeassociates.translationrecorder.MainMenu;
-
-import org.wycliffeassociates.translationrecorder.R;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import androidx.fragment.app.DialogFragment
+import org.wycliffeassociates.translationrecorder.MainMenu
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentBugReportBinding
 
 /**
  * Created by leongv on 12/8/2015.
  */
-public class BugReportDialog extends DialogFragment implements View.OnClickListener {
+class BugReportDialog : DialogFragment(), View.OnClickListener {
+    var mm: MainMenu? = null
+    var message: EditText? = null
 
-    Button delete, cancel;
-    MainMenu mm;
-    EditText message;
+    private var _binding: FragmentBugReportBinding? = null
+    private val binding get() = _binding!!
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_bug_report, null);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentBugReportBinding.inflate(inflater, container, false)
 
-        mm = (MainMenu) getActivity();
+        mm = activity as MainMenu
 
-        delete = (Button) view.findViewById(R.id.delete_confirm);
-        cancel = (Button) view.findViewById(R.id.delete_cancel);
-        message = (EditText) view.findViewById(R.id.crashReportTextField);
+        binding.deleteConfirm.setOnClickListener(this)
+        binding.deleteCancel.setOnClickListener(this)
 
-
-        delete.setOnClickListener(this);
-        cancel.setOnClickListener(this);
-
-        return view;
+        return binding.root
     }
 
-    @Override
-    public void onClick(View view) {
-        if (view.getId() == R.id.delete_confirm) {
-            mm.report(message.getText().toString());
-            this.dismiss();
-        }
-        else {
-            mm.archiveStackTraces();
-            this.dismiss();
+    override fun onClick(view: View) {
+        if (view.id == R.id.delete_confirm) {
+            mm?.report(message?.text.toString())
+            this.dismiss()
+        } else {
+            mm?.archiveStackTraces()
+            this.dismiss()
         }
     }
 
-
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

@@ -1,286 +1,273 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import androidx.core.view.MenuItemCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
+import android.app.SearchManager
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Utils
+import org.wycliffeassociates.translationrecorder.databinding.ActivitySourceAudioBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 5/25/2016.
  */
-public class SourceAudioActivity extends AppCompatActivity implements ScrollableListFragment.OnItemClickListener {
-    private static final String mSetLanguageKey = "set_language_key";
-    private static final String mSetLocationKey = "set_location_key";
-    private static final String mProjectKey = "project_key";
-    private static final String mUserSearchingLanguageKey = "searching_language_key";
-    private static final String mSearchTextKey = "search_text_key";
-    private Project mProject;
-    private Button btnSourceLanguage;
-    private Button btnSourceLocation;
-    private Button btnContinue;
-    private boolean mSetLocation = false;
-    private boolean mSetLanguage = false;
-    private final int REQUEST_SOURCE_LOCATION = 42;
-    private final int REQUEST_SOURCE_LANGUAGE = 43;
-    private int mCurrentFragment;
-    private Searchable mFragment;
-    private FragmentManager mFragmentManager;
-    protected String mSearchText;
-    private boolean mShowSearch = false;
+@AndroidEntryPoint
+class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemClickListener {
 
-    public static Intent getSourceAudioIntent(Context ctx, Project project){
-        Intent intent = new Intent(ctx, SourceAudioActivity.class);
-        intent.putExtra(Project.PROJECT_EXTRA, project);
-        return intent;
-    }
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_source_audio);
-        Intent i = getIntent();
-        mProject = getIntent().getParcelableExtra(Project.PROJECT_EXTRA);
-        mFragmentManager = getFragmentManager();
+    private var sourceLanguage: Language? = null
+    private var sourceLocation: String? = null
 
-        btnSourceLanguage = (Button) findViewById(R.id.language_btn);
-        btnSourceLanguage.setOnClickListener(btnClick);
-        btnSourceLocation = (Button) findViewById(R.id.location_btn);
-        btnSourceLocation.setOnClickListener(btnClick);
-        btnContinue = (Button) findViewById(R.id.continue_btn);
-        btnContinue.setOnClickListener(btnClick);
+    private var mSetLocation = false
+    private var mSetLanguage = false
+    private var mFragment: Searchable? = null
+    private var mSearchText: String? = null
+    private var mShowSearch = false
 
-        View decorView = getWindow().getDecorView();
+    private lateinit var binding: ActivitySourceAudioBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivitySourceAudioBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.languageBtn.setOnClickListener(btnClick)
+        binding.locationBtn.setOnClickListener(btnClick)
+        binding.continueBtn.setOnClickListener(btnClick)
+
+        val decorView = window.decorView
         // Hide the status bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+        val uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
+        decorView.systemUiVisibility = uiOptions
+
 //        // Remember that you should never show the action bar if the
 //        // status bar is hidden, so hide that too if necessary.
 //        ActionBar actionBar = getActionBar();
 //        actionBar.hide();
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(getString(R.string.source_audio));
-            getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+        supportActionBar?.title = getString(R.string.source_audio)
+        supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(SOURCE_LANGUAGE_KEY, sourceLanguage)
+        outState.putString(SOURCE_LOCATION_KEY, sourceLocation)
+        outState.putBoolean(mSetLanguageKey, mSetLanguage)
+        outState.putBoolean(mSetLocationKey, mSetLocation)
+        outState.putString(mSearchTextKey, mSearchText)
+        outState.putBoolean(mUserSearchingLanguageKey, mFragment != null)
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(mProjectKey, mProject);
-        outState.putBoolean(mSetLanguageKey, mSetLanguage);
-        outState.putBoolean(mSetLocationKey, mSetLocation);
-        outState.putString(mSearchTextKey, mSearchText);
-        outState.putBoolean(mUserSearchingLanguageKey, (mFragment != null)? true : false);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        mProject = savedInstanceState.getParcelable(mProjectKey);
-        mSetLanguage = savedInstanceState.getBoolean(mSetLanguageKey);
-        mSetLocation = savedInstanceState.getBoolean(mSetLocationKey);
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        sourceLanguage = savedInstanceState.getParcelable(SOURCE_LANGUAGE_KEY)
+        sourceLocation = savedInstanceState.getString(SOURCE_LOCATION_KEY)
+        mSetLanguage = savedInstanceState.getBoolean(mSetLanguageKey)
+        mSetLocation = savedInstanceState.getBoolean(mSetLocationKey)
         if (mSetLocation) {
-            btnSourceLocation.setText(getResources().getString(
-                    R.string.source_location_selected,
-                    mProject.getSourceAudioPath()
-            ));
+            binding.locationBtn.text = resources.getString(
+                R.string.source_location_selected,
+                sourceLocation
+            )
         }
         if (mSetLanguage) {
-            btnSourceLanguage.setText(getResources().getString(
-                    R.string.source_language_selected,
-                    mProject.getSourceLanguageSlug()
-            ));
+            binding.languageBtn.text = resources.getString(
+                R.string.source_language_selected,
+                sourceLanguage?.slug
+            )
         }
-        if(savedInstanceState.getBoolean(mUserSearchingLanguageKey)){
-            mSearchText = savedInstanceState.getString(mSearchTextKey);
-            setSourceLanguage();
+        if (savedInstanceState.getBoolean(mUserSearchingLanguageKey)) {
+            mSearchText = savedInstanceState.getString(mSearchTextKey)
+            setSourceLanguage()
         } else {
-            continueIfBothSet();
+            continueIfBothSet()
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    override fun onBackPressed() {
         //if the source language fragment is showing, then close that, otherwise proceed with back press
-        if (findViewById(R.id.fragment_container).getVisibility() == View.VISIBLE) {
-            findViewById(R.id.fragment_container).setVisibility(View.INVISIBLE);
-            hideSearchMenu();
+        if (findViewById<View>(R.id.fragment_container).visibility == View.VISIBLE) {
+            findViewById<View>(R.id.fragment_container).visibility =
+                View.INVISIBLE
+            hideSearchMenu()
         } else {
-            super.onBackPressed();
-            finish();
+            super.onBackPressed()
+            finish()
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.language_menu, menu);
-        return true;
+        menuInflater.inflate(R.menu.language_menu, menu)
+        return true
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        //if(mFragment instanceof LanguageListFragment) {
-        menu.findItem(R.id.action_update).setVisible(false);
-//        } else {
-//            menu.findItem(R.id.action_update).setVisible(false);
-//        }
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-        searchMenuItem.setVisible(mShowSearch);
-        final SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
-        searchViewAction.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                return true;
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.action_update).setVisible(false)
+        val searchManager = getSystemService(SEARCH_SERVICE) as SearchManager
+        val searchMenuItem = menu.findItem(R.id.action_search)
+        searchMenuItem.setVisible(mShowSearch)
+        val searchViewAction = searchMenuItem.actionView as SearchView
+        searchViewAction.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(s: String): Boolean {
+                return true
             }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                mSearchText = s;
-                if(mFragment != null) {
-                    mFragment.onSearchQuery(s);
+            override fun onQueryTextChange(s: String): Boolean {
+                mSearchText = s
+                if (mFragment != null) {
+                    mFragment!!.onSearchQuery(s)
                 }
-                return true;
+                return true
             }
-        });
-        searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        })
+        searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(componentName))
 
         if (mSearchText != null) {
-            searchViewAction.setQuery(mSearchText, true);
+            searchViewAction.setQuery(mSearchText, true)
         }
-        return true;
+        return true
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (findViewById(R.id.fragment_container).getVisibility() == View.VISIBLE) {
-                    findViewById(R.id.fragment_container).setVisibility(View.INVISIBLE);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                if (binding.fragmentContainer.visibility == View.VISIBLE) {
+                    binding.fragmentContainer.visibility = View.INVISIBLE
                 } else {
-                    finish();
-                    return true;
+                    finish()
+                    return true
                 }
-            default:
-                return super.onOptionsItemSelected(item);
+                return super.onOptionsItemSelected(item)
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    public void setSourceLanguage() {
+    private fun setSourceLanguage() {
         if (mFragment != null) {
-            mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
+            supportFragmentManager
+                .beginTransaction()
+                .remove(mFragment as Fragment)
+                .commit()
         }
-        mFragment = new ScrollableListFragment.Builder(
-                new TargetLanguageAdapter(ParseJSON.getLanguages(this), this)
-        ).setSearchHint(getString(R.string.choose_source_language) + ":").build();
-        mFragmentManager.beginTransaction().add(R.id.fragment_container, (Fragment) mFragment).commit();
-        findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
+
+        mFragment = ScrollableListFragment.Builder(
+            TargetLanguageAdapter(ParseJSON.getLanguages(assetsProvider), this)
+        ).setSearchHint(getString(R.string.choose_source_language) + ":").build()
+
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container, mFragment as Fragment)
+            .commit()
+        binding.fragmentContainer.visibility = View.VISIBLE
     }
 
-    public void setSourceLocation() {
-        startActivityForResult(new Intent(this, SelectSourceDirectory.class), REQUEST_SOURCE_LOCATION);
+    private fun setSourceLocation() {
+        startActivityForResult(
+            Intent(this, SelectSourceDirectory::class.java),
+            REQUEST_SOURCE_LOCATION
+        )
     }
 
-    public void proceed() {
-        Intent intent = new Intent();
-        intent.putExtra(Project.PROJECT_EXTRA, mProject);
-        setResult(RESULT_OK, intent);
-        finish();
+    private fun proceed() {
+        val intent = Intent()
+        intent.putExtra(Project.SOURCE_LANGUAGE_EXTRA, sourceLanguage)
+        intent.putExtra(Project.SOURCE_LOCATION_EXTRA, sourceLocation)
+        setResult(RESULT_OK, intent)
+        finish()
     }
 
-    private View.OnClickListener btnClick = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.location_btn: {
-                    setSourceLocation();
-                    break;
-                }
-                case R.id.language_btn: {
-                    displaySearchMenu();
-                    setSourceLanguage();
-                    break;
-                }
-                case R.id.continue_btn: {
-                    proceed();
-                    break;
-                }
+    private val btnClick = View.OnClickListener { v ->
+        when (v.id) {
+            R.id.location_btn -> {
+                setSourceLocation()
+            }
+            R.id.language_btn -> {
+                displaySearchMenu()
+                setSourceLanguage()
+            }
+            R.id.continue_btn -> {
+                proceed()
             }
         }
-    };
-
-    private void displaySearchMenu(){
-        mShowSearch = true;
-        invalidateOptionsMenu();
-        mSearchText = "";
     }
 
-    private void hideSearchMenu(){
-        mShowSearch = false;
-        invalidateOptionsMenu();
-        mSearchText = "";
+    private fun displaySearchMenu() {
+        mShowSearch = true
+        invalidateOptionsMenu()
+        mSearchText = ""
     }
 
-    public void continueIfBothSet() {
+    private fun hideSearchMenu() {
+        mShowSearch = false
+        invalidateOptionsMenu()
+        mSearchText = ""
+    }
+
+    private fun continueIfBothSet() {
         if (mSetLocation && mSetLanguage) {
-            btnContinue.setText("Continue");
+            binding.continueBtn.text = getString(R.string.label_continue)
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_SOURCE_LOCATION) {
-            if (data.hasExtra(SelectSourceDirectory.SOURCE_LOCATION)) {
-                mProject.setSourceAudioPath(data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION));
-                btnSourceLocation.setText(getResources().getString(
-                        R.string.source_location_selected,
-                        mProject.getSourceAudioPath()
-                ));
-                mSetLocation = true;
-                continueIfBothSet();
+            if (data?.hasExtra(SelectSourceDirectory.SOURCE_LOCATION) == true) {
+                sourceLocation = data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION)
+                binding.locationBtn.text = resources.getString(
+                    R.string.source_location_selected,
+                    sourceLocation
+                )
+                mSetLocation = true
+                continueIfBothSet()
             }
         }
     }
 
-    @Override
-    public void onItemClick(Object result) {
-        Utils.closeKeyboard(this);
-        hideSearchMenu();
-        mProject.setSourceLanguage((Language) result);
-        btnSourceLanguage.setText(getResources().getString(
-                R.string.source_language_selected,
-                mProject.getSourceLanguageSlug()
-        ));
-        mSetLanguage = true;
-        mFragmentManager.beginTransaction().remove((Fragment) mFragment).commit();
-        findViewById(R.id.fragment_container).setVisibility(View.INVISIBLE);
-        continueIfBothSet();
+    override fun onItemClick(result: Any) {
+        Utils.closeKeyboard(this)
+        hideSearchMenu()
+        sourceLanguage = result as Language
+        binding.languageBtn.text = resources.getString(
+            R.string.source_language_selected,
+            sourceLanguage?.slug
+        )
+        mSetLanguage = true
+        supportFragmentManager.beginTransaction().remove(mFragment as Fragment).commit()
+        binding.fragmentContainer.visibility = View.INVISIBLE
+        continueIfBothSet()
+    }
+
+    companion object {
+        private const val mSetLanguageKey = "set_language_key"
+        private const val mSetLocationKey = "set_location_key"
+        private const val SOURCE_LANGUAGE_KEY = "source_language_key"
+        private const val SOURCE_LOCATION_KEY = "source_location_key"
+        private const val mUserSearchingLanguageKey = "searching_language_key"
+        private const val mSearchTextKey = "search_text_key"
+        private const val REQUEST_SOURCE_LOCATION = 42
+        private const val REQUEST_SOURCE_LANGUAGE = 43
+
+        fun getSourceAudioIntent(ctx: Context): Intent {
+            val intent = Intent(ctx, SourceAudioActivity::class.java)
+            return intent
+        }
     }
 }

@@ -1,455 +1,400 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.adapters;
+package org.wycliffeassociates.translationrecorder.ProjectManager.adapters
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ActionMode;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
-import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback;
-import com.bignerdranch.android.multiselector.MultiSelector;
-import com.bignerdranch.android.multiselector.SwappingHolder;
-import com.filippudak.ProgressPieView.ProgressPieView;
-
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
-import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
-import org.wycliffeassociates.translationrecorder.widgets.OnCardExpandedListener;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.View.OnLongClickListener
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.recyclerview.widget.RecyclerView
+import com.bignerdranch.android.multiselector.ModalMultiSelectorCallback
+import com.bignerdranch.android.multiselector.MultiSelector
+import com.bignerdranch.android.multiselector.SwappingHolder
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList.Companion.getActivityUnitListIntent
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog.Companion.newInstance
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ChapterCardBinding
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.widgets.ChapterCard
+import org.wycliffeassociates.translationrecorder.widgets.ChapterCard.ChapterDB
+import org.wycliffeassociates.translationrecorder.widgets.OnCardExpandedListener
 
 /**
  * Created by leongv on 8/15/2016.
  */
-public class ChapterCardAdapter extends RecyclerView.Adapter<ChapterCardAdapter.ViewHolder> implements ChapterCard.ChapterDB, OnCardExpandedListener {
+class ChapterCardAdapter(
+    private val mCtx: AppCompatActivity,
+    private val mProject: Project,
+    private val mChapterCardList: List<ChapterCard>,
+    private val db: IProjectDatabaseHelper
+) : RecyclerView.Adapter<ChapterCardAdapter.ViewHolder>(),
+    ChapterDB, OnCardExpandedListener {
+    private var recyclerView: RecyclerView? = null
+    private val mExpandedCards: MutableList<Int> = ArrayList()
+    private val mSelectedCards: MutableList<Int> = ArrayList()
+    private val mMultiSelector = MultiSelector()
+    var actionMode: ActionMode? = null
+        private set
 
-    // Attributes
-    private AppCompatActivity mCtx;
-    private RecyclerView recyclerView;
-    private Project mProject;
-    private List<ChapterCard> mChapterCardList;
-    private List<Integer> mExpandedCards = new ArrayList<>();
-    private List<Integer> mSelectedCards = new ArrayList<>();
-    private MultiSelector mMultiSelector = new MultiSelector();
-    private ActionMode mActionMode;
-    private ProjectDatabaseHelper db;
+    private fun initializeColors(mCtx: Context) {
+        RAISED_CARD_BACKGROUND_COLOR = mCtx.resources.getColor(R.color.accent)
+        RAISED_CARD_TEXT_COLOR = mCtx.resources.getColor(R.color.text_light)
 
-    private int RAISED_CARD_BACKGROUND_COLOR;
-    private int DROPPED_CARD_BACKGROUND_COLOR;
-    private int RAISED_CARD_TEXT_COLOR;
-    private int DROPPED_CARD_TEXT_COLOR;
-    private int DROPPED_CARD_EMPTY_TEXT_COLOR;
+        DROPPED_CARD_BACKGROUND_COLOR = mCtx.resources.getColor(R.color.card_bg)
+        DROPPED_CARD_EMPTY_TEXT_COLOR =
+            mCtx.resources.getColor(R.color.primary_text_disabled_material_light)
+        DROPPED_CARD_TEXT_COLOR =
+            mCtx.resources.getColor(R.color.primary_text_default_material_light)
+    }
+
+    private val mMultiSelectMode: ActionMode.Callback = object : ModalMultiSelectorCallback(mMultiSelector) {
+            override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+                mMultiSelector.clearSelections()
+                mMultiSelector.isSelectable = true
+                return false
+            }
+
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+                actionMode = mode
+                mCtx.menuInflater.inflate(R.menu.chapter_menu, menu)
+                setIconsClickable(false)
+                return true
+            }
+
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                val chapters = IntArray(mSelectedCards.size)
+                for (i in mSelectedCards.indices) {
+                    chapters[i] = mSelectedCards[i]
+                }
+                when (item.itemId) {
+                    R.id.chapters_checking_level -> {
+                        val dialog = newInstance(
+                            mProject, chapters,
+                            commonCheckingLevel
+                        )
+                        dialog.show(mCtx.supportFragmentManager, "multi_chapter_checking_level")
+                    }
+
+                    R.id.chapters_compile -> {
+                        val isCompiled = BooleanArray(mSelectedCards.size)
+                        var i = 0
+                        while (i < mSelectedCards.size) {
+                            isCompiled[i] = mChapterCardList[mSelectedCards[i]].isCompiled
+                            i++
+                        }
+                        val compileDialog =
+                            CompileDialog.newInstance(mProject, chapters, isCompiled)
+                        compileDialog.show(mCtx.supportFragmentManager, "multi_chapter_compile")
+                    }
+
+                    else -> println("Default action")
+                }
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {
+                mMultiSelector.isSelectable = false
+                mMultiSelector.clearSelections()
+                for (i in mSelectedCards) {
+                    notifyItemChanged(i)
+                }
+                mSelectedCards.clear()
+                actionMode = null
+                setIconsClickable(true)
+            }
+        }
 
     // Constructor
-    public ChapterCardAdapter(
-            AppCompatActivity context,
-            Project project,
-            List<ChapterCard> chapterCardList,
-            ProjectDatabaseHelper db
-    ) {
-        mCtx = context;
-        mProject = project;
-        mChapterCardList = chapterCardList;
-        this.db = db;
-
-        initializeColors(context);
+    init {
+        initializeColors(mCtx)
     }
 
-    private void initializeColors(Context mCtx) {
-        RAISED_CARD_BACKGROUND_COLOR = mCtx.getResources().getColor(R.color.accent);
-        RAISED_CARD_TEXT_COLOR = mCtx.getResources().getColor(R.color.text_light);
-
-        DROPPED_CARD_BACKGROUND_COLOR = mCtx.getResources().getColor(R.color.card_bg);
-        DROPPED_CARD_EMPTY_TEXT_COLOR = mCtx.getResources().getColor(R.color.primary_text_disabled_material_light);
-        DROPPED_CARD_TEXT_COLOR = mCtx.getResources().getColor(R.color.primary_text_default_material_light);
+    override fun checkingLevel(project: Project, chapter: Int): Int {
+        val checkingLevel = db.getChapterCheckingLevel(project, chapter)
+        return checkingLevel
     }
 
-    private ActionMode.Callback mMultiSelectMode = new ModalMultiSelectorCallback(mMultiSelector) {
-        @Override
-        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            mMultiSelector.clearSelections();
-            mMultiSelector.setSelectable(true);
-            return false;
-        }
-
-        @Override
-        public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-            mActionMode = actionMode;
-            mCtx.getMenuInflater().inflate(R.menu.chapter_menu, menu);
-            setIconsClickable(false);
-            return true;
-        }
-
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            int[] chapters = new int[mSelectedCards.size()];
-            for (int i = 0; i < mSelectedCards.size(); i++) {
-                chapters[i] = mSelectedCards.get(i);
-            }
-            switch (item.getItemId()) {
-                case R.id.chapters_checking_level:
-                    CheckingDialog dialog = CheckingDialog.newInstance(mProject, chapters, getCommonCheckingLevel());
-                    dialog.show(mCtx.getFragmentManager(), "multi_chapter_checking_level");
-                    break;
-                case R.id.chapters_compile:
-                    boolean[] isCompiled = new boolean[mSelectedCards.size()];
-                    for (int i = 0; i < mSelectedCards.size(); i++) {
-                        isCompiled[i] = mChapterCardList.get(mSelectedCards.get(i)).isCompiled();
-                    }
-                    CompileDialog compileDialog = CompileDialog.newInstance(mProject, chapters, isCompiled);
-                    compileDialog.show(mCtx.getFragmentManager(), "multi_chapter_compile");
-                    break;
-                default:
-                    System.out.println("Default action");
-                    break;
-            }
-            return false;
-        }
-
-        @Override
-        public void onDestroyActionMode(ActionMode actionMode) {
-            mMultiSelector.setSelectable(false);
-            mMultiSelector.clearSelections();
-            for (Integer i : mSelectedCards) {
-                notifyItemChanged(i);
-            }
-            mSelectedCards.clear();
-            mActionMode = null;
-            setIconsClickable(true);
-        }
-    };
-
-    @Override
-    public int checkingLevel(Project project, int chapter) {
-        int checkingLevel = db.getChapterCheckingLevel(project, chapter);
-        return checkingLevel;
+    override fun onCardExpanded(position: Int) {
+        recyclerView?.layoutManager?.scrollToPosition(position)
     }
 
-    @Override
-    public void onCardExpanded(int position) {
-        recyclerView.getLayoutManager().scrollToPosition(position);
-    }
+    inner class ViewHolder(
+        val binding: ChapterCardBinding
+    ) : SwappingHolder(binding.root, mMultiSelector), View.OnClickListener, OnLongClickListener {
+        var chapterCard: ChapterCard? = null
 
-    public class ViewHolder extends SwappingHolder implements View.OnClickListener,
-            View.OnLongClickListener {
+        init {
+            binding.root.setOnClickListener(this)
+            binding.root.setOnLongClickListener(this)
+            binding.root.isLongClickable = true
 
-        public ChapterCard chapterCard;
-        public CardView cardView;
-        public RelativeLayout cardHeader;
-        public LinearLayout cardBody, cardContainer, actions;
-        public TextView title, elapsed, duration;
-        public ImageView recordBtn, compileBtn, expandBtn;
-        public ImageButton deleteBtn, playPauseBtn;
-        public FourStepImageView checkLevelBtn;
-        public SeekBar seekBar;
-        public ProgressPieView progressPie;
-
-        public ViewHolder(View view) {
-            super(view, mMultiSelector);
-            // Containers
-            cardView = (CardView) view.findViewById(R.id.chapter_card);
-            cardContainer = (LinearLayout) view.findViewById(R.id.chapter_card_container);
-            cardHeader = (RelativeLayout) view.findViewById(R.id.card_header);
-            cardBody = (LinearLayout) view.findViewById(R.id.card_body);
-            actions = (LinearLayout) view.findViewById(R.id.actions);
-
-            // Views
-            title = (TextView) view.findViewById(R.id.title);
-            seekBar = (SeekBar) view.findViewById(R.id.seek_bar);
-            elapsed = (TextView) view.findViewById(R.id.time_elapsed);
-            duration = (TextView) view.findViewById(R.id.time_duration);
-            progressPie = (ProgressPieView) view.findViewById(R.id.progress_pie);
-
-            // Buttons
-            checkLevelBtn = (FourStepImageView) view.findViewById(R.id.check_level_btn);
-            recordBtn = (ImageView) view.findViewById(R.id.record_btn);
-            compileBtn = (ImageView) view.findViewById(R.id.compile_btn);
-            expandBtn = (ImageView) view.findViewById(R.id.expand_btn);
-            deleteBtn = (ImageButton) view.findViewById(R.id.delete_chapter_audio_btn);
-            playPauseBtn = (ImageButton) view.findViewById(R.id.play_pause_chapter_btn);
-
-            view.setOnClickListener(this);
-            view.setOnLongClickListener(this);
-            view.setLongClickable(true);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setSelectionModeStateListAnimator(null);
-                setDefaultModeStateListAnimator(null);
-            }
-            setSelectionModeBackgroundDrawable(null);
-            setDefaultModeBackgroundDrawable(null);
+            selectionModeStateListAnimator = null
+            defaultModeStateListAnimator = null
+            selectionModeBackgroundDrawable = null
+            defaultModeBackgroundDrawable = null
         }
 
-        public void bindViewHolder(ViewHolder holder, int pos, ChapterCard cc) {
-            chapterCard = cc;
-            chapterCard.setViewHolder(holder);
+        fun bindViewHolder(holder: ViewHolder, pos: Int, cc: ChapterCard?) {
+            chapterCard = cc
+            chapterCard?.let { card ->
+                card.viewHolder = holder
 
-            // Title
-            title.setText(chapterCard.getTitle());
+                // Title
+                binding.title.text = card.title
 
-            // Progress Pie
-            progressPie.setProgress(chapterCard.getProgress());
+                // Progress Pie
+                binding.progressPie.progress = card.progress
 
-            // Checking Level
-            chapterCard.refreshCheckingLevel(ChapterCardAdapter.this, mProject, chapterCard.getChapterNumber());
-            checkLevelBtn.setStep(chapterCard.getCheckingLevel());
+                // Checking Level
+                card.refreshCheckingLevel(
+                    this@ChapterCardAdapter,
+                    mProject,
+                    card.chapterNumber
+                )
+                binding.checkLevelBtn.step = card.checkingLevel
 
-            // Compile
-            compileBtn.setActivated(chapterCard.canCompile());
+                // Compile
+                binding.compileBtn.isActivated = card.canCompile()
 
-            // Checking Level and Expansion
-            if (chapterCard.isCompiled()) {
-                checkLevelBtn.setVisibility(View.VISIBLE);
-                expandBtn.setVisibility(View.VISIBLE);
-            } else {
-                checkLevelBtn.setVisibility(View.INVISIBLE);
-                expandBtn.setVisibility(View.INVISIBLE);
-            }
-
-            // Expand card if it's already expanded before
-            if (chapterCard.isExpanded()) {
-                chapterCard.expand();
-            } else {
-                chapterCard.collapse();
-            }
-
-            // Raise card, and show appropriate visual cue, if it's already selected
-            if (mMultiSelector.isSelected(pos, 0)) {
-                chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
-                if (!mSelectedCards.contains(getAdapterPosition())) {
-                    mSelectedCards.add(getAdapterPosition());
+                // Checking Level and Expansion
+                if (card.isCompiled) {
+                    binding.checkLevelBtn.visibility = View.VISIBLE
+                    binding.expandBtn.visibility = View.VISIBLE
+                } else {
+                    binding.checkLevelBtn.visibility = View.INVISIBLE
+                    binding.expandBtn.visibility = View.INVISIBLE
                 }
-            } else {
-                mSelectedCards.remove((Integer) getAdapterPosition());
-                chapterCard.drop(
+
+                // Expand card if it's already expanded before
+                if (card.isExpanded) {
+                    card.expand()
+                } else {
+                    card.collapse()
+                }
+
+                // Raise card, and show appropriate visual cue, if it's already selected
+                if (mMultiSelector.isSelected(pos, 0)) {
+                    card.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR)
+                    if (!mSelectedCards.contains(adapterPosition)) {
+                        mSelectedCards.add(adapterPosition)
+                    }
+                } else {
+                    mSelectedCards.remove(adapterPosition)
+                    card.drop(
                         DROPPED_CARD_BACKGROUND_COLOR,
                         DROPPED_CARD_TEXT_COLOR,
                         DROPPED_CARD_EMPTY_TEXT_COLOR
-                );
+                    )
+                }
+
+                // Clickable
+                card.setIconsClickable(!isInActionMode)
+
+                setListeners(this, card)
             }
-
-            // Clickable
-            chapterCard.setIconsClickable(!isInActionMode());
-
-            setListeners(this, chapterCard);
         }
 
-        @Override
-        public void onClick(View view) {
+        override fun onClick(view: View) {
             // Completing a chapter (hence can be compiled) is the minimum requirements to
             //    include a chapter in multi-selection
-            if (chapterCard == null) {
-                return;
-            }
+            chapterCard?.let { card ->
+                if (mMultiSelector.isSelectable) {
+                    if (!card.canCompile()) {
+                        return
+                    }
 
-            if (mMultiSelector.isSelectable()) {
-                if (!chapterCard.canCompile()) {
-                    return;
-                }
+                    // Close card if it is expanded in multi-select mode
+                    if (card.isExpanded) {
+                        toggleExpansion(this, mExpandedCards, this.adapterPosition)
+                    }
 
-                // Close card if it is expanded in multi-select mode
-                if (chapterCard.isExpanded()) {
-                    toggleExpansion(this, mExpandedCards, this.getAdapterPosition());
-                }
+                    mMultiSelector.tapSelection(this)
 
-                mMultiSelector.tapSelection(this);
-
-                // Raise/drop card
-                if (mMultiSelector.isSelected(this.getAdapterPosition(), 0)) {
-                    mSelectedCards.add(getAdapterPosition());
-                    chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
-                } else {
-                    mSelectedCards.remove((Integer) getAdapterPosition());
-                    chapterCard.drop(
+                    // Raise/drop card
+                    if (mMultiSelector.isSelected(this.adapterPosition, 0)) {
+                        mSelectedCards.add(adapterPosition)
+                        card.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR)
+                    } else {
+                        mSelectedCards.remove(adapterPosition)
+                        card.drop(
                             DROPPED_CARD_BACKGROUND_COLOR,
                             DROPPED_CARD_TEXT_COLOR,
                             DROPPED_CARD_EMPTY_TEXT_COLOR
-                    );                }
+                        )
+                    }
 
-                setAvailableActions();
+                    setAvailableActions()
 
-                // Finish action mode if all cards are de-selected
-                if (mActionMode != null && mSelectedCards.size() <= 0) {
-                    mActionMode.finish();
+                    // Finish action mode if all cards are de-selected
+                    if (actionMode != null && mSelectedCards.size <= 0) {
+                        actionMode!!.finish()
+                    }
+                } else {
+                    card.pauseAudio()
+                    card.destroyAudioPlayer()
+                    val intent = getActivityUnitListIntent(mCtx, mProject, card.chapterNumber)
+                    mCtx.startActivity(intent)
                 }
-
-            } else {
-                chapterCard.pauseAudio();
-                chapterCard.destroyAudioPlayer();
-                Intent intent = ActivityUnitList.getActivityUnitListIntent(mCtx, mProject, chapterCard.getChapterNumber());
-                mCtx.startActivity(intent);
             }
         }
 
-        @Override
-        public boolean onLongClick(View view) {
+        override fun onLongClick(view: View): Boolean {
             // Completing a chapter (hence can be compiled) is the minimum requirements to
             //    include a chapter in multi-selection
-            if (!chapterCard.canCompile()) {
-                return false;
+
+            chapterCard?.let { card ->
+                mCtx.startSupportActionMode(mMultiSelectMode)
+                mMultiSelector.setSelected(this, true)
+
+                // Close card if it is expanded on entering multi-select mode
+                if (card.isExpanded) {
+                    toggleExpansion(this, mExpandedCards, this.adapterPosition)
+                }
+
+                card.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR)
+
+                setAvailableActions()
             }
 
-            mCtx.startSupportActionMode(mMultiSelectMode);
-            mMultiSelector.setSelected(this, true);
-
-            // Close card if it is expanded on entering multi-select mode
-            if (chapterCard.isExpanded()) {
-                toggleExpansion(this, mExpandedCards, this.getAdapterPosition());
-            }
-
-            chapterCard.raise(RAISED_CARD_BACKGROUND_COLOR, RAISED_CARD_TEXT_COLOR);
-
-            setAvailableActions();
-
-            return true;
+            return true
         }
     }
 
 
     // Overrides
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.chapter_card, parent, false);
-        // Set the view's size, margins, padding and layout params here
-        return new ViewHolder(v);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = ChapterCardBinding.inflate(inflater, parent, false)
+        return ViewHolder(binding)
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        ChapterCard chapterCard = mChapterCardList.get(position);
-        holder.bindViewHolder(holder, position, chapterCard);
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val chapterCard = mChapterCardList[position]
+        holder.bindViewHolder(holder, position, chapterCard)
     }
 
-    @Override
-    public int getItemCount() {
-        return mChapterCardList.size();
+    override fun getItemCount(): Int {
+        return mChapterCardList.size
     }
 
-
-    // Getters
-    public List<ChapterCard> getSelectedCards() {
-        List<ChapterCard> cards = new ArrayList<>();
-        for (int i = getItemCount(); i >= 0; i--) {
-            if (mMultiSelector.isSelected(i, 0)) {
-                cards.add(mChapterCardList.get(i));
+    val selectedCards: List<ChapterCard>
+        // Getters
+        get() {
+            val cards: MutableList<ChapterCard> = arrayListOf()
+            for (i in itemCount downTo 0) {
+                if (mMultiSelector.isSelected(i, 0)) {
+                    cards.add(mChapterCardList[i])
+                }
             }
+            return cards
         }
-        return cards;
-    }
 
-    public boolean isInActionMode() {
-        return mActionMode != null;
-    }
-
-    public ActionMode getActionMode() {
-        return mActionMode;
-    }
-
+    val isInActionMode: Boolean
+        get() = actionMode != null
 
     // Private Methods
-    private void setListeners(final ViewHolder holder, final ChapterCard chapterCard) {
-        holder.checkLevelBtn.setOnClickListener(chapterCard.getCheckLevelOnClick(mCtx.getFragmentManager()));
-        holder.compileBtn.setOnClickListener(chapterCard.getCompileOnClick(mCtx.getFragmentManager()));
-        holder.recordBtn.setOnClickListener(chapterCard.getRecordOnClick(mCtx));
-        holder.expandBtn.setOnClickListener(chapterCard.getExpandOnClick(this, holder.getAdapterPosition()));
-        holder.deleteBtn.setOnClickListener(chapterCard.getDeleteOnClick(this, mCtx));
-        holder.playPauseBtn.setOnClickListener(chapterCard.getPlayPauseOnClick());
+    private fun setListeners(holder: ViewHolder, chapterCard: ChapterCard) {
+        holder.binding.checkLevelBtn.setOnClickListener(chapterCard.getCheckLevelOnClick(mCtx.supportFragmentManager))
+        holder.binding.compileBtn.setOnClickListener(chapterCard.getCompileOnClick(mCtx.supportFragmentManager))
+        holder.binding.recordBtn.setOnClickListener(chapterCard.getRecordOnClick(mCtx))
+        holder.binding.expandBtn.setOnClickListener(
+            chapterCard.getExpandOnClick(
+                this,
+                holder.adapterPosition
+            )
+        )
+        holder.binding.deleteChapterAudioBtn.setOnClickListener(chapterCard.getDeleteOnClick(this, mCtx))
+        holder.binding.playPauseChapterBtn.setOnClickListener(chapterCard.playPauseOnClick)
     }
 
-    private void setAvailableActions() {
-        if (mActionMode == null) {
-            return;
-        }
+    private fun setAvailableActions() {
+        actionMode?.let { mode ->
+            var checkEnabled = true
 
-        boolean checkEnabled = true;
-
-        for (ChapterCard chapterCard : getSelectedCards()) {
-            if (!chapterCard.isCompiled()) {
-                checkEnabled = false;
-                break;
+            for (chapterCard in selectedCards) {
+                if (!chapterCard.isCompiled) {
+                    checkEnabled = false
+                    break
+                }
             }
-        }
 
-        mActionMode.getMenu().findItem(R.id.chapters_checking_level).setEnabled(checkEnabled);
+            mode.menu.findItem(R.id.chapters_checking_level).setEnabled(checkEnabled)
+        }
     }
 
-    private int getCommonCheckingLevel() {
-        List<ChapterCard> selectedCards = getSelectedCards();
-        int length = selectedCards.size();
-        int checkingLevel = length >= 1 ? selectedCards.get(0).getCheckingLevel() : CheckingDialog.NO_LEVEL_SELECTED;
+    private val commonCheckingLevel: Int
+        get() {
+            val selectedCards = selectedCards
+            val length = selectedCards.size
+            var checkingLevel = if (length >= 1) {
+                selectedCards[0].checkingLevel
+            } else CheckingDialog.NO_LEVEL_SELECTED
 
-        // If there are more items, check if their checking level is similar. If not, set the
-        // checking level to an empty value
-        for (int i = 1; i < length; i++) {
-            if (selectedCards.get(i).getCheckingLevel() != checkingLevel) {
-                checkingLevel = CheckingDialog.NO_LEVEL_SELECTED;
-                break;
+            // If there are more items, check if their checking level is similar. If not, set the
+            // checking level to an empty value
+            for (i in 1 until length) {
+                if (selectedCards[i].checkingLevel != checkingLevel) {
+                    checkingLevel = CheckingDialog.NO_LEVEL_SELECTED
+                    break
+                }
             }
-        }
 
-        return checkingLevel;
-    }
+            return checkingLevel
+        }
 
 
     // Public API
-    public void toggleExpansion(final ChapterCardAdapter.ViewHolder vh, final List<Integer> expandedCards, final int position) {
-        if (!vh.chapterCard.isExpanded()) {
-            vh.chapterCard.expand();
-            if (!expandedCards.contains(position)) {
-                expandedCards.add(position);
-            }
-        } else {
-            vh.chapterCard.collapse();
-            if (expandedCards.contains(position)) {
-                expandedCards.remove(expandedCards.indexOf(position));
-            }
-        }
-    }
-
-    public void setIconsClickable(boolean clickable) {
-        for (int i = 0; i < mChapterCardList.size(); i++) {
-            mChapterCardList.get(i).setIconsClickable(clickable);
-            notifyItemChanged(i);
-        }
-    }
-
-    public void exitCleanUp() {
-        for (ChapterCard cc : mChapterCardList) {
-            if (cc.isExpanded()) {
-                cc.destroyAudioPlayer();
+    fun toggleExpansion(vh: ViewHolder, expandedCards: MutableList<Int>, position: Int) {
+        vh.chapterCard?.let { card ->
+            if (!card.isExpanded) {
+                card.expand()
+                if (!expandedCards.contains(position)) {
+                    expandedCards.add(position)
+                }
+            } else {
+                card.collapse()
+                if (expandedCards.contains(position)) {
+                    expandedCards.removeAt(expandedCards.indexOf(position))
+                }
             }
         }
     }
 
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        this.recyclerView = recyclerView;
+    fun setIconsClickable(clickable: Boolean) {
+        for (i in mChapterCardList.indices) {
+            mChapterCardList[i].setIconsClickable(clickable)
+            notifyItemChanged(i)
+        }
     }
 
-    public ChapterCard getItem(int index) {
-        return mChapterCardList.get(index);
+    fun exitCleanUp() {
+        for (cc in mChapterCardList) {
+            if (cc.isExpanded) {
+                cc.destroyAudioPlayer()
+            }
+        }
     }
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    fun getItem(index: Int): ChapterCard {
+        return mChapterCardList[index]
+    }
+
+    companion object {
+        private var RAISED_CARD_BACKGROUND_COLOR = 0
+        private var DROPPED_CARD_BACKGROUND_COLOR = 0
+        private var RAISED_CARD_TEXT_COLOR = 0
+        private var DROPPED_CARD_TEXT_COLOR = 0
+        private var DROPPED_CARD_EMPTY_TEXT_COLOR = 0
+    }
 }

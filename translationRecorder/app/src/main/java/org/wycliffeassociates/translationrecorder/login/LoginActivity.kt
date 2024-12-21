@@ -3,6 +3,7 @@ package org.wycliffeassociates.translationrecorder.login
 import android.content.Intent
 import android.os.Bundle
 import com.door43.login.TermsOfUseActivity
+import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.databinding.ActivityLoginBinding
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile
@@ -16,12 +17,12 @@ import java.io.File
 /**
  * Created by sarabiaj on 3/9/2018.
  */
-
+@AndroidEntryPoint
 class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoListener {
     override fun onPermissionsAccepted() {}
 
-    private lateinit var mFragmentCreateProfile: FragmentCreateProfile
-    private var mFragmentReviewProfile: FragmentReviewProfile? = null
+    private lateinit var fragmentCreateProfile: FragmentCreateProfile
+    private var fragmentReviewProfile: FragmentReviewProfile? = null
     private lateinit var profilesDirectory: File
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,33 +40,27 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
     }
 
     private fun initializeFragments() {
-        mFragmentCreateProfile = FragmentCreateProfile.newInstance(
-                profilesDirectory,
-                this
-        )
-        mFragmentCreateProfile.retainInstance = true
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(profilesDirectory, this)
+        fragmentCreateProfile.retainInstance = true
     }
 
     private fun addFragments() {
-        fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, mFragmentCreateProfile)
+        supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, fragmentCreateProfile)
                 .commit()
     }
 
     override fun onProfileCreated(wav: WavFile, audio: File, hash: String) {
-        mFragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash, this)
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, mFragmentReviewProfile)
+        fragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash, this)
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragmentReviewProfile!!)
                 .commit()
     }
 
     override fun onRedo() {
-        mFragmentCreateProfile = FragmentCreateProfile.newInstance(
-                profilesDirectory,
-                this
-        )
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, mFragmentCreateProfile)
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(profilesDirectory, this)
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragmentCreateProfile)
                 .commit()
     }
 
@@ -78,7 +73,6 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
 
     override fun onBackPressed() {
         super.onBackPressed()
-
         startActivity(Intent(this, UserActivity::class.java))
         finish()
     }

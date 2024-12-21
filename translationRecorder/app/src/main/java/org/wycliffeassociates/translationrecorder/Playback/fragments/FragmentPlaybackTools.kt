@@ -1,202 +1,228 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioEditDelegator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.EditStateInformer;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController;
-import org.wycliffeassociates.translationrecorder.Utils;
-
-import org.wycliffeassociates.translationrecorder.databinding.FragmentPlayerToolbarBinding;
-import org.wycliffeassociates.translationrecorder.widgets.PlaybackTimer;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioEditDelegator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.EditStateInformer
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController
+import org.wycliffeassociates.translationrecorder.Utils
+import org.wycliffeassociates.translationrecorder.databinding.FragmentPlayerToolbarBinding
+import org.wycliffeassociates.translationrecorder.widgets.PlaybackTimer
 
 /**
  * Created by sarabiaj on 11/4/2016.
  */
+class FragmentPlaybackTools : Fragment() {
 
-public class FragmentPlaybackTools extends Fragment {
+    var mMediaController: MediaController? = null
+    var mAudioEditDelegator: AudioEditDelegator? = null
 
-    private FragmentPlayerToolbarBinding binding;
+    private var mTimer: PlaybackTimer? = null
+    private var mUndoVisible = false
 
-    MediaController mMediaController;
-    AudioEditDelegator mAudioEditDelegator;
+    private var _binding: FragmentPlayerToolbarBinding? = null
+    private val binding get() = _binding!!
 
-    private PlaybackTimer mTimer;
-    private boolean mUndoVisible = false;
-
-    public static FragmentPlaybackTools newInstance() {
-        return new FragmentPlaybackTools();
-    }
-
-    @Override
-    public void onAttach(final Activity activity) {
-        super.onAttach(activity);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            mMediaController = (MediaController) activity;
-            mMediaController.setOnCompleteListner(new Runnable() {
-                @Override
-                public void run() {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Utils.swapViews(
-                                    new View[]{binding.btnPlay},
-                                    new View[]{binding.btnPause}
-                            );
-                        }
-                    });
+            mMediaController = context as MediaController
+            mMediaController?.setOnCompleteListner {
+                requireActivity().runOnUiThread {
+                    Utils.swapViews(
+                        arrayOf<View>(binding.btnPlay),
+                        arrayOf<View>(binding.btnPause)
+                    )
                 }
-            });
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement MediaController");
+            }
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement MediaController")
         }
         try {
-            mAudioEditDelegator = (AudioEditDelegator) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement AudioEditDelegator");
+            mAudioEditDelegator = context as AudioEditDelegator
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement AudioEditDelegator")
         }
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mMediaController = null;
-        mAudioEditDelegator = null;
-        //hold the visibility of the undo button for switching contexts to verse marker mode and back
-        mUndoVisible = binding.btnUndo.getVisibility() == View.VISIBLE;
+    override fun onDetach() {
+        super.onDetach()
+        mMediaController = null
+        mAudioEditDelegator = null
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentPlayerToolbarBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentPlayerToolbarBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        attachListeners();
-        initTimer(binding.playbackElapsed, binding.playbackDuration);
-        Utils.swapViews(new View[]{binding.btnPlay}, new View[]{binding.btnPause});
-        if (mMediaController.isPlaying()) {
-            showPauseButton();
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        attachListeners()
+        initTimer(binding.playbackElapsed, binding.playbackDuration)
+        Utils.swapViews(
+            arrayOf<View>(
+                binding.btnPlay
+            ), arrayOf<View>(binding.btnPause)
+        )
+        if (mMediaController!!.isPlaying) {
+            showPauseButton()
         } else {
-            showPlayButton();
+            showPlayButton()
         }
         //restore undo button visibility from detach
-        binding.btnUndo.setVisibility((mUndoVisible) ? View.VISIBLE : View.INVISIBLE);
+        binding.btnUndo.visibility = if ((mUndoVisible)) View.VISIBLE else View.INVISIBLE
     }
 
-    private void initTimer(final TextView elapsed, final TextView duration) {
-        mTimer = new PlaybackTimer(elapsed, duration);
-        mTimer.setElapsed(mMediaController.getLocationMs());
-        mTimer.setDuration(mMediaController.getDurationMs());
+    override fun onDestroyView() {
+        super.onDestroyView()
+        //hold the visibility of the undo button for switching contexts to verse marker mode and back
+        mUndoVisible = binding.btnUndo.visibility == View.VISIBLE
+        _binding = null
     }
 
-    public void onLocationUpdated(int ms) {
-        mTimer.setElapsed(ms);
+    private fun initTimer(elapsed: TextView, duration: TextView) {
+        mTimer = PlaybackTimer(elapsed, duration)
+        mTimer?.setElapsed(mMediaController!!.locationMs)
+        mTimer?.setDuration(mMediaController!!.durationMs)
     }
 
-    public void onDurationUpdated(int ms) {
-        mTimer.setDuration(ms);
+    fun onLocationUpdated(ms: Int) {
+        mTimer?.setElapsed(ms)
     }
 
-    private void attachListeners() {
-        attachMediaControllerListeners();
+    fun onDurationUpdated(ms: Int) {
+        mTimer?.setDuration(ms)
     }
 
-    public void showPauseButton() {
-        Utils.swapViews(new View[]{binding.btnPause}, new View[]{binding.btnPlay});
+    private fun attachListeners() {
+        attachMediaControllerListeners()
     }
 
-    public void showPlayButton() {
-        Utils.swapViews(new View[]{binding.btnPlay}, new View[]{binding.btnPause});
+    fun showPauseButton() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnPause),
+            arrayOf<View>(binding.btnPlay)
+        )
     }
 
-    public void viewOnSetStartMarker() {
-        Utils.swapViews(new View[]{binding.btnEndMark, binding.btnClear}, new View[]{binding.btnStartMark});
+    fun showPlayButton() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnPlay),
+            arrayOf<View>(binding.btnPause)
+        )
     }
 
-    public void viewOnSetEndMarker() {
-        Utils.swapViews(new View[]{binding.btnCut}, new View[]{binding.btnEndMark, binding.btnStartMark});
+    fun viewOnSetStartMarker() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnEndMark, binding.btnClear),
+            arrayOf<View>(binding.btnStartMark)
+        )
     }
 
-    public void viewOnSetBothMarkers() {
-        Utils.swapViews(new View[]{binding.btnCut}, new View[]{binding.btnEndMark, binding.btnStartMark});
+    fun viewOnSetEndMarker() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnCut),
+            arrayOf<View>(binding.btnEndMark, binding.btnStartMark)
+        )
     }
 
-    public void viewOnCut() {
-        Utils.swapViews(new View[]{binding.btnStartMark, binding.btnUndo}, new View[]{binding.btnCut, binding.btnClear});
+    fun viewOnSetBothMarkers() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnCut),
+            arrayOf<View>(binding.btnEndMark, binding.btnStartMark)
+        )
     }
 
-    public void viewOnUndo() {
-        View[] toHide = {};
-        if (!((EditStateInformer) mAudioEditDelegator).hasEdits()) {
-            toHide = new View[]{binding.btnUndo};
+    fun viewOnCut() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnStartMark, binding.btnUndo),
+            arrayOf<View>(binding.btnCut, binding.btnClear)
+        )
+    }
+
+    fun viewOnUndo() {
+        var toHide = arrayOf<View?>()
+        if (!(mAudioEditDelegator as EditStateInformer).hasEdits()) {
+            toHide = arrayOf(binding.btnUndo)
         }
-        Utils.swapViews(new View[]{}, toHide);
+        Utils.swapViews(arrayOf(), toHide)
     }
 
-    public void viewOnClearMarkers() {
-        Utils.swapViews(new View[]{binding.btnStartMark}, new View[]{binding.btnClear, binding.btnCut, binding.btnEndMark});
+    fun viewOnClearMarkers() {
+        Utils.swapViews(
+            arrayOf<View>(binding.btnStartMark),
+            arrayOf<View>(binding.btnClear, binding.btnCut, binding.btnEndMark)
+        )
     }
 
-    private void attachMediaControllerListeners() {
-        binding.btnPlay.setOnClickListener(v -> {
-            showPauseButton();
-            mMediaController.onMediaPlay();
-        });
+    private fun attachMediaControllerListeners() {
+        binding.btnPlay.setOnClickListener {
+            showPauseButton()
+            mMediaController!!.onMediaPlay()
+        }
 
-        binding.btnPause.setOnClickListener(v -> {
-            showPlayButton();
-            mMediaController.onMediaPause();
-        });
+        binding.btnPause.setOnClickListener {
+            showPlayButton()
+            mMediaController?.onMediaPause()
+        }
 
-        binding.btnSkipBack.setOnClickListener(v -> mMediaController.onSeekBackward());
+        binding.btnSkipBack.setOnClickListener { mMediaController?.onSeekBackward() }
 
-        binding.btnSkipForward.setOnClickListener(v -> mMediaController.onSeekForward());
+        binding.btnSkipForward.setOnClickListener { mMediaController?.onSeekForward() }
 
-        binding.btnStartMark.setOnClickListener(v -> {
-            viewOnSetStartMarker();
-            mAudioEditDelegator.onDropStartMarker();
-        });
+        binding.btnStartMark.setOnClickListener {
+            viewOnSetStartMarker()
+            mAudioEditDelegator?.onDropStartMarker()
+        }
 
-        binding.btnEndMark.setOnClickListener(v -> {
-            viewOnSetEndMarker();
-            mAudioEditDelegator.onDropEndMarker();
-        });
+        binding.btnEndMark.setOnClickListener {
+            viewOnSetEndMarker()
+            mAudioEditDelegator?.onDropEndMarker()
+        }
 
-        binding.btnDropVerseMarker.setOnClickListener(v -> mAudioEditDelegator.onDropVerseMarker());
+        binding.btnDropVerseMarker.setOnClickListener {
+            mAudioEditDelegator?.onDropVerseMarker()
+        }
 
-        binding.btnCut.setOnClickListener(v -> {
-            viewOnCut();
-            mAudioEditDelegator.onCut();
-        });
+        binding.btnCut.setOnClickListener {
+            viewOnCut()
+            mAudioEditDelegator!!.onCut()
+        }
 
-        binding.btnUndo.setOnClickListener(v -> {
-            mAudioEditDelegator.onUndo();
-            viewOnUndo();
-        });
+        binding.btnUndo.setOnClickListener {
+            mAudioEditDelegator?.onUndo()
+            viewOnUndo()
+        }
 
-        binding.btnClear.setOnClickListener(v -> {
-            viewOnClearMarkers();
-            mAudioEditDelegator.onClearMarkers();
-        });
+        binding.btnClear.setOnClickListener {
+            viewOnClearMarkers()
+            mAudioEditDelegator?.onClearMarkers()
+        }
 
-        binding.btnSave.setOnClickListener(v -> mAudioEditDelegator.onSave());
+        binding.btnSave.setOnClickListener { mAudioEditDelegator?.onSave() }
     }
 
-    public void onPlayerPaused() {
-        Utils.swapViews(new View[]{binding.btnPlay}, new View[]{binding.btnPause});
+    fun onPlayerPaused() {
+        if (_binding == null) return
+        Utils.swapViews(
+            arrayOf<View>(binding.btnPlay),
+            arrayOf<View>(binding.btnPause)
+        )
     }
 
-    public void invalidate(int ms) {
-
+    companion object {
+        fun newInstance(): FragmentPlaybackTools {
+            return FragmentPlaybackTools()
+        }
     }
 }

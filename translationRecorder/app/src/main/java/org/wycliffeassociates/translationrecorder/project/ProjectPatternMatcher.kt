@@ -1,92 +1,84 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.File
+import java.util.regex.Pattern
 
 /**
  * Created by Joe on 3/31/2017.
  */
+class ProjectPatternMatcher(var regex: String, var groups: String) {
 
-public class ProjectPatternMatcher {
+    private var mPattern: Pattern = Pattern.compile(regex)
+    private lateinit var locations: IntArray
 
-    String mRegex;
-    String mGroups;
-    Pattern mPattern;
-    Matcher mMatch;
-    int[] locations;
+    private var mName: String? = null
+    private var mMatched: Boolean = false
 
-    String mName;
-    boolean mMatched = false;
+    lateinit var projectSlugs: ProjectSlugs
+        private set
+    lateinit var takeInfo: TakeInfo
+        private set
 
-    private ProjectSlugs mProjectSlugs;
-    private TakeInfo mTakeInfo;
-
-    public ProjectPatternMatcher(String regex, String groups) {
-        mRegex = regex;
-        mGroups = groups;
-        mPattern = Pattern.compile(regex);
-        parseLocations();
+    init {
+        parseLocations()
     }
 
-    public boolean matched() {
-        return mMatched;
+    fun matched(): Boolean {
+        return mMatched
     }
 
-    private void parseLocations() {
-        String[] groups = mGroups.split(" ");
-        locations = new int[groups.length];
-        for(int i = 0; i < locations.length; i++) {
-            locations[i] = Integer.parseInt(groups[i]);
+    private fun parseLocations() {
+        val groups = groups.split(" ")
+        locations = IntArray(groups.size)
+        for (i in locations.indices) {
+            locations[i] = groups[i].toInt()
         }
     }
 
-    public String getRegex() {
-        return mRegex;
+    fun match(file: File): Boolean {
+        return match(file.name)
     }
 
-    public String getGroups() {
-        return mGroups;
-    }
+    fun match(file: String): Boolean {
+        if (file != mName) {
+            mName = file
+            mPattern.matcher(file).apply {
+                find()
+                if (matches()) {
+                    try {
+                        val values = arrayOfNulls<String>(locations.size)
+                        for (i in locations.indices) {
+                            if (locations[i] != -1) {
+                                values[i] = group(locations[i])
+                            } else {
+                                values[i] = ""
+                            }
+                        }
+                        projectSlugs = ProjectSlugs(
+                            values[0]!!,
+                            values[1]!!,
+                            values[2]!!.toInt(),
+                            values[3]!!
+                        )
 
-    public boolean match(File file){
-        return match(file.getName());
-    }
-
-    public boolean match(String file) {
-        String[] values = new String[locations.length];
-
-        if (!(file.equals(mName))) {
-            mName = file;
-            mMatch = mPattern.matcher(file);
-            mMatch.find();
-            if(mMatch.matches()) {
-                mMatched = true;
-                for (int i = 0; i < locations.length; i++) {
-                    if (locations[i] != -1) {
-                        values[i] = mMatch.group(locations[i]);
-                    } else {
-                        values[i] = "";
+                        takeInfo = TakeInfo(
+                            projectSlugs,
+                            values[4],
+                            values[5]!!,
+                            values[6],
+                            values[7]
+                        )
+                        mMatched = true
+                    } catch (e: Exception) {
+                        mMatched = false
+                        mName = null
                     }
+                } else {
+                    mMatched = false
+                    mName = null
                 }
-                mProjectSlugs = new ProjectSlugs(values[0], values[1], Integer.parseInt(values[2]), values[3]);
-
-                mTakeInfo = new TakeInfo(mProjectSlugs, values[4], values[5], values[6], values[7]);
-
-            } else {
-                mMatched = false;
-                mProjectSlugs = null;
-                mName = null;
             }
         }
-        return mMatched;
-    }
-
-    public ProjectSlugs getProjectSlugs(){
-        return mProjectSlugs;
-    }
-
-    public TakeInfo getTakeInfo() {
-        return mTakeInfo;
+        return mMatched
     }
 }

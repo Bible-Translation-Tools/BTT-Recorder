@@ -1,156 +1,126 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler;
-import org.wycliffeassociates.translationrecorder.R;
-
-import org.wycliffeassociates.translationrecorder.widgets.PlaybackTimer;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler
+import org.wycliffeassociates.translationrecorder.Utils
+import org.wycliffeassociates.translationrecorder.databinding.FragmentMarkerToolbarBinding
+import org.wycliffeassociates.translationrecorder.widgets.PlaybackTimer
 
 /**
  * Created by sarabiaj on 11/15/2016.
  */
+class MarkerToolbarFragment : Fragment() {
 
-public class MarkerToolbarFragment extends Fragment {
-
-    private ImageView mPlaceMarker;
-
-    public interface OnMarkerPlacedListener {
-        void onMarkerPlaced();
+    interface OnMarkerPlacedListener {
+        fun onMarkerPlaced()
     }
 
-    private OnMarkerPlacedListener mOnMarkerPlacedListener;
-    private VerseMarkerModeToggler mModeToggleCallback;
-    private MediaController mMediaController;
-    private ImageButton mPlayBtn;
-    private ImageButton mPauseBtn;
-    private ImageButton mSkipBackBtn;
-    private ImageButton mSkipForwardBtn;
-    private TextView mPlaybackElapsed;
-    private TextView mPlaybackDuration;
-    private PlaybackTimer mTimer;
+    private var mOnMarkerPlacedListener: OnMarkerPlacedListener? = null
+    private var mModeToggleCallback: VerseMarkerModeToggler? = null
+    private var mMediaController: MediaController? = null
+    private var mTimer: PlaybackTimer? = null
 
-    public static MarkerToolbarFragment newInstance(){
-        MarkerToolbarFragment f = new MarkerToolbarFragment();
-        return f;
+    private var _binding: FragmentMarkerToolbarBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mModeToggleCallback = context as VerseMarkerModeToggler
+        mMediaController = context as MediaController
+        mOnMarkerPlacedListener = context as OnMarkerPlacedListener
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mModeToggleCallback = (VerseMarkerModeToggler) activity;
-        mMediaController = (MediaController) activity;
-        mOnMarkerPlacedListener = (OnMarkerPlacedListener) activity;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentMarkerToolbarBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_marker_toolbar, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        findViews();
-        initViews();
-        initTimer(mPlaybackElapsed, mPlaybackDuration);
-        if (mMediaController.isPlaying()) {
-            showPauseButton();
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initViews()
+        initTimer(binding.playbackElapsed, binding.playbackDuration)
+        if (mMediaController!!.isPlaying) {
+            showPauseButton()
         } else {
-            showPlayButton();
+            showPlayButton()
         }
     }
 
-    private void findViews(){
-        View view = getView();
-        mPlayBtn = (ImageButton) view.findViewById(R.id.btn_play);
-        mPauseBtn = (ImageButton) view.findViewById(R.id.btn_pause);
-        mSkipBackBtn = (ImageButton) view.findViewById(R.id.btn_skip_back);
-        mSkipForwardBtn = (ImageButton) view.findViewById(R.id.btn_skip_forward);
-
-        mPlaybackElapsed = (TextView) view.findViewById(R.id.playback_elapsed);
-        mPlaybackDuration = (TextView) view.findViewById(R.id.playback_duration);
-
-        mPlaceMarker = (ImageView) view.findViewById(R.id.btn_drop_verse_marker);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    public void showPlayButton(){
-        Utils.swapViews(new View[]{mPlayBtn}, new View[]{mPauseBtn});
+    fun showPlayButton() {
+        if (_binding == null) return
+        Utils.swapViews(
+            arrayOf<View?>(binding.btnPlay),
+            arrayOf<View?>(binding.btnPause)
+        )
     }
 
-    public void showPauseButton(){
-        Utils.swapViews(new View[]{mPauseBtn}, new View[]{mPlayBtn});
+    fun showPauseButton() {
+        if (_binding == null) return
+        Utils.swapViews(
+            arrayOf<View?>(binding.btnPause),
+            arrayOf<View?>(binding.btnPlay)
+        )
     }
 
-    private void initViews(){
-        mPlayBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPauseButton();
-                mMediaController.onMediaPlay();
-            }
-        });
+    private fun initViews() {
+        binding.btnPlay.setOnClickListener {
+            showPauseButton()
+            mMediaController?.onMediaPlay()
+        }
 
-        mPauseBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPlayButton();
-                mMediaController.onMediaPause();
-            }
-        });
+        binding.btnPause.setOnClickListener {
+            showPlayButton()
+            mMediaController?.onMediaPause()
+        }
 
-        mSkipBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMediaController.onSeekBackward();
-            }
-        });
+        binding.btnSkipBack.setOnClickListener {
+            mMediaController?.onSeekBackward()
+        }
 
-        mSkipForwardBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMediaController.onSeekForward();
-            }
-        });
+        binding.btnSkipForward.setOnClickListener {
+            mMediaController?.onSeekForward()
+        }
 
-        mPlaceMarker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mOnMarkerPlacedListener.onMarkerPlaced();
-            }
-        });
-    }
-
-    private void initTimer(final TextView elapsed, final TextView duration) {
-        mTimer = new PlaybackTimer(elapsed, duration);
-        mTimer.setElapsed(mMediaController.getLocationMs());
-        mTimer.setDuration(mMediaController.getDurationMs());
-    }
-
-    public void onLocationUpdated(int ms){
-        if(mTimer != null) {
-            mTimer.setElapsed(ms);
+        binding.btnDropVerseMarker.setOnClickListener {
+            mOnMarkerPlacedListener?.onMarkerPlaced()
         }
     }
 
-    public void onDurationUpdated(int ms){
-        if(mTimer != null){
-            mTimer.setDuration(ms);
-        }
+    private fun initTimer(elapsed: TextView?, duration: TextView?) {
+        mTimer = PlaybackTimer(elapsed, duration)
+        mTimer?.setElapsed(mMediaController!!.locationMs)
+        mTimer?.setDuration(mMediaController!!.durationMs)
     }
 
-    public void invalidate(int ms) {
+    fun onLocationUpdated(ms: Int) {
+        mTimer?.setElapsed(ms)
+    }
 
+    fun onDurationUpdated(ms: Int) {
+        mTimer?.setDuration(ms)
+    }
+
+    companion object {
+        fun newInstance(): MarkerToolbarFragment {
+            val f = MarkerToolbarFragment()
+            return f
+        }
     }
 }

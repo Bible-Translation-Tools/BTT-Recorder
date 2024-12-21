@@ -1,204 +1,198 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs;
+package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.Intent;
-import android.os.Bundle;
-import androidx.appcompat.app.AlertDialog;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity;
-
-import static android.app.Activity.RESULT_OK;
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Dialog
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ProjectLayoutDialogBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import java.util.Locale
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 6/27/2016.
  */
-public class ProjectInfoDialog extends DialogFragment {
+@AndroidEntryPoint
+class ProjectInfoDialog : DialogFragment() {
 
-    private static final int SOURCE_AUDIO_REQUEST = 223;
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    public interface InfoDialogCallback {
-        void onDelete(final Project project);
+    interface InfoDialogCallback {
+        fun onDelete(project: Project)
     }
 
-    public interface ExportDelegator {
-        void delegateExport(Export exp);
+    interface ExportDelegator {
+        fun delegateExport(exp: Export)
     }
 
-    public interface SourceAudioDelegator {
-        void delegateSourceAudio(Project project);
+    interface SourceAudioDelegator {
+        fun delegateSourceAudio(project: Project)
     }
 
-    Project mProject;
-    ExportDelegator mExportDelegator;
-    Export mExp;
-    ProjectDatabaseHelper db;
-    public static final String PROJECT_FRAGMENT_TAG = "project_tag";
+    private lateinit var project: Project
+    var export: Export? = null
+    private var exportDelegator: ExportDelegator? = null
 
-    TextView mTitle;
-    TextView mProjectTitle;
-    TextView mLanguageTitle;
-    TextView mTranslator;
-    TextView mTranslationType;
-    TextView mUnitType;
-    TextView mSourceLanguage;
-    TextView mSourceLocation;
+    private var _binding: ProjectLayoutDialogBinding? = null
+    private val binding get() = _binding!!
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mExportDelegator = (ExportDelegator) activity;
-        db = ((TranslationRecorderApp)activity.getApplication()).getDatabase();
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        exportDelegator = context as ExportDelegator
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mExportDelegator = null;
+    override fun onDetach() {
+        super.onDetach()
+        exportDelegator = null
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.project_layout_dialog, null);
+    @SuppressLint("SetTextI18n")
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = ProjectLayoutDialogBinding.inflate(layoutInflater)
+        val builder = AlertDialog.Builder(requireActivity())
 
-        mProject = getArguments().getParcelable(Project.PROJECT_EXTRA);
+        project = arguments?.getParcelable(Project.PROJECT_EXTRA)!!
 
-        mTitle = (TextView) view.findViewById(R.id.title);
-        mProjectTitle = (TextView) view.findViewById(R.id.project_title);
-        mLanguageTitle = (TextView) view.findViewById(R.id.language_title);
-        mTranslationType = (TextView) view.findViewById(R.id.translation_type_title);
-        mUnitType = (TextView) view.findViewById(R.id.unit_title);
-        mSourceLanguage = (TextView) view.findViewById(R.id.source_audio_language);
-        mSourceLocation = (TextView) view.findViewById(R.id.source_audio_location);
+        val languageCode = project.targetLanguageSlug
+        val language = db.getLanguageName(languageCode)
+        val bookCode = project.bookSlug
+        val book = project.bookName
+        val translation = project.versionSlug
 
-        String languageCode = mProject.getTargetLanguageSlug();
-        String language = db.getLanguageName(languageCode);
-        String bookCode = mProject.getBookSlug();
-        String book = mProject.getBookName();
-        String translation = mProject.getVersionSlug();
+        binding.title.text = "$book - $language"
+        binding.projectTitle.text = "$book ($bookCode)"
+        binding.languageTitle.text = "$language ($languageCode)"
 
-        mTitle.setText(book + " - " + language);
-        mProjectTitle.setText(book + " (" + bookCode + ")");
-        mLanguageTitle.setText(language + " (" + languageCode + ")");
-        if (translation.equals("ulb")) {
-            mTranslationType.setText("Unlocked Literal Bible (" + translation + ")");
-        } else if (translation.equals("udb")) {
-            mTranslationType.setText("Unlocked Dynamic Bible (" + translation + ")");
-        } else {
-            mTranslationType.setText("Regular (" + translation.toUpperCase() + ")");
+        when (translation) {
+            "ulb" -> {
+                binding.translationTypeTitle.text = "Unlocked Literal Bible ($translation)"
+            }
+            "udb" -> {
+                binding.translationTypeTitle.text = "Unlocked Dynamic Bible ($translation)"
+            }
+            else -> {
+                binding.translationTypeTitle.text =
+                    "Regular (" + translation.uppercase(Locale.getDefault()) + ")"
+            }
         }
 
-        setSourceAudioTextInfo();
+        setSourceAudioTextInfo()
 
-        mUnitType.setText(mProject.getLocalizedModeName(getActivity()));
+        binding.unitTitle.text = project.getLocalizedModeName(requireActivity())
 
-        ImageButton deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
-        ImageButton sourceButton = (ImageButton) view.findViewById(R.id.export_as_source_btn);
-        ImageButton sdcard_button = (ImageButton) view.findViewById(R.id.sdcard_button);
-        ImageButton folderButton = (ImageButton) view.findViewById(R.id.folder_button);
-        ImageButton publishButton = (ImageButton) view.findViewById(R.id.publish_button);
-        ImageButton otherButton = (ImageButton) view.findViewById(R.id.other_button);
-        ImageButton editSourceLanguage = (ImageButton) view.findViewById(R.id.edit_source_language);
-        ImageButton editSourceLocation = (ImageButton) view.findViewById(R.id.edit_source_location);
+        binding.deleteButton.setOnClickListener {
+            dismiss()
+            (activity as InfoDialogCallback).onDelete(project)
+        }
 
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-                ((InfoDialogCallback) getActivity()).onDelete(mProject);
+        val localExport = View.OnClickListener {
+            export = FolderExport(
+                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                project,
+                directoryProvider
+            ).apply {
+                exportDelegator?.delegateExport(this)
             }
-        });
+        }
+        binding.sdcardButton.setOnClickListener(localExport)
+        binding.folderButton.setOnClickListener(localExport)
 
-        View.OnClickListener localExport = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mExp = new FolderExport(ProjectFileUtils.getProjectDirectory(mProject), mProject);
-                mExportDelegator.delegateExport(mExp);
+        val tEExport = View.OnClickListener {
+            export = TranslationExchangeExport(
+                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                project,
+                db,
+                directoryProvider,
+                prefs,
+                assetsProvider
+            ).apply {
+                exportDelegator?.delegateExport(this)
             }
-        };
-        sdcard_button.setOnClickListener(localExport);
-        folderButton.setOnClickListener(localExport);
+        }
+        binding.publishButton.setOnClickListener(tEExport)
 
-        View.OnClickListener tEExport = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mExp = new TranslationExchangeExport(ProjectFileUtils.getProjectDirectory(mProject), mProject, db);
-                mExportDelegator.delegateExport(mExp);
+        binding.otherButton.setOnClickListener {
+            export = AppExport(
+                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                project,
+                directoryProvider
+            ).apply {
+                exportDelegator?.delegateExport(this)
             }
-        };
-        publishButton.setOnClickListener(tEExport);
+        }
 
+        binding.exportAsSourceBtn.setOnClickListener {
+            (exportDelegator as SourceAudioDelegator).delegateSourceAudio(project)
+        }
 
-        otherButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mExp = new AppExport(ProjectFileUtils.getProjectDirectory(mProject), mProject);
-                mExportDelegator.delegateExport(mExp);
-            }
-        });
+        binding.editSourceLanguage.setOnClickListener {
+            val intent = SourceAudioActivity.getSourceAudioIntent(requireActivity())
+            startActivityForResult(intent, SOURCE_AUDIO_REQUEST)
+        }
 
-        sourceButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((SourceAudioDelegator) mExportDelegator).delegateSourceAudio(mProject);
-            }
-        });
+        binding.editSourceLocation.setOnClickListener {
+            val intent = SourceAudioActivity.getSourceAudioIntent(requireActivity())
+            startActivityForResult(intent, SOURCE_AUDIO_REQUEST)
+        }
 
-        editSourceLanguage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = SourceAudioActivity.getSourceAudioIntent(getActivity(), mProject);
-                startActivityForResult(intent, SOURCE_AUDIO_REQUEST);
-            }
-        });
-
-        editSourceLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = SourceAudioActivity.getSourceAudioIntent(getActivity(), mProject);
-                startActivityForResult(intent, SOURCE_AUDIO_REQUEST);
-            }
-        });
-
-        builder.setView(view);
-        return builder.create();
+        builder.setView(view)
+        return builder.create()
     }
 
-    private void setSourceAudioTextInfo() {
-        String sourceLanguageCode = mProject.getSourceLanguageSlug();
-        String sourceLanguageName = (db.languageExists(sourceLanguageCode))? db.getLanguageName(sourceLanguageCode) : "";
-        mSourceLanguage.setText(String.format("%s - (%s)", sourceLanguageName, sourceLanguageCode));
-        mSourceLocation.setText(mProject.getSourceAudioPath());
+    private fun setSourceAudioTextInfo() {
+        val sourceLanguageCode = project.sourceLanguageSlug
+        val sourceLanguageName = if (db.languageExists(sourceLanguageCode)) {
+            db.getLanguageName(sourceLanguageCode)
+        } else ""
+        binding.sourceAudioLanguage.text = String.format("%s - (%s)", sourceLanguageName, sourceLanguageCode)
+        binding.sourceAudioLocation.text = project.sourceAudioPath
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SOURCE_AUDIO_REQUEST) {
+                val projectId = db.getProjectId(project)
+                val sourceLanguage = data?.getParcelableExtra<Language>(Project.SOURCE_LANGUAGE_EXTRA)
+                val sourceLocation = data?.getStringExtra(Project.SOURCE_LOCATION_EXTRA)
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_OK){
-            if(requestCode == SOURCE_AUDIO_REQUEST) {
-                int projectId = db.getProjectId(mProject);
-                Project updatedProject = data.getParcelableExtra(Project.PROJECT_EXTRA);
-                if(updatedProject.getSourceLanguageSlug() != null && !updatedProject.getSourceLanguageSlug().equals("")) {
-                    mProject = updatedProject;
-                    db.updateSourceAudio(projectId, mProject);
-                    setSourceAudioTextInfo();
+                if (sourceLanguage != null || sourceLocation != null) {
+                    project.sourceLanguage = sourceLanguage
+                    project.sourceAudioPath = sourceLocation
+                    db.updateSourceAudio(projectId, project)
+                    setSourceAudioTextInfo()
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    companion object {
+        private const val SOURCE_AUDIO_REQUEST = 223
+
+        const val PROJECT_FRAGMENT_TAG: String = "project_tag"
     }
 }

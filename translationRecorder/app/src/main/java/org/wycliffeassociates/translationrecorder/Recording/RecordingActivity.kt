@@ -1,477 +1,456 @@
-package org.wycliffeassociates.translationrecorder.Recording;
+package org.wycliffeassociates.translationrecorder.Recording
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
-import android.view.WindowManager;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.ActiveRecordingRenderer;
-import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog;
-import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingControls;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentSourceAudio;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentVolumeBar;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity;
-import org.wycliffeassociates.translationrecorder.project.*;
-import org.wycliffeassociates.translationrecorder.project.components.User;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-import org.wycliffeassociates.translationrecorder.wav.WavMetadata;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.DEFAULT_CHAPTER;
-import static org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.DEFAULT_UNIT;
+import android.app.ProgressDialog
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import com.door43.tools.reporting.Logger
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.AudioVisualization.ActiveRecordingRenderer
+import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog
+import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog.DeleteFileCallback
+import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingControls
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingControls.RecordingControlCallback
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar.Companion.newInstance
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar.OnUnitChangedListener
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform.Companion.newInstance
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentSourceAudio
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentVolumeBar
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ActivityRecordingScreenBinding
+import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.createFile
+import org.wycliffeassociates.translationrecorder.project.ProjectProgress
+import org.wycliffeassociates.translationrecorder.project.components.User
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import org.wycliffeassociates.translationrecorder.wav.WavMetadata
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
+@AndroidEntryPoint
+class RecordingActivity : PermissionActivity(), RecordingControlCallback, InsertTaskFragment.Insert,
+    OnUnitChangedListener, DeleteFileCallback {
 
-public class RecordingActivity extends PermissionActivity implements
-        FragmentRecordingControls.RecordingControlCallback,
-        InsertTaskFragment.Insert,
-        FragmentRecordingFileBar.OnUnitChangedListener,
-        ExitDialog.DeleteFileCallback {
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    public static final String KEY_PROJECT = "key_project";
-    public static final String KEY_WAV_FILE = "key_wav_file";
-    public static final String KEY_CHAPTER = "key_chapter";
-    public static final String KEY_UNIT = "key_unit";
-    public static final String KEY_INSERT_LOCATION = "key_insert_location";
-    private static final String TAG_INSERT_TASK_FRAGMENT = "insert_task_fragment";
-    private static final String STATE_INSERTING = "state_inserting";
-
-    private Project mProject;
-    private User mUser;
-    private int mInitialChapter;
-    private int mInitialUnit;
-    private WavFile mLoadedWav;
-    private int mInsertLocation;
-    private boolean mInsertMode;
-    private boolean isChunkMode;
-    private InsertTaskFragment mInsertTaskFragment;
-    private boolean mInserting;
-    private ProgressDialog mProgressDialog;
-    private ChunkPlugin chunkPlugin;
-    private ProjectProgress projectProgress;
-    private ProjectDatabaseHelper db;
+    private lateinit var mProject: Project
+    private lateinit var mUser: User
+    private var mInitialChapter = 0
+    private var mInitialUnit = 0
+    private var mLoadedWav: WavFile? = null
+    private var mInsertLocation = 0
+    private var mInsertMode = false
+    private var isChunkMode = false
+    private var mInsertTaskFragment: InsertTaskFragment? = null
+    private var mInserting = false
+    private var mProgressDialog: ProgressDialog? = null
+    private var chunkPlugin: ChunkPlugin? = null
+    private var projectProgress: ProjectProgress? = null
 
     //Fragments
-    private HashMap<Integer, Fragment> mFragmentHolder;
-    private FragmentRecordingFileBar mFragmentRecordingFileBar;
-    private FragmentVolumeBar mFragmentVolumeBar;
-    private FragmentRecordingControls mFragmentRecordingControls;
-    private FragmentSourceAudio mFragmentSourceAudio;
-    private FragmentRecordingWaveform mFragmentRecordingWaveform;
+    private var mFragmentHolder: HashMap<Int, Fragment> = hashMapOf()
+    private lateinit var mFragmentRecordingFileBar: FragmentRecordingFileBar
+    private lateinit var mFragmentVolumeBar: FragmentVolumeBar
+    private lateinit var mFragmentRecordingControls: FragmentRecordingControls
+    private lateinit var mFragmentSourceAudio: FragmentSourceAudio
+    private lateinit var mFragmentRecordingWaveform: FragmentRecordingWaveform
 
-    private ActiveRecordingRenderer mRecordingRenderer;
+    private lateinit var mRecordingRenderer: ActiveRecordingRenderer
 
-    private boolean isRecording = false;
-    private boolean onlyVolumeTest = true;
-    private WavFile mNewRecording;
-    private boolean isPausedRecording;
-    private boolean isSaved;
-    private boolean hasStartedRecording = false;
+    private var isRecording = false
+    private var onlyVolumeTest = true
+    private var mNewRecording: WavFile? = null
+    private var isPausedRecording = false
+    private var isSaved = false
+    private var hasStartedRecording = false
 
-    private String mContributor = "";
+    private lateinit var binding: ActivityRecordingScreenBinding
 
-    public static Intent getInsertIntent(
-            Context ctx,
-            Project project,
-            WavFile wavFile,
-            int chapter,
-            int unit,
-            int locationMs
-    ) {
-        Logger.w("RecordingActivity", "Creating Insert Intent");
-        Intent intent = getRerecordIntent(ctx, project, wavFile, chapter, unit);
-        intent.putExtra(KEY_INSERT_LOCATION, locationMs);
-        return intent;
+    private val currentUser: String
+        get() = prefs.getDefaultPref(Settings.KEY_PROFILE, 1).toString()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        binding = ActivityRecordingScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        initialize(intent)
+        initializeTaskFragment(savedInstanceState)
     }
 
-    public static Intent getNewRecordingIntent(
-            Context ctx,
-            Project project,
-            int chapter,
-            int unit
-    ) {
-        Logger.w("RecordingActivity", "Creating New Recording Intent");
-        Intent intent = new Intent(ctx, RecordingActivity.class);
-        intent.putExtra(KEY_PROJECT, project);
-        intent.putExtra(KEY_CHAPTER, chapter);
-        intent.putExtra(KEY_UNIT, unit);
-        return intent;
+    override fun onPermissionsAccepted() {
+        onlyVolumeTest = true
+        val volumeTestIntent = Intent(this, WavRecorder::class.java)
+        volumeTestIntent.putExtra(WavRecorder.KEY_VOLUME_TEST, onlyVolumeTest)
+        startService(volumeTestIntent)
+        mRecordingRenderer.listenForRecording(onlyVolumeTest)
     }
 
-    public static Intent getRerecordIntent(
-            Context ctx,
-            Project project,
-            WavFile wavFile,
-            int chapter,
-            int unit
-    ) {
-        Logger.w("RecordingActivity", "Creating Rerecord Intent");
-        Intent intent = getNewRecordingIntent(ctx, project, chapter, unit);
-        intent.putExtra(KEY_WAV_FILE, wavFile);
-        return intent;
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_recording_screen);
-
-        db = ((TranslationRecorderApp)getApplication()).getDatabase();
-
-        initialize(getIntent());
-        initializeTaskFragment(savedInstanceState);
-    }
-
-    @Override
-    protected void onPermissionsAccepted() {
-        onlyVolumeTest = true;
-        Intent volumeTestIntent = new Intent(this, WavRecorder.class);
-        volumeTestIntent.putExtra(WavRecorder.KEY_VOLUME_TEST, onlyVolumeTest);
-        startService(volumeTestIntent);
-        mRecordingRenderer.listenForRecording(onlyVolumeTest);
-    }
-
-    @Override
-    public void onPause() {
-        Logger.w(this.toString(), "Recording screen onPauseRecording");
-        super.onPause();
-        if(!getRequestingPermission().get()) {
+    public override fun onPause() {
+        Logger.w(this.toString(), "Recording screen onPauseRecording")
+        super.onPause()
+        if (!requestingPermission.get()) {
             if (isRecording) {
-                isRecording = false;
-                stopService(new Intent(this, WavRecorder.class));
-                RecordingQueues.stopQueues(this);
+                isRecording = false
+                stopService(Intent(this, WavRecorder::class.java))
+                RecordingQueues.stopQueues(this)
             } else if (isPausedRecording) {
-                RecordingQueues.stopQueues(this);
+                RecordingQueues.stopQueues(this)
             } else if (!hasStartedRecording) {
-                stopService(new Intent(this, WavRecorder.class));
-                RecordingQueues.stopVolumeTest();
+                stopService(Intent(this, WavRecorder::class.java))
+                RecordingQueues.stopVolumeTest()
             }
-            finish();
+            finish()
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        Logger.w(this.toString(), "User pressed back");
+    override fun onBackPressed() {
+        Logger.w(this.toString(), "User pressed back")
         if (!isSaved && hasStartedRecording) {
-            mFragmentRecordingControls.pauseRecording();
-            ExitDialog exitDialog = ExitDialog.Build(
-                    this,
-                    DialogFragment.STYLE_NORMAL,
-                    false,
-                    false,
-                    mNewRecording.getFile()
-            );
-            exitDialog.show();
+            mFragmentRecordingControls.pauseRecording()
+            val exitDialog = ExitDialog.Build(
+                this,
+                DialogFragment.STYLE_NORMAL,
+                false,
+                false,
+                mNewRecording!!.file
+            )
+            exitDialog.show()
         } else {
-            super.onBackPressed();
+            super.onBackPressed()
         }
     }
 
-    public void onDeleteRecording() {
-        isRecording = false;
-        isPausedRecording = false;
-        stopService(new Intent(this, WavRecorder.class));
-        RecordingQueues.stopQueues(this);
-        RecordingQueues.clearQueues();
-        mNewRecording.getFile().delete();
+    override fun onDeleteRecording() {
+        isRecording = false
+        isPausedRecording = false
+        stopService(Intent(this, WavRecorder::class.java))
+        RecordingQueues.stopQueues(this)
+        RecordingQueues.clearQueues()
+        mNewRecording!!.file.delete()
         //originally called from a backpress, so finish by calling super
-        super.onBackPressed();
+        super.onBackPressed()
     }
 
-    private void initialize(Intent intent) {
-        initializeFromSettings();
-        parseIntent(intent);
-        getCurrentUser();
-        initializeFragments();
-        attachFragments();
-        mRecordingRenderer = new ActiveRecordingRenderer(
-                mFragmentRecordingControls,
-                mFragmentVolumeBar,
-                mFragmentRecordingWaveform
-        );
+    private fun initialize(intent: Intent) {
+        initializeFromSettings()
+        parseIntent(intent)
+        currentUser
+        initializeFragments()
+        attachFragments()
+        mRecordingRenderer = ActiveRecordingRenderer(
+            mFragmentRecordingControls,
+            mFragmentVolumeBar,
+            mFragmentRecordingWaveform
+        )
     }
 
-    private void initializeFromSettings() {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        mInitialChapter = pref.getInt(Settings.KEY_PREF_CHAPTER, DEFAULT_CHAPTER);
-        mInitialUnit = pref.getInt(Settings.KEY_PREF_CHUNK, DEFAULT_UNIT);
-        int userId = pref.getInt(Settings.KEY_USER, 1);
-        mUser = db.getUser(userId);
+    private fun initializeFromSettings() {
+        mInitialChapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        mInitialUnit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
+        val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+        mUser = db.getUser(userId)
     }
 
-    private void getCurrentUser() {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        mContributor = String.valueOf(pref.getInt(Settings.KEY_PROFILE, 1));
-    }
-
-    private void initializeFragments() {
+    private fun initializeFragments() {
         //initialize fragments
         mFragmentRecordingControls = FragmentRecordingControls.newInstance(
-                (mInsertMode)
-                        ? FragmentRecordingControls.Mode.INSERT_MODE
-                        : FragmentRecordingControls.Mode.RECORDING_MODE
-        );
-        mFragmentSourceAudio = FragmentSourceAudio.newInstance();
-        mFragmentRecordingFileBar = FragmentRecordingFileBar.newInstance(
-                mProject,
-                mInitialChapter,
-                mInitialUnit,
-                (mInsertMode)
-                        ? FragmentRecordingControls.Mode.INSERT_MODE
-                        : FragmentRecordingControls.Mode.RECORDING_MODE
-        );
+            if ((mInsertMode))
+                FragmentRecordingControls.Mode.INSERT_MODE
+            else
+                FragmentRecordingControls.Mode.RECORDING_MODE
+        )
+        mFragmentSourceAudio = FragmentSourceAudio.newInstance()
+        mFragmentRecordingFileBar = newInstance(
+            mProject,
+            mInitialChapter,
+            mInitialUnit,
+            if ((mInsertMode))
+                FragmentRecordingControls.Mode.INSERT_MODE
+            else
+                FragmentRecordingControls.Mode.RECORDING_MODE
+        )
 
-        mFragmentVolumeBar = FragmentVolumeBar.newInstance();
-        mFragmentRecordingWaveform = FragmentRecordingWaveform.newInstance();
+        mFragmentVolumeBar = FragmentVolumeBar.newInstance()
+        mFragmentRecordingWaveform = newInstance()
 
         //add fragments to map
-        mFragmentHolder = new HashMap<>();
-        mFragmentHolder.put(
-                R.id.fragment_recording_controls_holder,
-                mFragmentRecordingControls
-        );
+        mFragmentHolder[R.id.fragment_recording_controls_holder] = mFragmentRecordingControls
 
-        mFragmentHolder.put(R.id.fragment_source_audio_holder, mFragmentSourceAudio);
-        mFragmentHolder.put(
-                R.id.fragment_recording_file_bar_holder,
-                mFragmentRecordingFileBar
-        );
-        mFragmentHolder.put(
-                R.id.fragment_volume_bar_holder,
-                mFragmentVolumeBar
-        );
-        mFragmentHolder.put(
-                R.id.fragment_recording_waveform_holder,
-                mFragmentRecordingWaveform
-        );
+        mFragmentHolder[R.id.fragment_source_audio_holder] = mFragmentSourceAudio
+        mFragmentHolder[R.id.fragment_recording_file_bar_holder] = mFragmentRecordingFileBar
+        mFragmentHolder[R.id.fragment_volume_bar_holder] = mFragmentVolumeBar
+        mFragmentHolder[R.id.fragment_recording_waveform_holder] = mFragmentRecordingWaveform
     }
 
-    private void attachFragments() {
-        FragmentManager fm = getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Set<Map.Entry<Integer, Fragment>> entrySet = mFragmentHolder.entrySet();
-        for (Map.Entry<Integer, Fragment> pair : entrySet) {
-            ft.add(pair.getKey(), pair.getValue());
+    private fun attachFragments() {
+        val fm = supportFragmentManager
+        val ft = fm.beginTransaction()
+        val entrySet: Set<Map.Entry<Int, Fragment>> = mFragmentHolder.entries
+        for ((key, value) in entrySet) {
+            ft.add(key, value)
         }
-        ft.commit();
+        ft.commit()
     }
 
-    private void parseIntent(Intent intent) {
-        mProject = intent.getParcelableExtra(KEY_PROJECT);
+    private fun parseIntent(intent: Intent) {
+        mProject = intent.getParcelableExtra(KEY_PROJECT)!!
         //if a chapter and unit does not come from an intent, fallback to the ones from settings
-        mInitialChapter = intent.getIntExtra(KEY_CHAPTER, mInitialChapter);
-        mInitialUnit = intent.getIntExtra(KEY_UNIT, mInitialUnit);
+        mInitialChapter = intent.getIntExtra(KEY_CHAPTER, mInitialChapter)
+        mInitialUnit = intent.getIntExtra(KEY_UNIT, mInitialUnit)
         if (intent.hasExtra(KEY_WAV_FILE)) {
-            mLoadedWav = intent.getParcelableExtra(KEY_WAV_FILE);
+            mLoadedWav = intent.getParcelableExtra(KEY_WAV_FILE)
         }
         if (intent.hasExtra(KEY_INSERT_LOCATION)) {
-            mInsertLocation = intent.getIntExtra(KEY_INSERT_LOCATION, 0);
-            mInsertMode = true;
+            mInsertLocation = intent.getIntExtra(KEY_INSERT_LOCATION, 0)
+            mInsertMode = true
         }
-        isChunkMode = mProject.getModeType() == ChunkPlugin.TYPE.MULTI;
+        isChunkMode = mProject.modeType == ChunkPlugin.TYPE.MULTI
 
         try {
-            chunkPlugin = mProject.getChunkPlugin(new ChunkPluginLoader(this));
-            projectProgress = new ProjectProgress(mProject, db, chunkPlugin.getChapters());
-        } catch (IOException e) {
-            Logger.e(this.toString(), e.getMessage());
+            chunkPlugin = mProject.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetsProvider))
+            projectProgress = ProjectProgress(mProject, db, chunkPlugin!!.chapters)
+        } catch (e: IOException) {
+            Logger.e(this.toString(), e.message)
         }
     }
 
-
-
-    private void initializeTaskFragment(Bundle savedInstanceState) {
-        FragmentManager fm = getFragmentManager();
-        mInsertTaskFragment = (InsertTaskFragment) fm.findFragmentByTag(TAG_INSERT_TASK_FRAGMENT);
+    private fun initializeTaskFragment(savedInstanceState: Bundle?) {
+        val fm = supportFragmentManager
+        mInsertTaskFragment = fm.findFragmentByTag(TAG_INSERT_TASK_FRAGMENT) as? InsertTaskFragment
         if (mInsertTaskFragment == null) {
-            mInsertTaskFragment = new InsertTaskFragment();
-            fm.beginTransaction().add(mInsertTaskFragment, TAG_INSERT_TASK_FRAGMENT).commit();
-            fm.executePendingTransactions();
+            mInsertTaskFragment = InsertTaskFragment()
+            fm.beginTransaction().add(mInsertTaskFragment!!, TAG_INSERT_TASK_FRAGMENT).commit()
+            fm.executePendingTransactions()
         }
         if (savedInstanceState != null) {
-            mInserting = savedInstanceState.getBoolean(STATE_INSERTING, false);
+            mInserting = savedInstanceState.getBoolean(STATE_INSERTING, false)
             if (mInserting) {
-                displayProgressDialog();
+                displayProgressDialog()
             }
         }
     }
 
-    private void displayProgressDialog() {
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setTitle(R.string.inserting_recording);
-        mProgressDialog.setMessage(getResources().getString(R.string.please_wait));
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.show();
+    private fun displayProgressDialog() {
+        mProgressDialog = ProgressDialog(this).apply {
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            setTitle(R.string.inserting_recording)
+            setMessage(resources.getString(R.string.please_wait))
+            isIndeterminate = true
+            setCancelable(false)
+            show()
+        }
     }
 
-    @Override
-    public void onStartRecording() {
-        hasStartedRecording = true;
-        mFragmentSourceAudio.disableSourceAudio();
-        mFragmentRecordingFileBar.disablePickers();
-        onlyVolumeTest = false;
-        isRecording = true;
-        stopService(new Intent(this, WavRecorder.class));
+    override fun onStartRecording() {
+        hasStartedRecording = true
+        mFragmentSourceAudio.disableSourceAudio()
+        mFragmentRecordingFileBar.disablePickers()
+        onlyVolumeTest = false
+        isRecording = true
+        stopService(Intent(this, WavRecorder::class.java))
         if (!isPausedRecording) {
-            RecordingQueues.stopVolumeTest();
-            isSaved = false;
-            RecordingQueues.clearQueues();
-            String startVerse = mFragmentRecordingFileBar.getStartVerse();
-            String endVerse = mFragmentRecordingFileBar.getEndVerse();
-            File file = ProjectFileUtils.createFile(
+            RecordingQueues.stopVolumeTest()
+            isSaved = false
+            RecordingQueues.clearQueues()
+            val startVerse = mFragmentRecordingFileBar.startVerse
+            val endVerse = mFragmentRecordingFileBar.endVerse
+            val file = createFile(
+                mProject,
+                mFragmentRecordingFileBar.chapter,
+                startVerse.toInt(),
+                endVerse.toInt(),
+                directoryProvider
+            )
+            mNewRecording = WavFile(
+                file,
+                WavMetadata(
                     mProject,
-                    mFragmentRecordingFileBar.getChapter(),
-                    Integer.parseInt(startVerse),
-                    Integer.parseInt(endVerse)
-            );
-            mNewRecording = new WavFile(
-                    file,
-                    new WavMetadata(
-                            mProject,
-                            mContributor,
-                            String.valueOf(mFragmentRecordingFileBar.getChapter()),
-                            startVerse,
-                            endVerse
-                    )
-            );
-            startService(new Intent(this, WavRecorder.class));
-            startService(WavFileWriter.getIntent(this, mNewRecording));
-            mRecordingRenderer.listenForRecording(false);
+                    currentUser,
+                    mFragmentRecordingFileBar.chapter.toString(),
+                    startVerse,
+                    endVerse
+                )
+            )
+            startService(Intent(this, WavRecorder::class.java))
+            startService(WavFileWriter.getIntent(this, mNewRecording))
+            mRecordingRenderer.listenForRecording(false)
         } else {
-            isPausedRecording = false;
-            startService(new Intent(this, WavRecorder.class));
+            isPausedRecording = false
+            startService(Intent(this, WavRecorder::class.java))
         }
     }
 
-    @Override
-    public void onPauseRecording() {
-        isPausedRecording = true;
-        isRecording = false;
-        stopService(new Intent(this, WavRecorder.class));
-        RecordingQueues.pauseQueues();
-        Logger.w(this.toString(), "Pausing recording");
+    override fun onPauseRecording() {
+        isPausedRecording = true
+        isRecording = false
+        stopService(Intent(this, WavRecorder::class.java))
+        RecordingQueues.pauseQueues()
+        Logger.w(this.toString(), "Pausing recording")
     }
 
-    @Override
-    public void onStopRecording() {
+    override fun onStopRecording() {
         //Stop recording, load the recorded file, and draw
-        stopService(new Intent(this, WavRecorder.class));
-        long start = System.currentTimeMillis();
-        Logger.w(this.toString(), "Stopping recording");
-        RecordingQueues.stopQueues(this);
+        stopService(Intent(this, WavRecorder::class.java))
+        val start = System.currentTimeMillis()
+        Logger.w(this.toString(), "Stopping recording")
+        RecordingQueues.stopQueues(this)
         Logger.w(
-                this.toString(),
-                "SUCCESS: exited queues, took "
-                        + (System.currentTimeMillis() - start)
-                        + " to finish writing"
-        );
-        isRecording = false;
-        isPausedRecording = false;
-        addTakeToDb();
-        mNewRecording.parseHeader();
-        saveLocationToPreferences();
+            this.toString(),
+            ("SUCCESS: exited queues, took "
+                    + (System.currentTimeMillis() - start)
+                    + " to finish writing")
+        )
+        isRecording = false
+        isPausedRecording = false
+        addTakeToDb()
+        mNewRecording!!.parseHeader()
+        saveLocationToPreferences()
         if (mInsertMode) {
-            finalizeInsert(mLoadedWav, mNewRecording, mInsertLocation);
+            finalizeInsert(mLoadedWav, mNewRecording, mInsertLocation)
         } else {
-            Intent intent = PlaybackActivity.getPlaybackIntent(
-                    this,
-                    mNewRecording,
-                    mProject,
-                    mFragmentRecordingFileBar.getChapter(),
-                    mFragmentRecordingFileBar.getUnit()
-            );
-            startActivity(intent);
-            this.finish();
+            val intent = PlaybackActivity.getPlaybackIntent(
+                this,
+                mNewRecording,
+                mProject,
+                mFragmentRecordingFileBar.chapter,
+                mFragmentRecordingFileBar.unit
+            )
+            startActivity(intent)
+            this.finish()
         }
     }
 
-    private void saveLocationToPreferences() {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        pref.edit().putInt(Settings.KEY_PREF_CHAPTER, mFragmentRecordingFileBar.getChapter()).commit();
-        pref.edit().putInt(Settings.KEY_PREF_CHUNK, mFragmentRecordingFileBar.getUnit()).commit();
+    private fun saveLocationToPreferences() {
+        prefs.setDefaultPref(Settings.KEY_PREF_CHAPTER, mFragmentRecordingFileBar.chapter)
+        prefs.setDefaultPref(Settings.KEY_PREF_CHUNK, mFragmentRecordingFileBar.unit)
     }
 
-    private void addTakeToDb() {
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        ppm.match(mNewRecording.getFile());
+    private fun addTakeToDb() {
+        val ppm = mProject.patternMatcher
+        ppm.match(mNewRecording!!.file)
         db.addTake(
-                ppm.getTakeInfo(),
-                mNewRecording.getFile().getName(),
-                mNewRecording.getMetadata().getModeSlug(),
-                mNewRecording.getFile().lastModified(),
-                0,
-                mUser.getId()
-        );
-
-        if(projectProgress != null) {
-            projectProgress.updateProjectProgress();
-        }
+            ppm.takeInfo,
+            mNewRecording!!.file.name,
+            mNewRecording!!.metadata.modeSlug,
+            mNewRecording!!.file.lastModified(),
+            0,
+            mUser.id
+        )
+        projectProgress?.updateProjectProgress()
     }
 
-    private void finalizeInsert(WavFile base, WavFile insertClip, int insertFrame) {
+    private fun finalizeInsert(base: WavFile?, insertClip: WavFile?, insertFrame: Int) {
         // need to reparse the sizes after recording
         // updates to the object aren't reflected due to parceling to the writing service
-        mNewRecording.parseHeader();
-        mLoadedWav.parseHeader();
-        mInserting = true;
-        displayProgressDialog();
-        writeInsert(base, insertClip, insertFrame);
+        mNewRecording!!.parseHeader()
+        mLoadedWav!!.parseHeader()
+        mInserting = true
+        displayProgressDialog()
+        writeInsert(base!!, insertClip!!, insertFrame)
     }
 
-    @Override
-    public void writeInsert(WavFile base, WavFile insertClip, int insertFrame) {
-        mInsertTaskFragment.writeInsert(base, insertClip, insertFrame);
+    override fun writeInsert(base: WavFile, insertClip: WavFile, insertLoc: Int) {
+        mInsertTaskFragment!!.writeInsert(base, insertClip, insertLoc)
     }
 
-    public void insertCallback(WavFile result) {
-        mInserting = false;
+    fun insertCallback(result: WavFile?) {
+        mInserting = false
         try {
-            mProgressDialog.dismiss();
-        } catch (IllegalArgumentException e) {
-            Logger.e(this.toString(), "Tried to dismiss insert progress dialog", e);
+            mProgressDialog!!.dismiss()
+        } catch (e: IllegalArgumentException) {
+            Logger.e(this.toString(), "Tried to dismiss insert progress dialog", e)
         }
-        Intent intent = PlaybackActivity.getPlaybackIntent(
-                this,
-                result,
-                mProject,
-                mFragmentRecordingFileBar.getChapter(),
-                mFragmentRecordingFileBar.getUnit()
-        );
-        startActivity(intent);
-        this.finish();
+        val intent = PlaybackActivity.getPlaybackIntent(
+            this,
+            result,
+            mProject,
+            mFragmentRecordingFileBar.chapter,
+            mFragmentRecordingFileBar.unit
+        )
+        startActivity(intent)
+        this.finish()
     }
 
-    @Override
-    public void onUnitChanged(Project project, String fileName, int chapter) {
-        mFragmentSourceAudio.resetSourceAudio(project, fileName, chapter);
+    override fun onUnitChanged(project: Project, fileName: String, chapter: Int) {
+        mFragmentSourceAudio.resetSourceAudio(project, fileName, chapter)
+    }
+
+    companion object {
+        const val KEY_PROJECT: String = "key_project"
+        const val KEY_WAV_FILE: String = "key_wav_file"
+        const val KEY_CHAPTER: String = "key_chapter"
+        const val KEY_UNIT: String = "key_unit"
+        const val KEY_INSERT_LOCATION: String = "key_insert_location"
+        private const val TAG_INSERT_TASK_FRAGMENT = "insert_task_fragment"
+        private const val STATE_INSERTING = "state_inserting"
+
+        @JvmStatic
+        fun getInsertIntent(
+            ctx: Context?,
+            project: Project?,
+            wavFile: WavFile?,
+            chapter: Int,
+            unit: Int,
+            locationMs: Int
+        ): Intent {
+            Logger.w("RecordingActivity", "Creating Insert Intent")
+            val intent = getRerecordIntent(ctx, project, wavFile, chapter, unit)
+            intent.putExtra(KEY_INSERT_LOCATION, locationMs)
+            return intent
+        }
+
+        @JvmStatic
+        fun getNewRecordingIntent(
+            ctx: Context?,
+            project: Project?,
+            chapter: Int,
+            unit: Int
+        ): Intent {
+            Logger.w("RecordingActivity", "Creating New Recording Intent")
+            val intent = Intent(ctx, RecordingActivity::class.java)
+            intent.putExtra(KEY_PROJECT, project)
+            intent.putExtra(KEY_CHAPTER, chapter)
+            intent.putExtra(KEY_UNIT, unit)
+            return intent
+        }
+
+        @JvmStatic
+        fun getRerecordIntent(
+            ctx: Context?,
+            project: Project?,
+            wavFile: WavFile?,
+            chapter: Int,
+            unit: Int
+        ): Intent {
+            Logger.w("RecordingActivity", "Creating Rerecord Intent")
+            val intent = getNewRecordingIntent(ctx, project, chapter, unit)
+            intent.putExtra(KEY_WAV_FILE, wavFile)
+            return intent
+        }
     }
 }

@@ -75,7 +75,7 @@
                         android:duplicateParentState="true"
                         android:clickable="true"
                         android:cropToPadding="false"
-                        android:layout_marginLeft="@dimen/default_padding_l"
+                        android:layout_marginStart="@dimen/default_padding_l"
                         />
 
                 </LinearLayout>
@@ -135,7 +135,7 @@
                         android:text="00:00:00"
                         android:textSize="@dimen/abc_text_size_small_material"
                         android:textColor="@color/primary_text_default_material_light"
-                        android:layout_gravity="center_vertical|right"
+                        android:layout_gravity="center_vertical|end"
                         />
 
                     <SeekBar

@@ -1,8 +1,10 @@
 package org.wycliffeassociates.translationrecorder.FilesPage.Export;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
 
 
 /**
@@ -14,9 +16,9 @@ public class ExportTaskFragment extends Fragment implements Export.ProgressUpdat
     private Export mExp;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mProgressUpdateCallback = (Export.ProgressUpdateCallback) activity;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mProgressUpdateCallback = (Export.ProgressUpdateCallback) context;
     }
 
     @Override

@@ -2,12 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.door43.login'
-
     defaultConfig {
         //applicationId "com.door43.login"
-        compileSdk 31
-        minSdk 21
-        targetSdk 28
+        compileSdk 35
+        minSdk 22
+        targetSdk 35
     }
     buildTypes {
         release {
@@ -19,6 +18,11 @@ android {
         abortOnError true
         disable += ['ExpiredTargetSdkVersion','MissingTranslation']
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {

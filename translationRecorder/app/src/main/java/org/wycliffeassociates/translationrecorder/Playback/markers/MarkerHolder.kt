@@ -1,263 +1,207 @@
-package org.wycliffeassociates.translationrecorder.Playback.markers;
+package org.wycliffeassociates.translationrecorder.Playback.markers
 
-import android.view.View;
-import android.widget.FrameLayout;
-
-import org.wycliffeassociates.translationrecorder.Playback.AudioVisualController;
-import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentPlaybackTools;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.DraggableViewFrame;
-import org.wycliffeassociates.translationrecorder.wav.WavCue;
-import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import android.widget.FrameLayout
+import org.wycliffeassociates.translationrecorder.Playback.AudioVisualController
+import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentPlaybackTools
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.DraggableViewFrame
+import org.wycliffeassociates.translationrecorder.wav.WavCue
+import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by sarabiaj on 11/30/2016.
  */
+class MarkerHolder(
+    private val mAudioController: AudioVisualController,
+    private val mActivity: PlaybackActivity,
+    private val mMarkerButtons: FragmentPlaybackTools,
+    private val mTotalVerses: Int
+) : MarkerMediator {
+    private var mDraggableViewFrame: FrameLayout? = null
+    private var mMarkers: HashMap<Int, DraggableMarker> = HashMap()
 
-public class MarkerHolder implements MarkerMediator {
-
-    FrameLayout mDraggableViewFrame;
-    AudioVisualController mAudioController;
-    PlaybackActivity mActivity;
-    int mTotalVerses;
-    HashMap<Integer, DraggableMarker> mMarkers = new HashMap<>();
-    public static final int START_MARKER_ID = -1;
-    public static final int END_MARKER_ID = -2;
-    FragmentPlaybackTools mMarkerButtons;
-
-    public MarkerHolder(AudioVisualController controller, PlaybackActivity activity, FragmentPlaybackTools playbackTools, int totalVerses) {
-        mAudioController = controller;
-        mActivity = activity;
-        mMarkerButtons = playbackTools;
-        mTotalVerses = totalVerses;
+    override fun setDraggableViewFrame(dvf: DraggableViewFrame?) {
+        mDraggableViewFrame = dvf
     }
 
-    public void setMarkerButtons(FragmentPlaybackTools playbackTools) {
-        mMarkerButtons = playbackTools;
+    override fun onAddVerseMarker(verseNumber: Int, marker: VerseMarker) {
+        addMarker(verseNumber, marker)
     }
 
-    public void setDraggableViewFrame(DraggableViewFrame dvf) {
-        mDraggableViewFrame = dvf;
-    }
-
-    public void onAddVerseMarker(int verseNumber, VerseMarker marker) {
-        addMarker(verseNumber, marker);
-    }
-
-    public VerseMarker getVerseMarker(int verseNumber) {
+    fun getVerseMarker(verseNumber: Int): VerseMarker? {
         if (verseNumber > 0) {
-            return (VerseMarker) mMarkers.get(verseNumber);
+            return mMarkers[verseNumber] as VerseMarker?
         }
-        return null;
+        return null
     }
 
-    public void onAddStartSectionMarker(SectionMarker marker) {
-        addMarker(START_MARKER_ID, marker);
-        mMarkerButtons.viewOnSetStartMarker();
+    override fun onAddStartSectionMarker(marker: SectionMarker) {
+        addMarker(START_MARKER_ID, marker)
+        mMarkerButtons.viewOnSetStartMarker()
     }
 
-    public void onAddEndSectionMarker(SectionMarker marker) {
-        addMarker(END_MARKER_ID, marker);
-        mMarkerButtons.viewOnSetEndMarker();
+    override fun onAddEndSectionMarker(marker: SectionMarker) {
+        addMarker(END_MARKER_ID, marker)
+        mMarkerButtons.viewOnSetEndMarker()
     }
 
-    @Override
-    public void onRemoveVerseMarker(int verseNumber) {
-        removeMarker(verseNumber);
+    override fun onRemoveVerseMarker(verseNumber: Int) {
+        removeMarker(verseNumber)
     }
 
-    @Override
-    public void onRemoveSectionMarkers() {
-        onRemoveStartSectionMarker();
-        onRemoveEndSectionMarker();
-        mAudioController.clearLoopPoints();
-        mActivity.onLocationUpdated();
+    override fun onRemoveSectionMarkers() {
+        onRemoveStartSectionMarker()
+        onRemoveEndSectionMarker()
+        mAudioController.clearLoopPoints()
+        mActivity.onLocationUpdated()
     }
 
-    @Override
-    public void onRemoveStartSectionMarker() {
-        removeMarker(START_MARKER_ID);
+    override fun onRemoveStartSectionMarker() {
+        removeMarker(START_MARKER_ID)
     }
 
-    @Override
-    public void onRemoveEndSectionMarker() {
-        removeMarker(END_MARKER_ID);
+    override fun onRemoveEndSectionMarker() {
+        removeMarker(END_MARKER_ID)
     }
 
-    private void removeMarker(int id) {
+    private fun removeMarker(id: Int) {
         if (mMarkers.containsKey(id)) {
-            View marker = mMarkers.get(id).getView();
-            mDraggableViewFrame.removeView(marker);
-            mMarkers.remove(id);
+            val marker = mMarkers[id]!!.view
+            mDraggableViewFrame!!.removeView(marker)
+            mMarkers.remove(id)
         }
-        mAudioController.setCueList(getCueLocationList());
-        mActivity.onLocationUpdated();
+        mAudioController.setCueList(cueLocationList)
+        mActivity.onLocationUpdated()
     }
 
-    private synchronized void addMarker(int id, DraggableMarker marker) {
-        if (mMarkers.get(id) != null) {
+    @Synchronized
+    private fun addMarker(id: Int, marker: DraggableMarker) {
+        if (mMarkers[id] != null) {
             if (mDraggableViewFrame != null) {
-                mDraggableViewFrame.removeView(mMarkers.get(id).getView());
+                mDraggableViewFrame!!.removeView(mMarkers[id]!!.view)
             }
         }
-        mMarkers.put(id, marker);
+        mMarkers[id] = marker
         if (mDraggableViewFrame != null) {
-            mDraggableViewFrame.addView(marker.getView());
+            mDraggableViewFrame!!.addView(marker.view)
         }
-        mAudioController.setCueList(getCueLocationList());
-        mActivity.onLocationUpdated();
+        mAudioController.setCueList(cueLocationList)
+        mActivity.onLocationUpdated()
     }
 
-    public SectionMarker getSectionMarker(int sectionMarkerId) {
-        if (sectionMarkerId != START_MARKER_ID || sectionMarkerId != END_MARKER_ID) {
-            return null;
-        } else {
-            return (SectionMarker) mMarkers.get(sectionMarkerId);
-        }
-    }
+    override val markers: Collection<DraggableMarker>
+        get() = mMarkers.values
 
-    public boolean sectionMarkersAreSet() {
-        return (mMarkers.containsKey(START_MARKER_ID) && mMarkers.containsKey(END_MARKER_ID));
-    }
-
-    public void updateVerseMarkerLocation(int verseNumber, int frame) {
-        updateMarkerLocation(verseNumber, frame);
-    }
-
-    public void updateStartMarkerLocation(int frame) {
-        updateMarkerLocation(START_MARKER_ID, frame);
-    }
-
-    public void updateEndMarkerLocation(int frame) {
-        updateMarkerLocation(END_MARKER_ID, frame);
-    }
-
-    private void updateMarkerLocation(int id, int frame) {
-        DraggableMarker marker = mMarkers.get(id);
-        if (marker != null) {
-            marker.updateX(frame, mDraggableViewFrame.getWidth());
+    override fun updateCurrentFrame(frame: Int) {
+        for (m in mMarkers.values) {
+            m.updateX(frame, mDraggableViewFrame!!.width)
         }
     }
 
-    public Collection<DraggableMarker> getMarkers() {
-        return mMarkers.values();
+    override fun getMarker(id: Int): DraggableMarker {
+        return mMarkers[id]!!
     }
 
-    @Override
-    public void updateCurrentFrame(int frame) {
-        for (DraggableMarker m : mMarkers.values()) {
-            m.updateX(frame, mDraggableViewFrame.getWidth());
-        }
+    override fun contains(id: Int): Boolean {
+        return mMarkers.containsKey(id)
     }
 
-    public DraggableMarker getMarker(int id) {
-        return mMarkers.get(id);
-    }
-
-    public boolean contains(int id) {
-        return mMarkers.containsKey(id);
-    }
-
-    @Override
-    public void onCueScroll(int id, float newXPos) {
-        DraggableMarker selectedMarker = mMarkers.get(id);
-        float fpp = getFramesPerPixel();
-        int position = selectedMarker.getFrame() + ((int) Math.round((newXPos - selectedMarker.getMarkerX()) * fpp));
-        position = Math.min(Math.max(position, 0), mAudioController.getAbsoluteDurationInFrames());
+    override fun onCueScroll(id: Int, newXPos: Float) {
+        val selectedMarker = mMarkers[id]
+        val fpp = framesPerPixel
+        var position = selectedMarker!!.frame + Math.round((newXPos - selectedMarker.markerX) * fpp)
+        position = min(
+            max(position.toDouble(), 0.0),
+            mAudioController.absoluteDurationInFrames.toDouble()
+        ).toInt()
         if (id == START_MARKER_ID) {
-            mAudioController.setStartMarker(position);
+            mAudioController.setStartMarker(position)
         } else if (id == END_MARKER_ID) {
-            mAudioController.setEndMarker(position);
+            mAudioController.setEndMarker(position)
         }
-        selectedMarker.updateFrame(position);
-        mAudioController.setCueList(getCueLocationList());
-        mActivity.onLocationUpdated();
+        selectedMarker.updateFrame(position)
+        mAudioController.setCueList(cueLocationList)
+        mActivity.onLocationUpdated()
     }
 
-    private float getFramesPerPixel(){
-        return (44100 * 10) / (float) mDraggableViewFrame.getWidth();
+    private val framesPerPixel: Float
+        get() = (44100 * 10) / mDraggableViewFrame!!.width.toFloat()
+
+    override fun updateStartMarkerFrame(frame: Int) {
+        updateMarkerFrame(START_MARKER_ID, frame)
     }
 
-    @Override
-    public void updateStartMarkerFrame(int frame) {
-        updateMarkerFrame(START_MARKER_ID, frame);
+    override fun updateEndMarkerFrame(frame: Int) {
+        updateMarkerFrame(END_MARKER_ID, frame)
     }
 
-    @Override
-    public void updateEndMarkerFrame(int frame) {
-        updateMarkerFrame(END_MARKER_ID, frame);
-    }
-
-    private void updateMarkerFrame(int id, int frame) {
+    private fun updateMarkerFrame(id: Int, frame: Int) {
         if (mMarkers.containsKey(id)) {
-            mMarkers.get(id).updateFrame(frame);
-            mMarkers.get(id).updateX(frame, mDraggableViewFrame.getWidth());
+            mMarkers[id]!!.updateFrame(frame)
+            mMarkers[id]!!.updateX(frame, mDraggableViewFrame!!.width)
         }
-        mAudioController.setCueList(getCueLocationList());
+        mAudioController.setCueList(cueLocationList)
     }
 
-    @Override
-    public boolean hasVersesRemaining() {
-        return numVersesRemaining() > 0;
+    override fun hasVersesRemaining(): Boolean {
+        return numVersesRemaining() > 0
     }
 
-    @Override
-    public int numVersesRemaining() {
-        return mTotalVerses - numVerseMarkersPlaced();
+    override fun numVersesRemaining(): Int {
+        return mTotalVerses - numVerseMarkersPlaced()
     }
 
-    public int numVerseMarkersPlaced(){
-        int markers = mMarkers.size();
-        if(mMarkers.containsKey(START_MARKER_ID)) {
-            markers--;
+    override fun numVerseMarkersPlaced(): Int {
+        var markers = mMarkers.size
+        if (mMarkers.containsKey(START_MARKER_ID)) {
+            markers--
         }
-        if(mMarkers.containsKey(END_MARKER_ID)){
-            markers--;
+        if (mMarkers.containsKey(END_MARKER_ID)) {
+            markers--
         }
-        return markers;
+        return markers
     }
 
-    public int availableMarkerNumber(int startVerse, int endVerse) {
-        for(int i=startVerse; i <= endVerse; i++) {
-            if(!contains(i)) {
-                return i;
+    override fun availableMarkerNumber(startVerse: Int, endVerse: Int): Int {
+        for (i in startVerse..endVerse) {
+            if (!contains(i)) {
+                return i
             }
         }
 
-        throw new IllegalStateException(
-                String.format("No markers available to insert in range of verses %s - %s", startVerse, endVerse)
-        );
+        throw IllegalStateException(
+            String.format(
+                "No markers available to insert in range of verses %s - %s",
+                startVerse,
+                endVerse
+            )
+        )
     }
 
-    public boolean hasSectionMarkers(){
-        return mMarkers.containsKey(START_MARKER_ID) || mMarkers.containsKey(END_MARKER_ID);
+    override fun hasSectionMarkers(): Boolean {
+        return mMarkers.containsKey(START_MARKER_ID) || mMarkers.containsKey(END_MARKER_ID)
     }
 
-    @Override
-    public List<WavCue> getCueLocationList() {
-        Collection<DraggableMarker> markers = mMarkers.values();
-        ArrayList<WavCue> cueList = new ArrayList<>();
-        for(DraggableMarker marker : markers) {
-            if (marker instanceof VerseMarker) {
-                cueList.add(new WavCue(marker.getFrame()));
+    override val cueLocationList: List<WavCue>
+        get() {
+            val markers: Collection<DraggableMarker> = mMarkers.values
+            val cueList = ArrayList<WavCue>()
+            for (marker in markers) {
+                if (marker is VerseMarker) {
+                    cueList.add(WavCue(marker.getFrame()))
+                }
             }
+            cueList.sortBy { it.location }
+            return cueList
         }
-        Collections.sort(cueList, new Comparator<WavCue>() {
-            @Override
-            public int compare(WavCue wavCue, WavCue t1) {
-                return Integer.compare(wavCue.getLocation(), t1.getLocation());
-            }
-        });
-        return cueList;
+
+    companion object {
+        const val START_MARKER_ID: Int = -1
+        const val END_MARKER_ID: Int = -2
     }
 }

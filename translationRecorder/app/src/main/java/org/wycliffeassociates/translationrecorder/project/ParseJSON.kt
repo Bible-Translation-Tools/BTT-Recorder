@@ -1,117 +1,119 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.content.Context;
-import android.util.Pair;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.wycliffeassociates.translationrecorder.project.components.Book;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import android.util.Pair
+import org.json.JSONArray
+import org.json.JSONException
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.project.components.Book
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import java.io.IOException
 
 /**
  * Created by Abi on 7/29/2015.
  */
-public class ParseJSON {
+class ParseJSON(private val assetsProvider: AssetsProvider) {
 
-    private Context mCtx;
-    private HashMap<String, Book> mBooksMap;
-    private String[] mBooksList;
-    private String[] mLanguages;
-    private Book[] mBooks;
+    private var mBooks: MutableList<Book> = arrayListOf()
 
-    public ParseJSON(Context ctx){
-        mCtx = ctx;
-    }
-
-    private String loadJSONFromAsset(String filename) {
-        String json = null;
-        try {
-            InputStream is = mCtx.getAssets().open(filename);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            json = new String(buffer, "UTF-8");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        return json;
-    }
-
-    private void pullBookInfo() throws JSONException {
-        ArrayList<Book> books = new ArrayList<>();
-        String json = loadJSONFromAsset("note_books.json");
-        JSONArray booksJSON = new JSONArray(json);
-        for(int i = 0; i < booksJSON.length(); i++){
-            JSONObject bookObj = booksJSON.getJSONObject(i);
-            String name = bookObj.getString("name");
-            String slug = bookObj.getString("slug");
-            String anthology = bookObj.getString("anth");
-            int order = bookObj.getInt("num");
-            Book book = new Book(slug, name, anthology, order);
-            books.add(book);
-        }
-        Collections.sort(books, new Comparator<Book>() {
-            @Override
-            public int compare(Book lhs, Book rhs) {
-                if (lhs.getOrder() > rhs.getOrder()) {
-                    return 1;
-                } else if (lhs.getOrder() < rhs.getOrder()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+    private var _booksMap: HashMap<String, Book> = hashMapOf()
+    val booksMap: HashMap<String, Book>
+        get() {
+            try {
+                pullBookInfo()
+            } catch (e: JSONException) {
+                e.printStackTrace()
             }
-        });
-        mBooksMap = new HashMap<>();
-        for(Book b : books) {
-            mBooksMap.put(b.getSlug(), b);
+            return _booksMap
         }
 
-        int i = 0;
-        mBooksList = new String[books.size()];
-
-        for(Book b : books){
-            mBooksList[i] = b.getSlug() + " - " + b.getName();
-            i++;
+    private var _booksList: MutableList<String> = arrayListOf()
+    val booksList: List<String>
+        get() {
+            try {
+                pullBookInfo()
+            } catch (e: JSONException) {
+                e.printStackTrace()
+            }
+            return _booksList
         }
-        mBooks = books.toArray(new Book[books.size()]);
+
+    private var _languages: MutableList<String> = arrayListOf()
+    val languages: List<String>
+        get() {
+            try {
+                pullLangNames()
+            } catch (e: JSONException) {
+                e.printStackTrace()
+            }
+            return _languages
+        }
+
+    private fun loadJSONFromAsset(filename: String): String? {
+        val json: String?
+        try {
+            val `is` = assetsProvider.open(filename)
+            val size = `is`.available()
+            val buffer = ByteArray(size)
+            `is`.read(buffer)
+            `is`.close()
+            json = String(buffer, charset("UTF-8"))
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+        return json
     }
 
+    @Throws(JSONException::class)
+    private fun pullBookInfo() {
+        val books = ArrayList<Book>()
+        val json = loadJSONFromAsset("note_books.json")
+        val booksJSON = JSONArray(json)
+        for (i in 0 until booksJSON.length()) {
+            val bookObj = booksJSON.getJSONObject(i)
+            val name = bookObj.getString("name")
+            val slug = bookObj.getString("slug")
+            val anthology = bookObj.getString("anth")
+            val order = bookObj.getInt("num")
+            val book = Book(slug, name, anthology, order)
+            books.add(book)
+        }
+        val sortedBooks = books.sortedWith { lhs, rhs ->
+            when {
+                lhs.order > rhs.order -> 1
+                lhs.order < rhs.order -> -1
+                else -> 0
+            }
+        }
+        _booksMap = HashMap()
+        for (b in sortedBooks) {
+            _booksMap[b.slug] = b
+        }
+        for ((i, b) in sortedBooks.withIndex()) {
+            _booksList[i] = b.slug + " - " + b.name
+        }
+        mBooks.addAll(sortedBooks)
+    }
 
-
-    public int getNumChapters(String bookCode){
-
-
-
+    fun getNumChapters(bookCode: String): Int {
         try {
-            String json = loadJSONFromAsset("chunks/" + bookCode + "/en/" + "udb" + "/chunks.json");
-            JSONArray arrayOfChunks = new JSONArray(json);
-            int numChapters = 1;
+            val json = loadJSONFromAsset("chunks/$bookCode/en/udb/chunks.json")
+            val arrayOfChunks = JSONArray(json)
+            var numChapters = 1
             //loop through the all the chunks
-            for (int i = 0; i < arrayOfChunks.length(); i++) {
-                JSONObject jsonChunk = arrayOfChunks.getJSONObject(i);
-                String id = jsonChunk.getString("id");
-                int chapter = Integer.parseInt(id.substring(0, id.lastIndexOf('-')));
-                if(chapter > numChapters){
-                    numChapters = chapter;
+            for (i in 0 until arrayOfChunks.length()) {
+                val jsonChunk = arrayOfChunks.getJSONObject(i)
+                val id = jsonChunk.getString("id")
+                val chapter = id.substring(0, id.lastIndexOf('-')).toInt()
+                if (chapter > numChapters) {
+                    numChapters = chapter
                 }
             }
-            return numChapters;
-        } catch (JSONException e){
-            e.printStackTrace();
+            return numChapters
+        } catch (e: JSONException) {
+            e.printStackTrace()
         }
-        return 1;
+        return 1
     }
 
     /**
@@ -120,32 +122,38 @@ public class ParseJSON {
      * @return a 2d ArrayList of chunks
      * @throws JSONException
      */
-    public ArrayList<ArrayList<Pair<Integer,Integer>>> getChunks(String bookCode, String source){
+    fun getChunks(bookCode: String, source: String): ArrayList<ArrayList<Pair<Int, Int>>>? {
+        var source = source
         try {
             //FIXME: no folder for "reg"
-            if(source.compareTo("reg") == 0){
-                source = "ulb";
+            if (source.compareTo("reg") == 0) {
+                source = "ulb"
             }
-            String json = loadJSONFromAsset("chunks/" + bookCode + "/en/" + source + "/chunks.json");
-            JSONArray arrayOfChunks = new JSONArray(json);
-            ArrayList<ArrayList<Pair<Integer, Integer>>> chunksInBook = new ArrayList<>();
+            val json = loadJSONFromAsset("chunks/$bookCode/en/$source/chunks.json")
+            val arrayOfChunks = JSONArray(json)
+            val chunksInBook = ArrayList<ArrayList<Pair<Int, Int>>>()
             //loop through the all the chunks
-            for (int i = 0; i < arrayOfChunks.length(); i++) {
-                JSONObject jsonChunk = arrayOfChunks.getJSONObject(i);
-                String id = jsonChunk.getString("id");
-                int chapter = Integer.parseInt(id.substring(0, id.lastIndexOf('-')));
+            for (i in 0 until arrayOfChunks.length()) {
+                val jsonChunk = arrayOfChunks.getJSONObject(i)
+                val id = jsonChunk.getString("id")
+                val chapter = id.substring(0, id.lastIndexOf('-')).toInt()
                 //if a chapter hasn't been appended yet, append it
-                if (chunksInBook.size() >= chapter - 1) {
-                    chunksInBook.add(new ArrayList<Pair<Integer,Integer>>());
+                if (chunksInBook.size >= chapter - 1) {
+                    chunksInBook.add(ArrayList())
                 }
                 //add the chunk to that chapter
-                chunksInBook.get(chapter - 1).add(new Pair<>(jsonChunk.getInt("firstvs"), jsonChunk.getInt("lastvs")));
+                chunksInBook[chapter - 1].add(
+                    Pair(
+                        jsonChunk.getInt("firstvs"),
+                        jsonChunk.getInt("lastvs")
+                    )
+                )
             }
-            return chunksInBook;
-        } catch (JSONException e){
-            e.printStackTrace();
+            return chunksInBook
+        } catch (e: JSONException) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 
     /**
@@ -154,135 +162,102 @@ public class ParseJSON {
      * @return a 2d ArrayList of verses
      * @throws JSONException
      */
-    public ArrayList<ArrayList<Pair<Integer,Integer>>> getVerses(String bookCode, String source){
+    fun getVerses(bookCode: String, source: String): ArrayList<ArrayList<Pair<Int, Int>>>? {
+        var source = source
         try {
             //FIXME: no folder for "reg"
-            if(source.compareTo("reg") == 0){
-                source = "ulb";
+            if (source.compareTo("reg") == 0) {
+                source = "ulb"
             }
-            String json = loadJSONFromAsset("chunks/" + bookCode + "/en/" + source + "/chunks.json");
-            JSONArray arrayOfVerses = new JSONArray(json);
-            ArrayList<ArrayList<Pair<Integer,Integer>>> versesInBook = new ArrayList<>();
-            int lastChapter = 0;
+            val json = loadJSONFromAsset("chunks/$bookCode/en/$source/chunks.json")
+            val arrayOfVerses = JSONArray(json)
+            val versesInBook = ArrayList<ArrayList<Pair<Int, Int>>>()
+            var lastChapter = 0
             //loop through the all the verses
-            for (int i = 0; i < arrayOfVerses.length(); i++) {
-                JSONObject jsonChunk = arrayOfVerses.getJSONObject(i);
-                String id = jsonChunk.getString("id");
-                int chapter = Integer.parseInt(id.substring(0, id.lastIndexOf('-')));
+            for (i in 0 until arrayOfVerses.length()) {
+                val jsonChunk = arrayOfVerses.getJSONObject(i)
+                val id = jsonChunk.getString("id")
+                val chapter = id.substring(0, id.lastIndexOf('-')).toInt()
                 //if a chapter hasn't been appended yet, append it
-                if (versesInBook.size() >= chapter - 1) {
-                    versesInBook.add(new ArrayList<Pair<Integer,Integer>>());
+                if (versesInBook.size >= chapter - 1) {
+                    versesInBook.add(ArrayList())
                 }
                 //add the chunk to that chapter
-                versesInBook.get(chapter - 1).add(new Pair<>(jsonChunk.getInt("lastvs"),jsonChunk.getInt("lastvs")));
-                if(chapter > lastChapter){
-                    lastChapter = chapter;
+                versesInBook[chapter - 1].add(
+                    Pair(
+                        jsonChunk.getInt("lastvs"),
+                        jsonChunk.getInt("lastvs")
+                    )
+                )
+                if (chapter > lastChapter) {
+                    lastChapter = chapter
                 }
             }
 
-            ArrayList<ArrayList<Pair<Integer,Integer>>> verses = new ArrayList<>();
-            for(int idx = 0; idx < lastChapter; idx++){
-                if(idx >= verses.size()){
-                    verses.add(new ArrayList<Pair<Integer,Integer>>());
+            val verses = ArrayList<ArrayList<Pair<Int, Int>>>()
+            for (idx in 0 until lastChapter) {
+                if (idx >= verses.size) {
+                    verses.add(ArrayList())
                 }
-                int numVerses = versesInBook.get(idx).get(versesInBook.get(idx).size()-1).first;
-                for(int i = 1; i <= numVerses; i++){
-                   verses.get(idx).add(new Pair<>(i,i));
+                val numVerses = versesInBook[idx][versesInBook[idx].size - 1].first
+                for (i in 1..numVerses) {
+                    verses[idx].add(Pair(i, i))
                 }
             }
-            return verses;
-        } catch (JSONException e){
-            e.printStackTrace();
+            return verses
+        } catch (e: JSONException) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 
-    public HashMap<String, Book> getBooksMap(){
-        try {
-            pullBookInfo();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return mBooksMap;
+    fun pullBooks(): List<Book> {
+        booksMap
+        return mBooks
     }
 
-    public String[] getBooksList(){
-        try {
-            pullBookInfo();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return mBooksList;
+    @Throws(JSONException::class)
+    fun pullLangNames(): List<Language> {
+        val json = loadJSONFromAsset("langnames.json")
+        val langArray = JSONArray(json)
+        return pullLangNames(langArray)
     }
 
-    public Book[] pullBooks(){
-        getBooksMap();
-        return mBooks;
+    @Throws(JSONException::class)
+    fun pullLangNames(langArray: JSONArray): List<Language> {
+        val languageList = ArrayList<Language>()
+        for (i in 0 until langArray.length()) {
+            val langObj = langArray.getJSONObject(i)
+            val ln = Language(langObj.getString("lc"), langObj.getString("ln"))
+            languageList.add(ln)
+        }
+        for (l in languageList) {
+            _languages.add(l.slug + " - " + l.name)
+        }
+        return languageList
     }
 
-    public String[] getLanguages(){
-        try {
-            pullLangNames();
-        } catch (JSONException e) {
-            e.printStackTrace();
+    companion object {
+        fun getLanguages(assetsProvider: AssetsProvider): List<Language> {
+            val parse = ParseJSON(assetsProvider)
+            return try {
+                parse.pullLangNames()
+            } catch (e: JSONException) {
+                e.printStackTrace()
+                arrayListOf()
+            }
         }
-        return mLanguages;
-    }
 
-    public Language[] pullLangNames() throws JSONException {
-        String json = loadJSONFromAsset("langnames.json");
-        JSONArray langArray = new JSONArray(json);
-        return pullLangNames(langArray);
-    }
-
-    public Language[] pullLangNames(JSONArray langArray) throws JSONException {
-        ArrayList<Language> languageList = new ArrayList<>();
-        for(int i = 0; i < langArray.length(); i++){
-            JSONObject langObj = langArray.getJSONObject(i);
-            Language ln = new Language(langObj.getString("lc"),langObj.getString("ln"));
-            languageList.add(ln);
-        }
-        mLanguages = new String[languageList.size()];
-        for (int a = 0; a < mLanguages.length; a++) {
-            mLanguages[a] = (languageList.get(a)).getSlug() + " - " +
-                    (languageList.get(a)).getName();
-        }
-        Language[] languages = new Language[languageList.size()];
-        for(int i = 0; i < languageList.size(); i++){
-            languages[i] = languageList.get(i);
-        }
-        return languages;
-    }
-
-    public static Language[] getLanguages(Context ctx){
-        ParseJSON parse = new ParseJSON(ctx);
-        Language[] languages= null;
-        try {
-            languages = parse.pullLangNames();
-        } catch (JSONException e){
-            e.printStackTrace();
-        }
-        return languages;
-    }
-
-    public static Book[] getBooks(Context ctx, String testament){
-        ParseJSON parse = new ParseJSON(ctx);
-        ArrayList<Book> books= new ArrayList<>(Arrays.asList(parse.pullBooks()));
-        for(int i = 0; i < books.size(); i++){
-            if(testament.compareTo("nt") == 0){
-                if(books.get(i).getOrder() < 40){
-                    books.remove(i);
-                    i--;
-                }
-            } else {
-                if(books.get(i).getOrder() > 39){
-                    books.remove(i);
-                    i--;
+        fun getBooks(assetsProvider: AssetsProvider, testament: String): List<Book> {
+            val parse = ParseJSON(assetsProvider)
+            val books = parse.pullBooks()
+            return books.filter {
+                when (testament) {
+                    "nt" -> it.order > 40
+                    "ot" -> it.order < 40
+                    else -> true
                 }
             }
         }
-        Book[] bookArray = new Book[books.size()];
-        return books.toArray(bookArray);
     }
-
 }

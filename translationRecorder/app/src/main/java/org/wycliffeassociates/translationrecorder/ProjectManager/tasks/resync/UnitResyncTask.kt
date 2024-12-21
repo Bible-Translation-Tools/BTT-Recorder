@@ -1,106 +1,88 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync;
+package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync
 
-import android.app.FragmentManager;
-import android.content.Context;
-import android.os.Environment;
-
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.database.CorruptFileDialog;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import androidx.fragment.app.FragmentManager
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog
+import org.wycliffeassociates.translationrecorder.database.CorruptFileDialog
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper.OnCorruptFile
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper.OnLanguageNotFound
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import java.io.File
+import java.util.LinkedList
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
 
 /**
  * Created by sarabiaj on 1/20/2017.
  */
+class UnitResyncTask(
+    taskId: Int,
+    private var mFragmentManager: FragmentManager,
+    private val mProject: Project,
+    private val mChapter: Int,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider
+) : Task(taskId), OnLanguageNotFound, OnCorruptFile {
 
-public class UnitResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound, ProjectDatabaseHelper.OnCorruptFile {
-    private final Project mProject;
-    Context mCtx;
-    FragmentManager mFragmentManager;
-    private int mChapter;
-    private ProjectDatabaseHelper db;
-
-    public UnitResyncTask(
-            int taskId,
-            Context ctx,
-            FragmentManager fm,
-            Project project,
-            int chapter,
-            ProjectDatabaseHelper db
-    ){
-        super(taskId);
-        mCtx = ctx;
-        mFragmentManager = fm;
-        mProject = project;
-        mChapter = chapter;
-        this.db = db;
-    }
-
-    public List<File> getAllTakes(){
-        String path = String.format(
-                "%s/%s/%s/%s/%s/",
-                mCtx.getResources().getString(R.string.folder_name),
-                mProject.getTargetLanguageSlug(),
-                mProject.getVersionSlug(),
-                mProject.getBookSlug(),
+    private val allTakes: List<File>
+        get() {
+            val path = String.format(
+                "%s/%s/%s/%s/",
+                mProject.targetLanguageSlug,
+                mProject.versionSlug,
+                mProject.bookSlug,
                 ProjectFileUtils.chapterIntToString(mProject, mChapter)
-        );
-        File root = new File(Environment.getExternalStorageDirectory(), path);
-        File[] dirs = root.listFiles();
-        List<File> files;
-        if(dirs != null) {
-            files = new LinkedList<>(Arrays.asList(dirs));
-        } else {
-            files = new ArrayList<>();
+            )
+            val root = File(directoryProvider.translationsDir, path)
+            val dirs = root.listFiles()
+            val files: MutableList<File> = if (dirs != null) {
+                LinkedList(listOf(*dirs))
+            } else {
+                ArrayList()
+            }
+            filterFiles(files)
+            return files
         }
-        filterFiles(files);
-        return files;
-    }
 
-    public void filterFiles(List<File> files) {
-        Iterator<File> iter = files.iterator();
+    private fun filterFiles(files: MutableList<File>) {
+        val iter = files.iterator()
         while (iter.hasNext()) {
-            ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-            ppm.match(iter.next());
-            if(!ppm.matched()) {
-                iter.remove();
+            val ppm = mProject.patternMatcher
+            ppm.match(iter.next())
+            if (!ppm.matched()) {
+                iter.remove()
             }
         }
     }
 
-    @Override
-    public void run() {
-        db.resyncChapterWithFilesystem(mProject, mChapter, getAllTakes(), this, this);
-        onTaskCompleteDelegator();
+    override fun run() {
+        db.resyncChapterWithFilesystem(
+            mProject,
+            mChapter,
+            allTakes,
+            this,
+            this
+        )
+        onTaskCompleteDelegator()
     }
 
-    public void onCorruptFile(File file) {
-        CorruptFileDialog cfd = CorruptFileDialog.newInstance(file);
-        cfd.show(mFragmentManager, "CORRUPT_FILE");
+    override fun onCorruptFile(file: File) {
+        val cfd = CorruptFileDialog.newInstance(file)
+        cfd.show(mFragmentManager, "CORRUPT_FILE")
     }
 
-    public String requestLanguageName(String code) {
-        BlockingQueue<String> response = new ArrayBlockingQueue<>(1);
-        RequestLanguageNameDialog dialog = RequestLanguageNameDialog.newInstance(code, response);
-        dialog.show(mFragmentManager,"REQUEST_LANGUAGE");
+    override fun requestLanguageName(languageCode: String): String {
+        val response: BlockingQueue<String> = ArrayBlockingQueue(1)
+        val dialog = RequestLanguageNameDialog.newInstance(languageCode, response)
+        dialog.show(mFragmentManager, "REQUEST_LANGUAGE")
         try {
-            return response.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            return response.take()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
-        return "???";
+        return "???"
     }
 }

@@ -1,235 +1,248 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.activities;
+package org.wycliffeassociates.translationrecorder.ProjectManager.activities
 
-import android.app.FragmentManager;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
-import android.view.MenuItem;
-
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog;
-import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.UnitResyncTask;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chunk;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectProgress;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
-import org.wycliffeassociates.translationrecorder.widgets.UnitCard;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.UnitResyncTask
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ActivityUnitListBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
+import org.wycliffeassociates.translationrecorder.project.ProjectProgress
+import org.wycliffeassociates.translationrecorder.project.TakeInfo
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
+import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
+import org.wycliffeassociates.translationrecorder.widgets.UnitCard
+import org.wycliffeassociates.translationrecorder.widgets.UnitCard.OnTakeActionListener
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 6/30/2016.
  */
-public class ActivityUnitList extends AppCompatActivity implements CheckingDialog.DialogListener,
-        RatingDialog.DialogListener, TaskFragment.OnTaskComplete, UnitCard.OnTakeDeleteListener {
+@AndroidEntryPoint
+class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
+    RatingDialog.DialogListener, OnTaskComplete, OnTakeActionListener {
 
-    public static String PROJECT_KEY = "project_key";
-    public static String CHAPTER_KEY = "chapter_key";
-    private final String TAG_TASK_FRAGMENT = "task_fragment";
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    private final String STATE_RESYNC = "db_resync";
-    private static final int DATABASE_RESYNC_TASK = Task.FIRST_TASK;
+    private lateinit var project: Project
 
-    public static Intent getActivityUnitListIntent(Context ctx, Project p, int chapter) {
-        Intent intent = new Intent(ctx, ActivityUnitList.class);
-        intent.putExtra(PROJECT_KEY, p);
-        intent.putExtra(CHAPTER_KEY, chapter);
-        return intent;
-    }
+    private var chapterNum = 0
+    private var unitCardList: MutableList<UnitCard> = arrayListOf()
+    private var adapter: UnitCardAdapter? = null
+    private var dbResyncing = false
+    private var taskFragment: TaskFragment? = null
+    private var projectProgress: ProjectProgress? = null
 
-    private int mChapterNum;
-    private Project mProject;
-    private List<UnitCard> mUnitCardList;
-    private UnitCardAdapter mAdapter;
-    private LinearLayoutManager mLayoutManager;
-    private RecyclerView mUnitList;
-    private boolean mDbResyncing;
-    private TaskFragment mTaskFragment;
-    private ChunkPlugin chunkPlugin;
-    private ProjectDatabaseHelper db;
-    private ProjectProgress projectProgress;
+    private lateinit var chunkPlugin: ChunkPlugin
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_unit_list);
+        val binding = ActivityUnitListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        mProject = getIntent().getParcelableExtra(PROJECT_KEY);
-        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+        project = intent.getParcelableExtra(PROJECT_KEY)!!
 
         try {
-            chunkPlugin = mProject.getChunkPlugin(new ChunkPluginLoader(this));
-            mChapterNum = getIntent().getIntExtra(CHAPTER_KEY, 1);
-            projectProgress = new ProjectProgress(mProject, db, chunkPlugin.getChapters());
+            chunkPlugin = project.getChunkPlugin(ChunkPluginLoader(
+                directoryProvider,
+                assetsProvider
+            ))
+            chapterNum = intent.getIntExtra(CHAPTER_KEY, 1)
+            projectProgress = ProjectProgress(project, db, chunkPlugin.chapters)
 
-            FragmentManager fm = getFragmentManager();
-            mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
-            if (mTaskFragment == null) {
-                mTaskFragment = new TaskFragment();
-                fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
-                fm.executePendingTransactions();
+            val fm = supportFragmentManager
+            taskFragment = fm.findFragmentByTag(TAG_TASK_FRAGMENT) as? TaskFragment
+            if (taskFragment == null) {
+                taskFragment = TaskFragment()
+                fm.beginTransaction().add(taskFragment!!, TAG_TASK_FRAGMENT).commit()
+                fm.executePendingTransactions()
             }
 
             if (savedInstanceState != null) {
-                mDbResyncing = savedInstanceState.getBoolean(STATE_RESYNC);
+                dbResyncing = savedInstanceState.getBoolean(STATE_RESYNC)
             }
 
             // Setup toolbar
-            String language = db.getLanguageName(mProject.getTargetLanguageSlug());
-            String book = mProject.getBookName();
-            Toolbar mToolbar = (Toolbar) findViewById(R.id.unit_list_toolbar);
-            setSupportActionBar(mToolbar);
-            if (getSupportActionBar() != null) {
-                String chapterLabel = chunkPlugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
-                String chapterName = chunkPlugin.getChapterName(mChapterNum);
-                getSupportActionBar().setTitle(language + " - " + book + " - " + chapterLabel + " " + chapterName);
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                getSupportActionBar().setDisplayShowHomeEnabled(true);
-            }
+            val language = db.getLanguageName(project.targetLanguageSlug)
+            val book = project.bookName
+            setSupportActionBar(binding.unitListToolbar)
+
+            val chapterLabel = if (chunkPlugin.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+            val chapterName = chunkPlugin.getChapterName(chapterNum)
+            supportActionBar?.title = "$language - $book - $chapterLabel $chapterName"
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
 
             // Find the recycler view
-            mUnitList = (RecyclerView) findViewById(R.id.unit_list);
-            mUnitList.setHasFixedSize(false);
+            binding.unitList.setHasFixedSize(false)
 
             // Set its layout manager
-            mLayoutManager = new LinearLayoutManager(this);
-            mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            mUnitList.setLayoutManager(mLayoutManager);
+            val layoutManager = LinearLayoutManager(this)
+            layoutManager.orientation = LinearLayoutManager.VERTICAL
+            binding.unitList.layoutManager = layoutManager
 
             // Set its adapter
-            mUnitCardList = new ArrayList<>();
-            mAdapter = new UnitCardAdapter(this, mProject, mChapterNum, mUnitCardList, db);
-            mUnitList.setAdapter(mAdapter);
+            unitCardList = ArrayList()
+            adapter = UnitCardAdapter(project, chapterNum, unitCardList, db, prefs)
+            binding.unitList.adapter = adapter
 
             // Set its animator
-            mUnitList.setItemAnimator(new DefaultItemAnimator());
-            prepareUnitCardData();
-        } catch (IOException e) {
-            e.printStackTrace();
+            binding.unitList.itemAnimator = DefaultItemAnimator()
+            prepareUnitCardData()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!mDbResyncing) {
-            mDbResyncing = true;
-            UnitResyncTask task = new UnitResyncTask(
-                    DATABASE_RESYNC_TASK,
-                    getBaseContext(),
-                    getFragmentManager(),
-                    mProject,
-                    mChapterNum,
-                    db
-            );
-            mTaskFragment.executeRunnable(task, "Resyncing Database", "Please wait...", true);
+    override fun onResume() {
+        super.onResume()
+        if (!dbResyncing) {
+            dbResyncing = true
+            val task = UnitResyncTask(
+                DATABASE_RESYNC_TASK,
+                supportFragmentManager,
+                project,
+                chapterNum,
+                db,
+                directoryProvider
+            )
+            taskFragment?.executeRunnable(
+                task,
+                "Resyncing Database",
+                "Please wait...",
+                true
+            )
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle saveInstanceState) {
-        saveInstanceState.putBoolean(STATE_RESYNC, mDbResyncing);
-        super.onSaveInstanceState(saveInstanceState);
+    public override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(STATE_RESYNC, dbResyncing)
+        super.onSaveInstanceState(outState)
     }
 
-    public void refreshUnitCards() {
-        for (int i = 0; i < mUnitCardList.size(); i++) {
-            mUnitCardList.get(i).refreshUnitStarted(mProject, mChapterNum, mUnitCardList.get(i).getStartVerse());
+    private fun refreshUnitCards() {
+        for (i in unitCardList.indices) {
+            unitCardList[i].refreshUnitStarted(
+                project,
+                chapterNum,
+                unitCardList[i].startVerse
+            )
         }
-        mAdapter.notifyDataSetChanged();
+        adapter?.notifyDataSetChanged()
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mAdapter.exitCleanUp();
+    override fun onPause() {
+        super.onPause()
+        adapter?.exitCleanUp()
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
         }
 
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item)
     }
 
-    @Override
-    public void onPositiveClick(CheckingDialog dialog) {
+    override fun onPositiveClick(dialog: CheckingDialog) {
         // NOTE: Deprecated
     }
 
-    @Override
-    public void onPositiveClick(RatingDialog dialog) {
-        db.setTakeRating(dialog.getTakeInfo(), dialog.getRating());
-        mAdapter.notifyDataSetChanged();
+    override fun onPositiveClick(dialog: RatingDialog) {
+        db.setTakeRating(dialog.takeInfo, dialog.rating)
+        adapter?.notifyDataSetChanged()
     }
 
-    @Override
-    public void onNegativeClick(CheckingDialog dialog) {
-        dialog.dismiss();
+    override fun onNegativeClick(dialog: CheckingDialog) {
+        dialog.dismiss()
     }
 
-    @Override
-    public void onNegativeClick(RatingDialog dialog) {
-        dialog.dismiss();
+    override fun onNegativeClick(dialog: RatingDialog) {
+        dialog.dismiss()
     }
 
-
-    private void prepareUnitCardData() {
-        if(chunkPlugin != null) {
-            List<Chunk> chunks = chunkPlugin.getChapter(mChapterNum).getChunks();
-            for (Chunk unit : chunks) {
-                String modeLabel = mProject.getLocalizedModeName(this);
-                String title = modeLabel + " " + unit.getLabel();
-                mUnitCardList.add(
-                        new UnitCard(
-                            mAdapter,
-                            mProject,
-                            title,
-                            mChapterNum,
-                            unit.getStartVerse(),
-                            unit.getEndVerse(),
-                                this
-                        )
-                );
+    private fun prepareUnitCardData() {
+        if (chunkPlugin != null) {
+            val chunks = chunkPlugin.getChapter(chapterNum).chunks
+            for (unit in chunks) {
+                val modeLabel = project.getLocalizedModeName(this)
+                val title = modeLabel + " " + unit.label
+                unitCardList.add(
+                    UnitCard(
+                        adapter!!,
+                        project,
+                        title,
+                        chapterNum,
+                        unit.startVerse,
+                        unit.endVerse,
+                        this,
+                        directoryProvider
+                    )
+                )
             }
         }
     }
 
-    @Override
-    public void onTakeDeleted() {
-        if(projectProgress != null) {
-            projectProgress.updateProjectProgress();
+    override fun onTakeDeleted() {
+        if (projectProgress != null) {
+            projectProgress!!.updateProjectProgress()
         }
     }
 
-    @Override
-    public void onTaskComplete(int taskTag, int resultCode) {
+    override fun onRated(name: String, currentTakeRating: Int) {
+        val ppm: ProjectPatternMatcher = project.patternMatcher
+        ppm.match(name)
+        val takeInfo: TakeInfo = ppm.takeInfo
+        val dialog = RatingDialog.newInstance(takeInfo, currentTakeRating)
+        dialog.show(supportFragmentManager, "single_take_rating")
+    }
+
+    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
         if (resultCode == TaskFragment.STATUS_OK) {
             if (taskTag == DATABASE_RESYNC_TASK) {
-                mDbResyncing = false;
-                refreshUnitCards();
+                dbResyncing = false
+                refreshUnitCards()
             }
+        }
+    }
+
+    companion object {
+        var PROJECT_KEY: String = "project_key"
+        var CHAPTER_KEY: String = "chapter_key"
+        private val DATABASE_RESYNC_TASK = Task.FIRST_TASK
+        private const val TAG_TASK_FRAGMENT = "task_fragment"
+        private const val STATE_RESYNC = "db_resync"
+
+        @JvmStatic
+        fun getActivityUnitListIntent(ctx: Context?, p: Project?, chapter: Int): Intent {
+            val intent = Intent(ctx, ActivityUnitList::class.java)
+            intent.putExtra(PROJECT_KEY, p)
+            intent.putExtra(CHAPTER_KEY, chapter)
+            return intent
         }
     }
 }

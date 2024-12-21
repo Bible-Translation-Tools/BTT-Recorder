@@ -1,130 +1,123 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync;
+package org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync
 
-import android.app.FragmentManager;
-import android.os.Environment;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.CorruptFileDialog;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectProgress;
-import org.wycliffeassociates.translationrecorder.project.components.Book;
-import org.wycliffeassociates.translationrecorder.project.components.Mode;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-
-import static org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncUtils.getFilesInDirectory;
+import androidx.fragment.app.FragmentManager
+import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RequestLanguageNameDialog
+import org.wycliffeassociates.translationrecorder.database.CorruptFileDialog
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper.OnCorruptFile
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper.OnLanguageNotFound
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.project.ProjectProgress
+import org.wycliffeassociates.translationrecorder.project.components.Mode
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
 
 /**
  * Created by sarabiaj on 1/19/2017.
  */
+class ProjectListResyncTask(
+    taskId: Int,
+    private val mFragmentManager: FragmentManager,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider,
+    private val chunkPluginLoader: ChunkPluginLoader
+) : Task(taskId), OnLanguageNotFound,
+    OnCorruptFile {
 
-public class ProjectListResyncTask extends Task implements ProjectDatabaseHelper.OnLanguageNotFound,
-        ProjectDatabaseHelper.OnCorruptFile {
-
-    FragmentManager mFragmentManager;
-    ProjectDatabaseHelper db;
-    ChunkPluginLoader chunkPluginLoader;
-
-    public ProjectListResyncTask(
-            int taskId,
-            FragmentManager fm,
-            ProjectDatabaseHelper db,
-            ChunkPluginLoader pluginLoader
-    ) {
-        super(taskId);
-        mFragmentManager = fm;
-        this.db = db;
-        chunkPluginLoader = pluginLoader;
-    }
-
-    public Map<Project, File> getProjectDirectoriesOnFileSystem() {
-        Map<Project, File> projectDirectories = new HashMap<>();
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        File[] langs = root.listFiles();
-        if (langs != null) {
-            for(File lang : langs) {
-                if (!lang.isDirectory()) {
-                    continue;
-                }
-                File[] versions = lang.listFiles();
-                if (versions != null) {
-                    for(File version : versions) {
-                        if(!version.isDirectory()) {
-                            continue;
-                        }
-                        File[] bookDirs = version.listFiles();
-                        if (bookDirs != null) {
-                            for(File bookDir : bookDirs) {
-                                if (!bookDir.isDirectory()) {
-                                    continue;
-                                }
-                                //get the project from the database if it exists
-                                Project project = db.getProject(lang.getName(), version.getName(), bookDir.getName());
-                                if(project != null) {
-                                    projectDirectories.put(project, bookDir);
-                                } else { //otherwise derive the project from the filename
-                                    File[] chapters = bookDir.listFiles();
-                                    Mode mode = null;
-                                    if(chapters != null) {
-                                        for(File chapter : chapters) {
-                                            if(!chapter.isDirectory()) {
-                                                continue;
-                                            }
-                                            File[] c = chapter.listFiles();
-                                            if(c != null) {
-                                                for (int i = 0; i < c.length; i++) {
-                                                    try {
-                                                        WavFile wav = new WavFile(c[i]);
-                                                        mode = db.getMode(
+        private val projectDirectoriesOnFileSystem: Map<Project, File>
+        get() {
+            val projectDirectories: MutableMap<Project, File> = HashMap()
+            val root = directoryProvider.translationsDir
+            val langs = root.listFiles()
+            if (langs != null) {
+                for (lang in langs) {
+                    if (!lang.isDirectory) {
+                        continue
+                    }
+                    val versions = lang.listFiles()
+                    if (versions != null) {
+                        for (version in versions) {
+                            if (!version.isDirectory) {
+                                continue
+                            }
+                            val bookDirs = version.listFiles()
+                            if (bookDirs != null) {
+                                for (bookDir in bookDirs) {
+                                    if (!bookDir.isDirectory) {
+                                        continue
+                                    }
+                                    //get the project from the database if it exists
+                                    var project = db.getProject(
+                                        lang.name,
+                                        version.name,
+                                        bookDir.name
+                                    )
+                                    if (project != null) {
+                                        projectDirectories[project] = bookDir
+                                    } else { //otherwise derive the project from the filename
+                                        val chapters =
+                                            bookDir.listFiles()
+                                        var mode: Mode? =
+                                            null
+                                        if (chapters != null) {
+                                            for (chapter in chapters) {
+                                                if (!chapter.isDirectory) {
+                                                    continue
+                                                }
+                                                val c =
+                                                    chapter.listFiles()
+                                                if (c != null) {
+                                                    for (i in c.indices) {
+                                                        try {
+                                                            val wav = WavFile(c[i])
+                                                            mode = db.getMode(
                                                                 db.getModeId(
-                                                                        wav.getMetadata().getModeSlug(),
-                                                                        wav.getMetadata().getAnthology()
+                                                                    wav.metadata
+                                                                        .modeSlug,
+                                                                    wav.metadata
+                                                                        .anthology
                                                                 )
-                                                        );
-                                                    } catch (IllegalArgumentException e) {
-                                                        //don't worry about the corrupt file dialog here;
-                                                        // the database resync will pick it up.
-                                                        Logger.e(this.toString(), c[i].getName(), e);
-                                                        continue;
+                                                            )
+                                                        } catch (e: IllegalArgumentException) {
+                                                            //don't worry about the corrupt file dialog here;
+                                                            // the database resync will pick it up.
+                                                            Logger.e(
+                                                                toString(),
+                                                                c[i].name,
+                                                                e
+                                                            )
+                                                            continue
+                                                        }
+                                                        break
                                                     }
-                                                    break;
                                                 }
                                             }
                                         }
-                                    }
-                                    if(chapters != null && mode != null) {
-                                        int languageId = db.getLanguageId(lang.getName());
-                                        int bookId = db.getBookId(bookDir.getName());
-                                        Book book = db.getBook(bookId);
-                                        int anthologyId = db.getAnthologyId(book.getAnthology());
-                                        int versionId = db.getVersionId(version.getName());
-                                        project = new Project(
+                                        if (chapters != null && mode != null) {
+                                            val languageId = db.getLanguageId(lang.name)
+                                            val bookId = db.getBookId(bookDir.name)
+                                            val book =
+                                                db.getBook(bookId)
+                                            val anthologyId =
+                                                db.getAnthologyId(book.anthology)
+                                            val versionId = db.getVersionId(version.name)
+                                            project = Project(
                                                 db.getLanguage(languageId),
                                                 db.getAnthology(anthologyId),
                                                 book,
                                                 db.getVersion(versionId),
                                                 mode
-                                        );
-                                        projectDirectories.put(project, bookDir);
+                                            )
+                                            projectDirectories[project] = bookDir
+                                        }
                                     }
                                 }
                             }
@@ -132,95 +125,96 @@ public class ProjectListResyncTask extends Task implements ProjectDatabaseHelper
                     }
                 }
             }
+            return projectDirectories
         }
-        return projectDirectories;
+
+    private fun getProjectDirectories(projects: List<Project>): Map<Project, File> {
+        val projectDirectories: MutableMap<Project, File> = hashMapOf()
+        for (p in projects) {
+            projectDirectories[p] = ProjectFileUtils.getProjectDirectory(p, directoryProvider)
+        }
+        return projectDirectories
     }
 
-    public Map<Project, File> getProjectDirectories(List<Project> projects) {
-        Map<Project, File> projectDirectories = new HashMap();
-        for (Project p : projects) {
-            projectDirectories.put(p, ProjectFileUtils.getProjectDirectory(p));
-        }
-        return projectDirectories;
-    }
-
-    public Map<Project, File> getDirectoriesMissingFromDb(Map<Project, File> fs, Map<Project, File> db) {
-        Map<Project, File> missingDirectories = new HashMap<>();
-        for(Map.Entry<Project, File> f : fs.entrySet()) {
-            if(!db.containsValue(f.getValue())) {
-                missingDirectories.put(f.getKey(), f.getValue());
+    private fun getDirectoriesMissingFromDb(
+        fs: Map<Project, File>,
+        db: Map<Project, File>
+    ): Map<Project, File> {
+        val missingDirectories: MutableMap<Project, File> = hashMapOf()
+        for ((key, value) in fs) {
+            if (!db.containsValue(value)) {
+                missingDirectories[key] = value
             }
         }
-        return missingDirectories;
+        return missingDirectories
     }
 
-    @Override
-    public void run() {
-        Map<Project, File> directoriesOnFs = getProjectDirectoriesOnFileSystem();
+    override fun run() {
+        val directoriesOnFs = projectDirectoriesOnFileSystem
         //if the number of projects doesn't match up between the filesystem and the db, OR,
         //the projects themselves don't match an id in the db, then resync everything (only resyncing
         // projects missing won't remove dangling take references in the db)
         //NOTE: removing a project only removes dangling takes, not the project itself from the db
-        boolean projectCountDiffers = directoriesOnFs.size() != db.getNumProjects();
-        boolean projectsNeedResync = db.projectsNeedingResync(directoriesOnFs.keySet()).size() > 0;
+        val projectCountDiffers = directoriesOnFs.size != db.numProjects
+        val projectsNeedResync = db.projectsNeedingResync(directoriesOnFs.keys).isNotEmpty()
         if (projectCountDiffers || projectsNeedResync) {
-            fullResync(directoriesOnFs);
+            fullResync(directoriesOnFs)
         }
-        onTaskCompleteDelegator();
+        onTaskCompleteDelegator()
     }
 
-    public void fullResync(Map<Project, File> directoriesOnFs) {
-        List<Project> projects = db.getAllProjects();
-        Map<Project, File> directoriesFromDb = getProjectDirectories(projects);
-        Map<Project, File> directoriesMissingFromFs = getDirectoriesMissingFromDb(directoriesOnFs, directoriesFromDb);
+    private fun fullResync(directoriesOnFs: Map<Project, File>) {
+        val projects: List<Project> = db.allProjects
+        val directoriesFromDb = getProjectDirectories(projects)
+        val directoriesMissingFromFs =
+            getDirectoriesMissingFromDb(directoriesOnFs, directoriesFromDb)
 
         //get directories of projects
         //check which directories are not in the list
-        //for projects with directories, get their files and resync
+        //for projects with directories, get their files and re-sync
         //for directories not in the list, try to find which pattern match succeeds
-        for(Map.Entry<Project, File> dir : directoriesOnFs.entrySet()) {
-            File[] chapters = dir.getValue().listFiles();
-            Project project = dir.getKey();
-            if(chapters != null) {
-                List<File> takes = getFilesInDirectory(chapters);
-                db.resyncDbWithFs(dir.getKey(), takes, this, this);
+        for ((project, value) in directoriesOnFs) {
+            val chapters = value.listFiles()
+            if (chapters != null) {
+                val takes = ResyncUtils.getFilesInDirectory(chapters)
+                db.resyncDbWithFs(project, takes, this, this)
 
                 try {
-                    ChunkPlugin chunkPlugin = project.getChunkPlugin(chunkPluginLoader);
+                    val chunkPlugin = project.getChunkPlugin(chunkPluginLoader)
                     // Recalculate project progress
-                    ProjectProgress pp = new ProjectProgress(project, db, chunkPlugin.getChapters());
-                    pp.updateProjectProgress();
+                    val pp = ProjectProgress(project, db, chunkPlugin.chapters)
+                    pp.updateProjectProgress()
 
                     // Recalculate chapters progress
-                    pp.updateChaptersProgress();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    pp.updateChaptersProgress()
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
         }
-        for(Map.Entry<Project, File> dir : directoriesMissingFromFs.entrySet()) {
-            File[] chapters = dir.getValue().listFiles();
-            if(chapters != null) {
-                List<File> takes = getFilesInDirectory(chapters);
-                db.resyncDbWithFs(dir.getKey(), takes, this, this);
+        for ((key, value) in directoriesMissingFromFs) {
+            val chapters = value.listFiles()
+            if (chapters != null) {
+                val takes = ResyncUtils.getFilesInDirectory(chapters)
+                db.resyncDbWithFs(key, takes, this, this)
             }
         }
     }
 
-    public void onCorruptFile(final File file) {
-        CorruptFileDialog cfd = CorruptFileDialog.newInstance(file);
-        cfd.show(mFragmentManager, "CORRUPT_FILE");
+    override fun onCorruptFile(file: File) {
+        val cfd = CorruptFileDialog.newInstance(file)
+        cfd.show(mFragmentManager, "CORRUPT_FILE")
     }
 
-    public String requestLanguageName(String code) {
-        BlockingQueue<String> response = new ArrayBlockingQueue<>(1);
-        RequestLanguageNameDialog dialog = RequestLanguageNameDialog.newInstance(code, response);
-        dialog.show(mFragmentManager, "REQUEST_LANGUAGE");
+    override fun requestLanguageName(languageCode: String): String {
+        val response: BlockingQueue<String> = ArrayBlockingQueue(1)
+        val dialog = RequestLanguageNameDialog.newInstance(languageCode, response)
+        dialog.show(mFragmentManager, "REQUEST_LANGUAGE")
         try {
-            return response.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            return response.take()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
-        return "???";
+        return "???"
     }
 }

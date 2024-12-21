@@ -1,164 +1,151 @@
-package org.wycliffeassociates.translationrecorder.FilesPage.Export;
+package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.wycliffeassociates.translationrecorder.FilesPage.Manifest;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
+import org.apache.commons.codec.binary.Hex
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
+import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
 
 /**
  * Created by sarabiaj on 1/24/2018.
  */
+//Arraylist explicitly specified because of zip4j dependency
+class TranslationExchangeDiff(
+    private val project: Project,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider,
+    private val assetsProvider: AssetsProvider
+) {
+    val diff: MutableList<File> = arrayListOf()
 
-public class TranslationExchangeDiff {
-
-    public static int DIFF_ID = 1;
-
-    final Project mProject;
-    final TranslationRecorderApp mApp;
-    volatile ArrayList<File> mFilesToUpload;
-
-    //Arraylist explicitly specified because of zip4j dependency
-    public TranslationExchangeDiff(TranslationRecorderApp app, Project project) {
-        mApp = app;
-        mProject = project;
+    private fun constructProjectQueryParameters(project: Project): String {
+        return String.format(
+            "lang=%s&book=%s&anth=%s&version=%s",
+            project.targetLanguageSlug,
+            project.bookSlug,
+            project.anthologySlug,
+            project.versionSlug
+        )
     }
 
-
-    public String constructProjectQueryParameters(Project project) {
-        return String.format("lang=%s&book=%s&anth=%s&version=%s",
-                project.getTargetLanguageSlug(),
-                project.getBookSlug(),
-                project.getAnthologySlug(),
-                project.getVersionSlug()
-        );
-    }
-
-    public Map<String, String> getUploadedFilesList(Project project, TranslationRecorderApp app) {
+    fun getUploadedFilesList(project: Project): Map<String, String> {
         try {
-            String query = constructProjectQueryParameters(project);
-            URL url = new URL("http://opentranslationtools.org/api/exclude_files/?" + query);
+            val query = constructProjectQueryParameters(project)
+            val url = URL("http://opentranslationtools.org/api/exclude_files/?$query")
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
-            if (conn.getResponseCode() != 200) {
-                throw new RuntimeException("Failed : HTTP error code : "
-                        + conn.getResponseCode());
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Accept", "application/json")
+            if (conn.responseCode != 200) {
+                throw RuntimeException("Failed : HTTP error code : ${conn.responseCode}")
             }
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream())
-            );
-            String output;
-            StringBuilder builder = new StringBuilder();
-            while ((output = br.readLine()) != null) {
-                builder.append(output);
+            val br = BufferedReader(
+                InputStreamReader(conn.inputStream)
+            )
+            var output: String?
+            val builder = StringBuilder()
+            while ((br.readLine().also { output = it }) != null) {
+                builder.append(output)
             }
-            return parseJsonOutput(builder.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return parseJsonOutput(builder.toString())
+        } catch (e: MalformedURLException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        return new HashMap<>();
+        return HashMap()
     }
 
-    private ArrayList<File> stageNewFiles(Map<String, String> existingFiles) throws IOException {
+    @Throws(IOException::class)
+    private fun stageNewFiles(existingFiles: Map<String, String>): ArrayList<File> {
         //get local takes for that project
-        final ArrayList<File> filesInProject = new ArrayList<>(
-                FileUtils.listFiles(
-                        ProjectFileUtils.getProjectDirectory(mProject),
-                        new String[]{"wav"},
-                        true
-                )
-        );
-        Iterator<File> iter = filesInProject.iterator();
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        while (iter.hasNext()) {
-            File f = iter.next();
+        val filesInProject = ArrayList(
+            FileUtils.listFiles(
+                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                arrayOf("wav"),
+                true
+            )
+        )
+        val iterator = filesInProject.iterator()
+        val ppm = project.patternMatcher
+        while (iterator.hasNext()) {
+            val f = iterator.next()
             //remove files already in tE, or files that don't match the file convention
-            if (!ppm.match(f.getName())) {
-                iter.remove();
-            } else if (existingFiles.containsKey(f.getName())) {
+            if (!ppm.match(f.name)) {
+                iterator.remove()
+            } else if (existingFiles.containsKey(f.name)) {
                 //compute the md5 hash and convert to string
-                String hash = new String(Hex.encodeHex(DigestUtils.md5(new FileInputStream(f))));
+                val hash = String(Hex.encodeHex(DigestUtils.md5(FileInputStream(f))))
                 //compare hash to hash received from tE
-                if (hash.equals(existingFiles.get(f.getName()))) {
-                    iter.remove();
+                if (hash == existingFiles[f.name]) {
+                    iterator.remove()
                 } else {
-                    System.out.println(f.getName());
-                    System.out.println(hash);
-                    System.out.println(existingFiles.get(f.getName()));
+                    println(f.name)
+                    println(hash)
+                    println(existingFiles[f.name])
                 }
             }
         }
-        return filesInProject;
+        return filesInProject
     }
 
     //gets the map of filenames to their md5 hashes
-    private Map<String, String> parseJsonOutput(String json) {
-        HashMap<String, String> map = new HashMap<>();
-        JsonArray ja = new JsonParser().parse(json).getAsJsonArray();
-        Iterator<JsonElement> iter = ja.iterator();
-        while (iter.hasNext()) {
-            JsonObject jo = iter.next().getAsJsonObject();
-            String file = jo.get("name").getAsString();
-            String hash = jo.get("md5hash").getAsString();
-            map.put(file, hash);
+    private fun parseJsonOutput(json: String): Map<String, String> {
+        val map = HashMap<String, String>()
+        val ja = JsonParser.parseString(json).asJsonArray
+        val iterator: Iterator<JsonElement> = ja.iterator()
+        while (iterator.hasNext()) {
+            val jo = iterator.next().asJsonObject
+            val file = jo["name"].asString
+            val hash = jo["md5hash"].asString
+            map[file] = hash
         }
-        return map;
+        return map
     }
 
-    public void computeDiff(final File outFile, final SimpleProgressCallback progressCallback) {
-        Thread diff = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            progressCallback.onStart(DIFF_ID);
-                            mFilesToUpload = stageNewFiles(getUploadedFilesList(mProject, mApp));
-                            Manifest manifest = new Manifest(mProject, ProjectFileUtils.getProjectDirectory(mProject));
-                            manifest.setProgressCallback(progressCallback);
-                            File mani = manifest.createManifestFile(mApp, mApp.getDatabase());
-                            mFilesToUpload.add(mani);
-                            List<File> userFiles = manifest.getUserFiles();
-                            for(File file : userFiles) {
-                                mFilesToUpload.add(file);
-                            }
-                            progressCallback.onComplete(DIFF_ID);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+    fun computeDiff(outFile: File?, progressCallback: SimpleProgressCallback) {
+        val diff = Thread {
+            try {
+                progressCallback.onStart(DIFF_ID)
+                diff.clear()
+                diff.addAll(stageNewFiles(getUploadedFilesList(project)))
+                val manifest = Manifest(
+                    project,
+                    ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                    db,
+                    directoryProvider,
+                    assetsProvider
+                )
+                manifest.setProgressCallback(progressCallback)
+                val mani = manifest.createManifestFile()
+                diff.add(mani)
+                val userFiles = manifest.userFiles
+                for (file in userFiles) {
+                    diff.add(file)
                 }
-        );
-        diff.start();
+                progressCallback.onComplete(DIFF_ID)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        diff.start()
     }
 
-    public ArrayList<File> getDiff() {
-        return mFilesToUpload;
+    companion object {
+        var DIFF_ID: Int = 1
     }
 }

@@ -1,723 +1,654 @@
-package org.wycliffeassociates.translationrecorder.Playback;
+package org.wycliffeassociates.translationrecorder.Playback
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.media.AudioTrack;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer;
-import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentFileBar;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentPlaybackTools;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentTabbedWidget;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.MarkerCounterFragment;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.MarkerToolbarFragment;
-import org.wycliffeassociates.translationrecorder.Playback.fragments.WaveformFragment;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioEditDelegator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioStateCallback;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.EditStateInformer;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback;
-import org.wycliffeassociates.translationrecorder.Playback.markers.MarkerHolder;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.WavFileLoader;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.project.components.User;
-import org.wycliffeassociates.translationrecorder.wav.WavCue;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
-import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableImageView;
-import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarkerView;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.ProgressDialog
+import android.content.Context
+import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.media.AudioTrack
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.door43.tools.reporting.Logger
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer
+import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog
+import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog.DeleteFileCallback
+import org.wycliffeassociates.translationrecorder.Playback.SourceAudio.OnAudioListener
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentFileBar
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentFileBar.InsertCallback
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentFileBar.RatingCallback
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentFileBar.RerecordCallback
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentPlaybackTools
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentTabbedWidget
+import org.wycliffeassociates.translationrecorder.Playback.fragments.FragmentTabbedWidget.DelegateMinimapMarkerDraw
+import org.wycliffeassociates.translationrecorder.Playback.fragments.MarkerCounterFragment
+import org.wycliffeassociates.translationrecorder.Playback.fragments.MarkerToolbarFragment
+import org.wycliffeassociates.translationrecorder.Playback.fragments.MarkerToolbarFragment.OnMarkerPlacedListener
+import org.wycliffeassociates.translationrecorder.Playback.fragments.WaveformFragment
+import org.wycliffeassociates.translationrecorder.Playback.fragments.WaveformFragment.OnScrollDelegator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioEditDelegator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioStateCallback
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.EditStateInformer
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback
+import org.wycliffeassociates.translationrecorder.Playback.markers.MarkerHolder
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MinimapLayer.MinimapDrawDelegator
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog.Companion.newInstance
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity.Companion.getInsertIntent
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity.Companion.getRerecordIntent
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
+import org.wycliffeassociates.translationrecorder.WavFileLoader
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ActivityPlaybackScreenBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.chapterIntToString
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getLargestTake
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getNameWithoutTake
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getProjectDirectory
+import org.wycliffeassociates.translationrecorder.project.components.User
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView
+import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableImageView.OnMarkerMovementRequest
+import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarkerView
+import java.io.File
+import java.io.IOException
+import java.nio.ShortBuffer
+import javax.inject.Inject
+import kotlin.concurrent.Volatile
+import kotlin.math.max
 
 /**
  * Created by sarabiaj on 10/27/2016.
  */
-
-public class PlaybackActivity extends Activity implements
-        RatingDialog.DialogListener,
-        MediaController,
-        AudioStateCallback,
-        AudioEditDelegator,
-        EditStateInformer,
-        ViewCreatedCallback,
-        WaveformFragment.OnScrollDelegator,
-        VerseMarkerModeToggler,
-        MarkerToolbarFragment.OnMarkerPlacedListener,
-        MinimapLayer.MinimapDrawDelegator,
-        FragmentTabbedWidget.DelegateMinimapMarkerDraw,
-        FragmentFileBar.RerecordCallback,
-        FragmentFileBar.RatingCallback,
-        FragmentFileBar.InsertCallback,
-        DraggableImageView.OnMarkerMovementRequest,
-        ExitDialog.DeleteFileCallback,
-        SourceAudio.OnAudioListener
-{
-
-    public enum MODE {
+@AndroidEntryPoint
+class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
+    MediaController,
+    AudioStateCallback, AudioEditDelegator, EditStateInformer, ViewCreatedCallback,
+    OnScrollDelegator, VerseMarkerModeToggler, OnMarkerPlacedListener, MinimapDrawDelegator,
+    DelegateMinimapMarkerDraw, RerecordCallback, RatingCallback, InsertCallback,
+    OnMarkerMovementRequest, DeleteFileCallback, OnAudioListener {
+    enum class MODE {
         EDIT,
         VERSE_MARKER
     }
 
-    public static final String AUDIO_RECORDER_FILE_EXT_WAV = ".wav";
-    public static final String KEY_PROJECT = "key_project";
-    public static final String KEY_WAV_FILE = "wavfile";
-    public static final String KEY_CHAPTER = "key_chapter";
-    public static final String KEY_UNIT = "key_unit";
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    private volatile boolean isSaved = true;
-    private boolean isPlaying = false;
-    private boolean wasPlaying = false;
-    private MODE mode;
+    @Volatile
+    private var isSaved = true
+    private val isPlaying = false
+    private var wasPlaying = false
+    private var mode: MODE? = null
 
-    private WavVisualizer wavVis;
-    private WavFile mWavFile;
-    private WavFileLoader wavFileLoader;
-    private Project mProject;
-    private int mChapter, mUnit, mRating, startVerse, endVerse, mTotalVerses;
-    private AudioVisualController mAudioController;
-    private HashMap<Integer, Fragment> mFragmentContainerMapping;
-    private FragmentPlaybackTools mFragmentPlaybackTools;
-    private FragmentTabbedWidget mFragmentTabbedWidget;
-    private FragmentFileBar mFragmentFileBar;
-    private WaveformFragment mWaveformFragment;
-    private MarkerCounterFragment mMarkerCounterFragment;
-    private MarkerToolbarFragment mMarkerToolbarFragment;
-    private MarkerMediator mMarkerMediator;
-    private boolean mWaveformInflated = false;
-    private boolean mMinimapInflated = false;
-    private DrawThread mDrawLoop;
-    private User mUser;
-    private AudioTrack audioTrack;
-    private int trackBufferSize = 0;
-    private ProjectDatabaseHelper db;
+    private var wavVis: WavVisualizer? = null
+    private lateinit var mWavFile: WavFile
+    private var wavFileLoader: WavFileLoader? = null
+    private lateinit var mProject: Project
+    private var mChapter = 0
+    private var mUnit = 0
+    private var mRating = 0
+    private var startVerse = 0
+    private var endVerse = 0
+    private var mTotalVerses = 0
+    private lateinit var mAudioController: AudioVisualController
 
-    public static Intent getPlaybackIntent(
-            Context ctx,
-            WavFile file,
-            Project project,
-            int chapter,
-            int unit
-    ) {
-        Intent intent = new Intent(ctx, PlaybackActivity.class);
-        intent.putExtra(KEY_PROJECT, project);
-        intent.putExtra(KEY_WAV_FILE, file);
-        intent.putExtra(KEY_CHAPTER, chapter);
-        intent.putExtra(KEY_UNIT, unit);
-        return intent;
+    private var mFragmentContainerMapping: HashMap<Int, Fragment> = hashMapOf()
+    private lateinit var mFragmentPlaybackTools: FragmentPlaybackTools
+    private lateinit var mFragmentTabbedWidget: FragmentTabbedWidget
+    private lateinit var mFragmentFileBar: FragmentFileBar
+    private lateinit var mWaveformFragment: WaveformFragment
+    private lateinit var mMarkerCounterFragment: MarkerCounterFragment
+    private lateinit var mMarkerToolbarFragment: MarkerToolbarFragment
+
+    private lateinit var mMarkerMediator: MarkerMediator
+    private var mWaveformInflated = false
+    private var mMinimapInflated = false
+    private var mDrawLoop: DrawThread? = null
+
+    private lateinit var mUser: User
+    private lateinit var audioTrack: AudioTrack
+    private var trackBufferSize = 0
+
+    private lateinit var binding: ActivityPlaybackScreenBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        binding = ActivityPlaybackScreenBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        audioTrack = (application as TranslationRecorderApp).audioTrack
+        trackBufferSize = (application as TranslationRecorderApp).trackBufferSize
+        try {
+            initialize(intent)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+        Logger.w(this.toString(), "onCreate")
+        val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+        mUser = db.getUser(userId)
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_playback_screen);
-        audioTrack = ((TranslationRecorderApp)getApplication()).getAudioTrack();
-        trackBufferSize = ((TranslationRecorderApp)getApplication()).getTrackBufferSize();
+    @Throws(IOException::class)
+    private fun initialize(intent: Intent) {
+        isSaved = true
+        parseIntent(intent)
+        verseRange
         try {
-            initialize(getIntent());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Logger.w(this.toString(), "onCreate");
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        int userId = pref.getInt(Settings.KEY_USER, 1);
-        db = ((TranslationRecorderApp)getApplication()).getDatabase();
-        mUser = db.getUser(userId);
-    }
-
-    private void initialize(Intent intent) throws IOException {
-        isSaved = true;
-        parseIntent(intent);
-        getVerseRange();
-        try {
-            mAudioController = new AudioVisualController(
-                    audioTrack,
-                    trackBufferSize,
-                    this,
-                    mWavFile,
-                    this
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mMarkerMediator = new MarkerHolder(
-                mAudioController,
+            mAudioController = AudioVisualController(
+                audioTrack,
+                trackBufferSize,
+                mWavFile,
                 this,
-                mFragmentPlaybackTools,
-                mTotalVerses
-        );
-        initializeFragments();
-        wavFileLoader = mAudioController.getWavLoader();
-        mMarkerMediator.setMarkerButtons(mFragmentPlaybackTools);
-        mode = MODE.EDIT;
-    }
-
-    public void startDrawThread() {
-        if (mDrawLoop != null) {
-            mDrawLoop.finish();
+                this
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        mDrawLoop = new DrawThread();
-        Thread draw = new Thread(mDrawLoop);
-        draw.start();
+        initializeFragments()
+        wavFileLoader = mAudioController.wavLoader
+        mode = MODE.EDIT
     }
 
-    private void initializeMarkers() {
-        List<WavCue> cues = mWavFile.getMetadata().getCuePoints();
-        for (WavCue cue : cues) {
+    fun startDrawThread() {
+        mDrawLoop?.finish()
+        mDrawLoop = DrawThread()
+        val draw = Thread(mDrawLoop)
+        draw.start()
+    }
+
+    private fun initializeMarkers() {
+        val cues = mWavFile.metadata.cuePoints
+        for (cue in cues) {
             mWaveformFragment.addVerseMarker(
-                    Integer.valueOf(cue.getLabel()),
-                    cue.getLocation()
-            );
+                cue.label.toInt(),
+                cue.location
+            )
         }
         if (cues.isEmpty()) {
-            mWaveformFragment.addVerseMarker(0, 0);
+            mWaveformFragment.addVerseMarker(0, 0)
         }
     }
 
-    private void parseIntent(Intent intent) {
-        mWavFile = intent.getParcelableExtra(KEY_WAV_FILE);
-        mProject = intent.getParcelableExtra(KEY_PROJECT);
-        mChapter = intent.getIntExtra(KEY_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER);
-        mUnit = intent.getIntExtra(KEY_UNIT, ChunkPlugin.DEFAULT_UNIT);
+    private fun parseIntent(intent: Intent) {
+        mWavFile = intent.getParcelableExtra(KEY_WAV_FILE)!!
+        mProject = intent.getParcelableExtra(KEY_PROJECT)!!
+        mChapter = intent.getIntExtra(KEY_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        mUnit = intent.getIntExtra(KEY_UNIT, ChunkPlugin.DEFAULT_UNIT)
     }
 
-    private void initializeFragments() throws IOException {
-        ChunkPlugin plugin = mProject.getChunkPlugin(new ChunkPluginLoader(this));
-        plugin.initialize(mChapter, mUnit);
+    @Throws(IOException::class)
+    private fun initializeFragments() {
+        val plugin = mProject.getChunkPlugin(ChunkPluginLoader(
+            directoryProvider,
+            assetsProvider
+        ))
+        plugin.initialize(mChapter, mUnit)
 
-        mFragmentContainerMapping = new HashMap<>();
+        mFragmentPlaybackTools = FragmentPlaybackTools.newInstance()
+        mFragmentContainerMapping[R.id.playback_tools_fragment_holder] = mFragmentPlaybackTools
 
-        mFragmentPlaybackTools = FragmentPlaybackTools.newInstance();
-        mFragmentContainerMapping.put(
-                R.id.playback_tools_fragment_holder,
-                mFragmentPlaybackTools
-        );
+        mMarkerMediator = MarkerHolder(
+            mAudioController,
+            this,
+            mFragmentPlaybackTools,
+            mTotalVerses
+        )
 
         mFragmentTabbedWidget = FragmentTabbedWidget.newInstance(
-                mMarkerMediator,
-                mProject,
-                ProjectFileUtils.getNameWithoutTake(mWavFile.getFile().getName()),
-                mChapter
-        );
-        mFragmentContainerMapping.put(
-                R.id.tabbed_widget_fragment_holder,
-                mFragmentTabbedWidget
-        );
+            mMarkerMediator,
+            mProject,
+            getNameWithoutTake(mWavFile.file.name),
+            mChapter
+        )
+        mFragmentContainerMapping[R.id.tabbed_widget_fragment_holder] = mFragmentTabbedWidget
 
-        String chapterLabel = plugin.getChapterLabel().equals("chapter") ? getString(R.string.chapter_title) : "";
+        val chapterLabel = if (plugin.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
 
         mFragmentFileBar = FragmentFileBar.newInstance(
-                mProject.getTargetLanguageSlug(),
-                mProject.getVersionSlug(),
-                mProject.getBookName(),
-                chapterLabel,
-                plugin.getChapterName(mChapter),
-                mProject.getLocalizedModeName(this),
-                plugin.getChunkName(),
-                mProject.getModeType()
-        );
+            mProject.targetLanguageSlug,
+            mProject.versionSlug,
+            mProject.bookName,
+            chapterLabel,
+            plugin.getChapterName(mChapter),
+            mProject.getLocalizedModeName(this),
+            plugin.chunkName,
+            mProject.modeType
+        )
 
-        mFragmentContainerMapping.put(R.id.file_bar_fragment_holder, mFragmentFileBar);
+        mFragmentContainerMapping[R.id.file_bar_fragment_holder] = mFragmentFileBar
 
-        mWaveformFragment = WaveformFragment.newInstance(mMarkerMediator);
-        mFragmentContainerMapping.put(R.id.waveform_fragment_holder, mWaveformFragment);
+        mWaveformFragment = WaveformFragment.newInstance(mMarkerMediator)
+        mFragmentContainerMapping[R.id.waveform_fragment_holder] = mWaveformFragment
 
-        mMarkerCounterFragment = MarkerCounterFragment.newInstance(mMarkerMediator);
-        mMarkerToolbarFragment = MarkerToolbarFragment.newInstance();
-        attachFragments();
+        mMarkerCounterFragment = MarkerCounterFragment.newInstance(mMarkerMediator)
+        mMarkerToolbarFragment = MarkerToolbarFragment.newInstance()
+        attachFragments()
     }
 
-    @Override
-    public void finish() {
-        super.finish();
-        if(mDrawLoop != null) {
-            mDrawLoop.finish();
-        }
-        if (mAudioController.isPlaying()) {
-            mAudioController.pause();
+    override fun finish() {
+        super.finish()
+        mDrawLoop?.finish()
+        if (mAudioController.isPlaying) {
+            mAudioController.pause()
         }
     }
 
-    private void attachFragments() {
-        FragmentManager fm = getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Set<Map.Entry<Integer, Fragment>> entrySet = mFragmentContainerMapping.entrySet();
-        for (Map.Entry<Integer, Fragment> pair : entrySet) {
-            ft.add(pair.getKey(), pair.getValue());
+    private fun attachFragments() {
+        val fm = supportFragmentManager
+        val ft = fm.beginTransaction()
+        val entrySet: Set<Map.Entry<Int, Fragment>> = mFragmentContainerMapping.entries
+        for ((key, value) in entrySet) {
+            ft.add(key, value)
         }
-        ft.commit();
+        ft.commit()
     }
 
 
-    @Override
-    public void onMediaPause() {
-        mAudioController.pause();
+    override fun onMediaPause() {
+        mAudioController.pause()
     }
 
-    @Override
-    public void onMediaPlay() {
+    override fun onMediaPlay() {
         try {
-            mAudioController.play();
-            mFragmentTabbedWidget.getSrcPlayer().pauseSource();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            mAudioController.play()
+            mFragmentTabbedWidget.pauseSource()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void onSourcePlay() {
-        mAudioController.pause();
-        mFragmentPlaybackTools.showPlayButton();
+    override fun onSourcePlay() {
+        mAudioController.pause()
+        mFragmentPlaybackTools.showPlayButton()
     }
 
-    @Override
-    public void onSourcePause() {}
+    override fun onSourcePause() {}
 
-    public void requestUserToRestart() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.audio_player_error);
-        builder.setMessage(getResources().getString(R.string.restart_device));
-        builder.setCancelable(false);
-        builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
+    private fun requestUserToRestart() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.audio_player_error)
+        builder.setMessage(resources.getString(R.string.restart_device))
+        builder.setCancelable(false)
+        builder.setPositiveButton(R.string.label_ok) { _, _ -> finish() }
+        val dialog = builder.create()
+        dialog.show()
     }
 
-    @Override
-    public void onSeekForward() {
+    override fun onSeekForward() {
         try {
-            mAudioController.seekNext();
-            onLocationUpdated();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            mAudioController.seekNext()
+            onLocationUpdated()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void onSeekBackward() throws IllegalStateException {
+    @Throws(IllegalStateException::class)
+    override fun onSeekBackward() {
         try {
-            mAudioController.seekPrevious();
-            onLocationUpdated();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            mAudioController.seekPrevious()
+            onLocationUpdated()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void onSeekTo(float x) {
+    override fun onSeekTo(x: Float) {
         try {
             mAudioController.seekTo(
-                    mAudioController.mCutOp.relativeLocToAbsolute(
-                            (int) (x * mAudioController.getRelativeDurationInFrames()),
-                            false
-                    )
-            );
-            onLocationUpdated();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+                mAudioController.cutOp.relativeLocToAbsolute(
+                    (x * mAudioController.relativeDurationInFrames).toInt(),
+                    false
+                )
+            )
+            onLocationUpdated()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public int getDurationMs() {
-        return mAudioController.getRelativeDurationMs();
+    override fun getDurationMs(): Int {
+        return mAudioController.relativeDurationMs
     }
 
-    @Override
-    public int getLocationMs() throws IllegalStateException {
+    @Throws(IllegalStateException::class)
+    override fun getLocationMs(): Int {
         try {
-            return mAudioController.getRelativeLocationMs();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            return mAudioController.relativeLocationMs
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
-        return 0;
+        return 0
     }
 
-    @Override
-    public int getLocationInFrames() {
+    override fun getLocationInFrames(): Int {
         try {
-            return mAudioController.getRelativeLocationInFrames();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            return mAudioController.relativeLocationInFrames
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
-        return 0;
+        return 0
     }
 
-    @Override
-    public int getDurationInFrames() {
+    override fun getDurationInFrames(): Int {
         try {
-            return mAudioController.getRelativeDurationInFrames();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            return mAudioController.relativeDurationInFrames
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
-        return 0;
+        return 0
     }
 
-    @Override
-    public void setOnCompleteListner(Runnable onComplete) {
+    override fun setOnCompleteListner(onComplete: Runnable) {
         //mAudioController.setOnCompleteListener(onComplete);
     }
 
-    @Override
-    public int getStartMarkerFrame() {
-        return mAudioController.mCutOp.absoluteLocToRelative(
-                mAudioController.getLoopStart(),
-                false
-        );
+    override fun getStartMarkerFrame(): Int {
+        return mAudioController.cutOp.absoluteLocToRelative(
+            mAudioController.loopStart,
+            false
+        )
     }
 
-    @Override
-    public int getEndMarkerFrame() {
-        return mAudioController.mCutOp.absoluteLocToRelative(
-                mAudioController.getLoopEnd(),
-                false
-        );
+    override fun getEndMarkerFrame(): Int {
+        return mAudioController.cutOp.absoluteLocToRelative(
+            mAudioController.loopEnd,
+            false
+        )
     }
 
-    @Override
-    public void onPlayerPaused() {
-        mFragmentPlaybackTools.onPlayerPaused();
-        mMarkerToolbarFragment.showPlayButton();
-        onLocationUpdated();
+    override fun onPlayerPaused() {
+        mFragmentPlaybackTools.onPlayerPaused()
+        mMarkerToolbarFragment.showPlayButton()
+        onLocationUpdated()
     }
 
-    @Override
-    public void onDeleteRecording() {
-        super.onBackPressed();
+    override fun onDeleteRecording() {
+        super.onBackPressed()
     }
 
-    @Override
-    public void onSave() {
-        save(null);
+    override fun onSave() {
+        save(null)
     }
 
-    @Override
-    public synchronized void onCut() {
-        isSaved = false;
-        Collection<DraggableMarker> markers = mMarkerMediator.getMarkers();
-        List<DraggableMarker> markerList = new ArrayList<>(markers);
-        long relativeLoopStart = mAudioController.mCutOp.absoluteLocToRelative(
-                mAudioController.getLoopStart(),
-                false
-        );
-        long relativeLoopEnd = mAudioController.mCutOp.absoluteLocToRelative(
-                mAudioController.getLoopEnd(),
-                false
-        );
+    @Synchronized
+    override fun onCut() {
+        isSaved = false
+        val markers = mMarkerMediator.markers
+        val markerList: List<DraggableMarker> = ArrayList(markers)
+        val relativeLoopStart = mAudioController.cutOp.absoluteLocToRelative(
+            mAudioController.loopStart,
+            false
+        ).toLong()
+        val relativeLoopEnd = mAudioController.cutOp.absoluteLocToRelative(
+            mAudioController.loopEnd,
+            false
+        ).toLong()
 
-        for (int i = 0; i < markerList.size(); i++) {
-            DraggableMarker marker = markerList.get(i);
-            if (marker.getFrame() <= relativeLoopEnd && marker.getFrame() > relativeLoopStart) {
-                if (marker instanceof VerseMarker) {
+        for (i in markerList.indices) {
+            val marker = markerList[i]
+            if (marker.frame in (relativeLoopStart + 1)..relativeLoopEnd) {
+                if (marker is VerseMarker) {
                     mMarkerMediator.onRemoveVerseMarker(
-                            ((VerseMarkerView) marker.getView()).getMarkerId()
-                    );
+                        (marker.getView() as VerseMarkerView).markerId
+                    )
                 }
             } else {
-                if (marker instanceof VerseMarker) {
+                if (marker is VerseMarker) {
                     marker.updateFrame(
-                            mAudioController.mCutOp.relativeLocToAbsolute(
-                                    marker.getFrame(),
-                                    false
-                            )
-                    );
+                        mAudioController.cutOp.relativeLocToAbsolute(
+                            marker.getFrame(),
+                            false
+                        )
+                    )
                 }
             }
         }
-        mAudioController.cut();
-        for (DraggableMarker marker : markers) {
-            if (marker instanceof VerseMarker) {
+        mAudioController.cut()
+        for (marker in markers) {
+            if (marker is VerseMarker) {
                 marker.updateFrame(
-                        mAudioController.mCutOp.absoluteLocToRelative(
-                                marker.getFrame(),
-                                false
-                        )
-                );
+                    mAudioController.cutOp.absoluteLocToRelative(
+                        marker.getFrame(),
+                        false
+                    )
+                )
             }
         }
         try {
-            mFragmentPlaybackTools.onLocationUpdated(mAudioController.getAbsoluteLocationMs());
-            mFragmentPlaybackTools.onDurationUpdated(mAudioController.getRelativeDurationMs());
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            mFragmentPlaybackTools.onLocationUpdated(mAudioController.absoluteLocationMs)
+            mFragmentPlaybackTools.onDurationUpdated(mAudioController.relativeDurationMs)
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
-        onClearMarkers();
-        mFragmentTabbedWidget.invalidateMinimap();
-        mFragmentTabbedWidget.onLocationChanged();
+        onClearMarkers()
+        mFragmentTabbedWidget.invalidateMinimap()
+        mFragmentTabbedWidget.onLocationChanged()
     }
 
-    @Override
-    public void onDropStartMarker() {
+    override fun onDropStartMarker() {
         try {
-            mAudioController.dropStartMarker();
-            int location = mAudioController.getLoopStart();
+            mAudioController.dropStartMarker()
+            val location = mAudioController.loopStart
             mWaveformFragment.addStartMarker(
-                    mAudioController.mCutOp.absoluteLocToRelative(
-                            location,
-                            false
-                    )
-            );
-            onLocationUpdated();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+                mAudioController.cutOp.absoluteLocToRelative(
+                    location,
+                    false
+                )
+            )
+            onLocationUpdated()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void onDropEndMarker() {
+    override fun onDropEndMarker() {
         try {
-            mAudioController.dropEndMarker();
-            int location = mAudioController.getLoopEnd();
+            mAudioController.dropEndMarker()
+            val location = mAudioController.loopEnd
             mWaveformFragment.addEndMarker(
-                    mAudioController.mCutOp.absoluteLocToRelative(
-                            location,
-                            false
-                    )
-            );
-            onLocationUpdated();
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+                mAudioController.cutOp.absoluteLocToRelative(
+                    location,
+                    false
+                )
+            )
+            onLocationUpdated()
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void setStartMarkerAt(int frameRelative) {
-        mAudioController.setStartMarker(frameRelative);
-        mWaveformFragment.addStartMarker(frameRelative);
-        onLocationUpdated();
+    override fun setStartMarkerAt(frameRelative: Int) {
+        mAudioController.setStartMarker(frameRelative)
+        mWaveformFragment.addStartMarker(frameRelative)
+        onLocationUpdated()
     }
 
-    @Override
-    public void setEndMarkerAt(int frame) {
-        mAudioController.setEndMarker(frame);
-        mWaveformFragment.addEndMarker(frame);
-        onLocationUpdated();
+    override fun setEndMarkerAt(frame: Int) {
+        mAudioController.setEndMarker(frame)
+        mWaveformFragment.addEndMarker(frame)
+        onLocationUpdated()
     }
 
-    @Override
-    public void onClearMarkers() {
-        mMarkerMediator.onRemoveSectionMarkers();
+    override fun onClearMarkers() {
+        mMarkerMediator.onRemoveSectionMarkers()
     }
 
-    @Override
-    public boolean hasSetMarkers() {
-        if (mMarkerMediator.hasSectionMarkers()) {
-            return true;
-        } else {
-            return false;
-        }
+    override fun hasSetMarkers(): Boolean {
+        return mMarkerMediator.hasSectionMarkers()
     }
 
-    @Override
-    public boolean isPlaying() {
-        return mAudioController.isPlaying();
+    override fun isPlaying(): Boolean {
+        return mAudioController.isPlaying
     }
 
-    @Override
-    public void onDropVerseMarker() {
-
+    override fun onDropVerseMarker() {
     }
 
-    @Override
-    public void onUndo() {
-        Collection<DraggableMarker> markers = mMarkerMediator.getMarkers();
+    override fun onUndo() {
+        val markers = mMarkerMediator.markers
         //map markers back to absolute before
-        for (DraggableMarker marker : markers) {
+        for (marker in markers) {
             marker.updateFrame(
-                    mAudioController.mCutOp.relativeLocToAbsolute(
-                            marker.getFrame(),
-                            false
-                    )
-            );
+                mAudioController.cutOp.relativeLocToAbsolute(
+                    marker.frame,
+                    false
+                )
+            )
         }
-        mAudioController.undo();
-        for (DraggableMarker marker : markers) {
+        mAudioController.undo()
+        for (marker in markers) {
             marker.updateFrame(
-                    mAudioController.mCutOp.absoluteLocToRelative(
-                            marker.getFrame(),
-                            false
-                    )
-            );
+                mAudioController.cutOp.absoluteLocToRelative(
+                    marker.frame,
+                    false
+                )
+            )
         }
-        if (!mAudioController.mCutOp.hasCut()) {
-            isSaved = true;
+        if (!mAudioController.cutOp.hasCut()) {
+            isSaved = true
         }
-        mFragmentTabbedWidget.invalidateMinimap();
-        onLocationUpdated();
+        mFragmentTabbedWidget.invalidateMinimap()
+        onLocationUpdated()
     }
 
-    @Override
-    public boolean hasEdits() {
-        return mAudioController.mCutOp.hasCut();
+    override fun hasEdits(): Boolean {
+        return mAudioController.cutOp.hasCut()
     }
 
-    @Override
-    public void onPositiveClick(RatingDialog dialog) {
-        Logger.w(this.toString(), "rating set");
-        mRating = dialog.getRating();
+    override fun onPositiveClick(dialog: RatingDialog) {
+        Logger.w(this.toString(), "rating set")
+        mRating = dialog.rating
 
-        db.setTakeRating(dialog.getTakeInfo(), mRating);
-        mFragmentFileBar.onRatingChanged(mRating);
+        db.setTakeRating(dialog.takeInfo, mRating)
+        mFragmentFileBar.onRatingChanged(mRating)
     }
 
-    @Override
-    public void onNegativeClick(RatingDialog dialog) {
-        Logger.w(this.toString(), "rating canceled");
-        dialog.dismiss();
+    override fun onNegativeClick(dialog: RatingDialog) {
+        Logger.w(this.toString(), "rating canceled")
+        dialog.dismiss()
     }
 
-    @Override
-    public void onBackPressed() {
-        Logger.w(this.toString(), "Back was pressed.");
+    override fun onBackPressed() {
+        Logger.w(this.toString(), "Back was pressed.")
         if (mode == MODE.VERSE_MARKER) {
-            onDisableVerseMarkerMode();
+            onDisableVerseMarkerMode()
         } else if (actionsToSave()) {
-            Logger.i(this.toString(), "Asking if user wants to save before going back");
+            Logger.i(this.toString(), "Asking if user wants to save before going back")
             //keep file needs to be false so the callback will go through and
             // the super.onBackPressed is called
-            ExitDialog exit = ExitDialog.Build(
-                    this,
-                    R.style.Theme_AppCompat_Light_Dialog,
-                    false,
-                    isPlaying,
-                    mWavFile.getFile()
-            );
-            exit.show();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-
-    public boolean actionsToSave() {
-        boolean cuts = mAudioController.mCutOp.hasCut();
-        int markersOriginally = Math.max(mWavFile.getMetadata().getCuePoints().size(), 1);
-        int markersNow = mMarkerMediator.numVerseMarkersPlaced();
-        boolean markersPlaced = markersNow > markersOriginally;
-        return cuts || markersPlaced;
-    }
-
-    public void onOpenRating(FourStepImageView v) {
-        Logger.w(this.toString(), "Rating dialog opened");
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        ppm.match(mWavFile.getFile());
-        RatingDialog dialog = RatingDialog.newInstance(ppm.getTakeInfo(), mRating);
-        dialog.show(getFragmentManager(), "single_unit_rating");
-    }
-
-    public void onRerecord() {
-        Intent intent = RecordingActivity.getRerecordIntent(
+            val exit = ExitDialog.Build(
                 this,
-                mProject,
-                mWavFile,
-                mChapter,
-                mUnit
-        );
-        save(intent);
-    }
-
-    private void writeMarkers(WavFile wav) {
-        Collection<DraggableMarker> markers = mMarkerMediator.getMarkers();
-        ArrayList<DraggableMarker> markersList = new ArrayList<>(markers);
-        Collections.sort(markersList, new Comparator<DraggableMarker>() {
-            @Override
-            public int compare(DraggableMarker lhs, DraggableMarker rhs) {
-                return Integer.compare(lhs.getFrame(), rhs.getFrame());
-            }
-        });
-        int i = 0;
-        for (DraggableMarker m : markersList) {
-            if(m instanceof VerseMarker) {
-                wav.addMarker(String.valueOf(startVerse + i), m.getFrame());
-            }
-            i++;
+                R.style.Theme_AppCompat_Light_Dialog,
+                false,
+                isPlaying,
+                mWavFile.file
+            )
+            exit.show()
+        } else {
+            super.onBackPressed()
         }
-        wav.commit();
     }
 
-    private void save(Intent intent) {
+
+    private fun actionsToSave(): Boolean {
+        val cuts = mAudioController.cutOp.hasCut()
+        val markersOriginally =
+            max(mWavFile.metadata.cuePoints.size.toDouble(), 1.0).toInt()
+        val markersNow = mMarkerMediator.numVerseMarkersPlaced()
+        val markersPlaced = markersNow > markersOriginally
+        return cuts || markersPlaced
+    }
+
+    override fun onOpenRating(view: FourStepImageView?) {
+        Logger.w(this.toString(), "Rating dialog opened")
+        val ppm = mProject.patternMatcher
+        ppm.match(mWavFile.file)
+        val dialog = newInstance(ppm.takeInfo, mRating)
+        dialog.show(supportFragmentManager, "single_unit_rating")
+    }
+
+    override fun onRerecord() {
+        val intent = getRerecordIntent(
+            this,
+            mProject,
+            mWavFile,
+            mChapter,
+            mUnit
+        )
+        save(intent)
+    }
+
+    private fun writeMarkers(wav: WavFile) {
+        val markers = mMarkerMediator.markers
+        val markersList = ArrayList(markers)
+        markersList.sortWith { lhs, rhs ->
+            lhs.frame.compareTo(rhs.frame)
+        }
+        for ((i, m) in markersList.withIndex()) {
+            if (m is VerseMarker) {
+                wav.addMarker((startVerse + i).toString(), m.getFrame())
+            }
+        }
+        wav.commit()
+    }
+
+    @SuppressLint("DefaultLocale")
+    private fun save(intent: Intent?) {
         //no changes were made, so just exit
         if (isSaved) {
-            writeMarkers(mWavFile);
+            writeMarkers(mWavFile)
             if (intent == null) {
-                this.finish();
-                return;
+                this.finish()
+                return
             } else {
-                startActivity(intent);
-                this.finish();
-                return;
+                startActivity(intent)
+                this.finish()
+                return
             }
         }
 
-        File dir = new File(
-                ProjectFileUtils.getProjectDirectory(mProject),
-                ProjectFileUtils.chapterIntToString(mProject, mChapter)
-        );
-        File from = mWavFile.getFile();
-        int takeInt = ProjectFileUtils.getLargestTake(mProject, dir, from) + 1;
-        String take = String.format("%02d", takeInt);
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        ppm.match(from);
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        File to = new File(
-                dir,
-                ProjectFileUtils.getNameWithoutTake(from)
-                        + "_t"
-                        + take
-                        + AUDIO_RECORDER_FILE_EXT_WAV
-        );
-        writeCutToFile(to, mWavFile, intent);
+        val dir = File(
+            getProjectDirectory(mProject, directoryProvider),
+            chapterIntToString(mProject, mChapter)
+        )
+        val from = mWavFile.file
+        val takeInt = getLargestTake(mProject, dir, from) + 1
+        val take = String.format("%02d", takeInt)
+        val ppm = mProject.patternMatcher
+        ppm.match(from)
+        val to = File(
+            dir,
+            (getNameWithoutTake(from)
+                    + "_t"
+                    + take
+                    + AUDIO_RECORDER_FILE_EXT_WAV)
+        )
+        writeCutToFile(to, mWavFile, intent)
     }
 
     /**
@@ -725,385 +656,377 @@ public class PlaybackActivity extends Activity implements
      *
      * @return the absolute path of the file created
      */
-    public void writeCutToFile(final File to, final WavFile from, final Intent intent) {
-
-        final ProgressDialog pd = new ProgressDialog(this);
-        pd.setTitle(R.string.saving);
-        pd.setMessage(getResources().getString(R.string.writing_changes));
-        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        pd.setProgressNumberFormat(null);
-        pd.setCancelable(false);
-        pd.show();
-        Thread saveThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mAudioController.mCutOp.hasCut()) {
-                    try {
-                        File dir = ProjectFileUtils.getProjectDirectory(mProject);
-                        File toTemp = new File(dir, "temp.wav");
-                        WavFile toTempWav = new WavFile(toTemp, from.getMetadata());
-                        mAudioController.mCutOp.writeCut(
-                                toTempWav,
-                                wavFileLoader.mapAndGetAudioBuffer(),
-                                pd
-                        );
-                        toTempWav.clearMarkers();
-                        writeMarkers(toTempWav);
-                        to.delete();
-                        toTemp.renameTo(to);
-                        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                        ppm.match(to);
-                        db.addTake(
-                                ppm.getTakeInfo(),
-                                to.getName(),
-                                from.getMetadata().getModeSlug(),
-                                to.lastModified(),
-                                0,
-                                mUser.getId()
-                        );
-                        String oldName = from.getFile().getName();
-                        oldName = oldName.substring(0, oldName.lastIndexOf("."));
-                        File visDir = new File(getExternalCacheDir(), "Visualization");
-                        File toVis = new File(visDir, oldName + ".vis");
-                        toVis.delete();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                isSaved = true;
+    private fun writeCutToFile(to: File, from: WavFile, intent: Intent?) {
+        val pd = ProgressDialog(this)
+        pd.setTitle(R.string.saving)
+        pd.setMessage(resources.getString(R.string.writing_changes))
+        pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+        pd.setProgressNumberFormat(null)
+        pd.setCancelable(false)
+        pd.show()
+        val saveThread = Thread {
+            if (mAudioController.cutOp.hasCut()) {
                 try {
-                    pd.dismiss();
-                } catch (IllegalArgumentException e) {
-                    Logger.e("PlaybackActivity", "Tried to dismiss cut dialog", e);
-                }
-                if (intent == null) {
-                    finish();
-                } else {
-                    WavFile result = new WavFile(to);
-                    intent.putExtra(RecordingActivity.KEY_WAV_FILE, result);
-                    startActivity(intent);
-                    finish();
+                    val dir = getProjectDirectory(mProject, directoryProvider)
+                    val toTemp = File(dir, "temp.wav")
+                    val toTempWav = WavFile(toTemp, from.metadata)
+                    mAudioController.cutOp.writeCut(
+                        toTempWav,
+                        wavFileLoader!!.mapAndGetAudioBuffer(),
+                        pd
+                    )
+                    toTempWav.clearMarkers()
+                    writeMarkers(toTempWav)
+                    to.delete()
+                    toTemp.renameTo(to)
+                    val ppm = mProject.patternMatcher
+                    ppm.match(to)
+                    db.addTake(
+                        ppm.takeInfo,
+                        to.name,
+                        from.metadata.modeSlug,
+                        to.lastModified(),
+                        0,
+                        mUser.id
+                    )
+                    var oldName = from.file.name
+                    oldName = oldName.substring(0, oldName.lastIndexOf("."))
+                    val visDir = File(externalCacheDir, "Visualization")
+                    val toVis = File(visDir, "$oldName.vis")
+                    toVis.delete()
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
-        });
-        saveThread.start();
+            isSaved = true
+            try {
+                pd.dismiss()
+            } catch (e: IllegalArgumentException) {
+                Logger.e(
+                    "PlaybackActivity",
+                    "Tried to dismiss cut dialog",
+                    e
+                )
+            }
+            if (intent == null) {
+                finish()
+            } else {
+                val result = WavFile(to)
+                intent.putExtra(RecordingActivity.KEY_WAV_FILE, result)
+                startActivity(intent)
+                finish()
+            }
+        }
+        saveThread.start()
     }
 
-    public void onInsert() {
-        Intent insertIntent = RecordingActivity.getInsertIntent(
-                this,
-                mProject,
-                mWavFile,
-                mChapter,
-                mUnit,
-                mAudioController.getRelativeLocationInFrames()
-        );
-        save(insertIntent);
+    override fun onInsert() {
+        val insertIntent = getInsertIntent(
+            this,
+            mProject,
+            mWavFile,
+            mChapter,
+            mUnit,
+            mAudioController.relativeLocationInFrames
+        )
+        save(insertIntent)
     }
 
-    private boolean allVersesMarked() {
-        return mMarkerMediator.hasVersesRemaining();
+    private fun allVersesMarked(): Boolean {
+        return mMarkerMediator.hasVersesRemaining()
     }
 
-    private void getVerseRange() {
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        ppm.match(mWavFile.getFile());
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        mTotalVerses = (takeInfo.getEndVerse() - takeInfo.getStartVerse() + 1);
-        startVerse = takeInfo.getStartVerse();
-        endVerse = takeInfo.getEndVerse();
-    }
+    private val verseRange: Unit
+        get() {
+            val ppm = mProject.patternMatcher
+            ppm.match(mWavFile.file)
+            val takeInfo = ppm.takeInfo
+            mTotalVerses = (takeInfo.endVerse - takeInfo.startVerse + 1)
+            startVerse = takeInfo.startVerse
+            endVerse = takeInfo.endVerse
+        }
 
-    private void setVerseMarkerCount(int count) {
+    private fun setVerseMarkerCount(count: Int) {
         // - 1 because the first verse marker should be automatically dropped at the beginning
         //mVerseMarkerCount.setText(String.valueOf(count));
     }
 
-    private void dropVerseMarker() {
+    private fun dropVerseMarker() {
         //mMainCanvas.dropVerseMarker(mManager.getLocationMs());
         //mManager.updateUI();
     }
 
-    private void saveVerseMarkerPosition() {
+    private fun saveVerseMarkerPosition() {
         // NOTE: Put real code here
-        System.out.println("Save verse marker position here");
+        println("Save verse marker position here")
     }
 
-    @Override
-    public void onViewCreated(Fragment ref) {
-        if (ref instanceof WaveformFragment) {
-            View view = mWaveformFragment.getView();
-            ViewTreeObserver vto = view.getViewTreeObserver();
-            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    mWaveformInflated = true;
-                    if (mWaveformInflated && mMinimapInflated) {
-                        initializeRenderer();
-                        initializeMarkers();
-                        mWaveformFragment.getView()
-                                .getViewTreeObserver()
-                                .removeOnGlobalLayoutListener(this);
-                        startDrawThread();
+    override fun onViewCreated(ref: Fragment) {
+        if (ref is WaveformFragment) {
+            val view = mWaveformFragment.view
+            val vto = view!!.viewTreeObserver
+            vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    mWaveformInflated = true
+                    if (mMinimapInflated) {
+                        initializeRenderer()
+                        initializeMarkers()
+                        mWaveformFragment.requireView()
+                            .getViewTreeObserver()
+                            .removeOnGlobalLayoutListener(this)
+                        startDrawThread()
                     }
                 }
-            });
-        } else if (ref instanceof FragmentTabbedWidget) {
-            View view = mFragmentTabbedWidget.getView();
-            ViewTreeObserver vto = view.getViewTreeObserver();
-            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    mMinimapInflated = true;
-                    if (mWaveformInflated && mMinimapInflated) {
-                        initializeRenderer();
-                        initializeMarkers();
-                        mFragmentTabbedWidget.getView()
-                                .getViewTreeObserver()
-                                .removeOnGlobalLayoutListener(this);
-                        startDrawThread();
+            })
+        } else if (ref is FragmentTabbedWidget) {
+            val view = mFragmentTabbedWidget.view
+            val vto = view!!.viewTreeObserver
+            vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    mMinimapInflated = true
+                    if (mWaveformInflated) {
+                        initializeRenderer()
+                        initializeMarkers()
+                        mFragmentTabbedWidget.requireView()
+                            .getViewTreeObserver()
+                            .removeOnGlobalLayoutListener(this)
+                        startDrawThread()
                     }
                 }
-            });
+            })
         }
     }
 
-    private void initializeRenderer() {
+    private fun initializeRenderer() {
         try {
-            int numThreads = 1;
-            ShortBuffer uncompressed = wavFileLoader.mapAndGetAudioBuffer();
-            ShortBuffer compressed = wavFileLoader.mapAndGetVisualizationBuffer();
-            wavVis = new WavVisualizer(
-                    uncompressed,
-                    compressed,
-                    numThreads,
-                    mWaveformFragment.getView().getWidth(),
-                    mWaveformFragment.getView().getHeight(),
-                    mFragmentTabbedWidget.getWidgetWidth(),
-                    mAudioController.getCutOp()
-            );
-            mWaveformFragment.setWavRenderer(wavVis);
-            mFragmentTabbedWidget.initializeTimecode(mAudioController.getRelativeDurationMs());
-        } catch (IOException e) {
-
+            val numThreads = 1
+            val uncompressed = wavFileLoader!!.mapAndGetAudioBuffer()
+            val compressed = wavFileLoader!!.mapAndGetVisualizationBuffer()
+            wavVis = WavVisualizer(
+                uncompressed,
+                compressed,
+                numThreads,
+                mWaveformFragment.requireView().width,
+                mWaveformFragment.requireView().height,
+                mFragmentTabbedWidget.widgetWidth,
+                mAudioController.cutOp
+            )
+            mWaveformFragment.setWavRenderer(wavVis)
+            mFragmentTabbedWidget.initializeTimecode(mAudioController.relativeDurationMs)
+        } catch (e: IOException) {
         }
     }
 
-    @Override
-    public void delegateOnScroll(float distX) {
-        if(mAudioController.isPlaying()) {
-            wasPlaying = true;
-            mAudioController.pause();
+    override fun delegateOnScroll(distX: Float) {
+        if (mAudioController.isPlaying) {
+            wasPlaying = true
+            mAudioController.pause()
         }
-        mAudioController.scrollAudio(distX);
+        mAudioController.scrollAudio(distX)
     }
 
-    @Override
-    public void delegateOnScrollComplete() {
-        if(wasPlaying) {
-            wasPlaying = false;
-            mAudioController.play();
+    override fun delegateOnScrollComplete() {
+        if (wasPlaying) {
+            wasPlaying = false
+            mAudioController.play()
         }
     }
 
-    @Override
-    public void onLocationUpdated() {
+    override fun onLocationUpdated() {
         try {
-            int absoluteFrame = mAudioController.getAbsoluteLocationInFrames();
-            int relativeFrame = mAudioController.getRelativeLocationInFrames();
-            int absoluteMs = mAudioController.getAbsoluteLocationMs();
+            val absoluteFrame = mAudioController.absoluteLocationInFrames
+            val relativeFrame = mAudioController.relativeLocationInFrames
+            val absoluteMs = mAudioController.absoluteLocationMs
 
-            mWaveformFragment.invalidateFrame(absoluteFrame, relativeFrame, absoluteMs);
+            mWaveformFragment.invalidateFrame(absoluteFrame, relativeFrame, absoluteMs)
 
-//                //// TODO
+            //                //// TODO
 //                mFragmentTabbedWidget.invalidateFrame(frame);
 //                mFragmentPlaybackTools.invalidateMs(ms);
 //                mMarkerToolbarFragment.invalidateMs(ms);
-
-            mFragmentPlaybackTools.onLocationUpdated(mAudioController.getRelativeLocationMs());
-            mFragmentTabbedWidget.onLocationChanged();
-            mMarkerToolbarFragment.onLocationUpdated(mAudioController.getRelativeLocationMs());
-        } catch (IllegalStateException e) {
-            requestUserToRestart();
+            mFragmentPlaybackTools.onLocationUpdated(mAudioController.relativeLocationMs)
+            mFragmentTabbedWidget.onLocationChanged()
+            mMarkerToolbarFragment.onLocationUpdated(mAudioController.relativeLocationMs)
+        } catch (e: IllegalStateException) {
+            requestUserToRestart()
         }
     }
 
-    @Override
-    public void onVisualizationLoaded(final ShortBuffer mappedVisualizationFile) {
-        Handler handler = new Handler(Looper.getMainLooper());
+    override fun onVisualizationLoaded(mappedVisualizationFile: ShortBuffer) {
+        val handler = Handler(Looper.getMainLooper())
         if (wavVis == null) {
             //delay the call if the visualizer hasn't loaded yet
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onVisualizationLoaded(mappedVisualizationFile);
-                }
-            }, 1000);
+            handler.postDelayed({ onVisualizationLoaded(mappedVisualizationFile) }, 1000)
         } else {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    wavVis.enableCompressedFileNextDraw(mappedVisualizationFile);
-                    mFragmentTabbedWidget.invalidateMinimap();
-                }
-            });
+            handler.post {
+                wavVis!!.enableCompressedFileNextDraw(mappedVisualizationFile)
+                mFragmentTabbedWidget.invalidateMinimap()
+            }
         }
     }
 
-    @Override
-    public void onEnableVerseMarkerMode() {
-        Logger.w(this.toString(), "onEnableVerseMarkerMode");
-        mAudioController.pause();
-        mFragmentTabbedWidget.getSrcPlayer().pauseSource();
-        onClearMarkers();
-        //if (mMarkerMediator.hasVersesRemaining()) {
-        mode = MODE.VERSE_MARKER;
-        FragmentManager fm = getFragmentManager();
-        fm.beginTransaction()
-                .remove(mFragmentFileBar)
-                .add(R.id.file_bar_fragment_holder, mMarkerCounterFragment)
-                .remove(mFragmentPlaybackTools)
-                .add(R.id.playback_tools_fragment_holder, mMarkerToolbarFragment)
-                .commit();
-        //}
-        onLocationUpdated();
+    override fun onEnableVerseMarkerMode() {
+        Logger.w(this.toString(), "onEnableVerseMarkerMode")
+        mAudioController.pause()
+        mFragmentTabbedWidget.pauseSource()
+        onClearMarkers()
+        mode = MODE.VERSE_MARKER
+        supportFragmentManager.beginTransaction()
+            .remove(mFragmentFileBar)
+            .add(R.id.file_bar_fragment_holder, mMarkerCounterFragment)
+            .remove(mFragmentPlaybackTools)
+            .add(R.id.playback_tools_fragment_holder, mMarkerToolbarFragment)
+            .commit()
+        onLocationUpdated()
     }
 
-    @Override
-    public void onDisableVerseMarkerMode() {
-        Logger.w(this.toString(), "onDisableVerseMarkerMode");
-        mAudioController.pause();
-        mFragmentTabbedWidget.getSrcPlayer().pauseSource();
-        mode = MODE.EDIT;
-        FragmentManager fm = getFragmentManager();
+    override fun onDisableVerseMarkerMode() {
+        Logger.w(this.toString(), "onDisableVerseMarkerMode")
+        mAudioController.pause()
+        mFragmentTabbedWidget.pauseSource()
+        mode = MODE.EDIT
+        val fm = supportFragmentManager
         fm.beginTransaction()
-                .remove(mMarkerCounterFragment)
-                .add(R.id.file_bar_fragment_holder, mFragmentFileBar)
-                .remove(mMarkerToolbarFragment)
-                .add(R.id.playback_tools_fragment_holder, mFragmentPlaybackTools)
-                .commit();
-        onLocationUpdated();
+            .remove(mMarkerCounterFragment)
+            .add(R.id.file_bar_fragment_holder, mFragmentFileBar)
+            .remove(mMarkerToolbarFragment)
+            .add(R.id.playback_tools_fragment_holder, mFragmentPlaybackTools)
+            .commit()
+        onLocationUpdated()
     }
 
-    @Override
-    public void onMarkerPlaced() {
+    override fun onMarkerPlaced() {
         if (mMarkerMediator.hasVersesRemaining()) {
-            Logger.w(this.toString(), "Placed verse marker");
-            int frame = mAudioController.getRelativeLocationInFrames();
-            int markerNumber;
+            Logger.w(this.toString(), "Placed verse marker")
+            val frame = mAudioController.relativeLocationInFrames
+            val markerNumber: Int
 
             try {
-                markerNumber = mMarkerMediator.availableMarkerNumber(startVerse, endVerse);
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                return;
+                markerNumber = mMarkerMediator.availableMarkerNumber(startVerse, endVerse)
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+                return
             }
 
-            mAudioController.dropVerseMarker(String.valueOf(markerNumber), frame);
-            mWaveformFragment.addVerseMarker(markerNumber, frame);
-            mMarkerCounterFragment.decrementVersesRemaining();
+            mAudioController.dropVerseMarker(markerNumber.toString(), frame)
+            mWaveformFragment.addVerseMarker(markerNumber, frame)
+            mMarkerCounterFragment.decrementVersesRemaining()
             try {
                 mWaveformFragment.invalidateFrame(
-                        mAudioController.getAbsoluteLocationInFrames(),
-                        mAudioController.getRelativeLocationInFrames(),
-                        mAudioController.getAbsoluteLocationMs()
-                );
-            } catch (IllegalStateException e) {
-                requestUserToRestart();
+                    mAudioController.absoluteLocationInFrames,
+                    mAudioController.relativeLocationInFrames,
+                    mAudioController.absoluteLocationMs
+                )
+            } catch (e: IllegalStateException) {
+                requestUserToRestart()
             }
         }
     }
 
-    @Override
-    public void onCueScroll(int id, float distX) {
-        mMarkerMediator.onCueScroll(id, distX);
+    override fun onCueScroll(id: Int, distX: Float) {
+        mMarkerMediator.onCueScroll(id, distX)
     }
 
-    @Override
-    public boolean onDelegateMinimapDraw(Canvas canvas, Paint paint) {
+    override fun onDelegateMinimapDraw(canvas: Canvas, paint: Paint): Boolean {
         if (wavVis != null) {
             canvas.drawLines(
-                    wavVis.getMinimap(
-                            canvas.getHeight(),
-                            canvas.getWidth(),
-                            mAudioController.getRelativeDurationInFrames()
-                    ),
-                    paint
-            );
-            return true;
+                wavVis!!.getMinimap(
+                    canvas.height,
+                    canvas.width,
+                    mAudioController.relativeDurationInFrames
+                ),
+                paint
+            )
+            return true
         } else {
-            return false;
+            return false
         }
     }
 
-    @Override
-    public void onDelegateMinimapMarkerDraw(
-            Canvas canvas,
-            Paint location,
-            Paint section,
-            Paint verse
+    override fun onDelegateMinimapMarkerDraw(
+        canvas: Canvas,
+        location: Paint,
+        section: Paint,
+        verse: Paint
     ) {
-        float x = (getLocationInFrames() / (float) getDurationInFrames()) * canvas.getWidth();
-        canvas.drawLine(x, 0, x, canvas.getHeight(), location);
-        float start = ((getStartMarkerFrame()) / (float) getDurationInFrames()) * canvas.getWidth();
-        float end = ((getEndMarkerFrame()) / (float) getDurationInFrames()) * canvas.getWidth();
-        Collection<DraggableMarker> markers = mMarkerMediator.getMarkers();
-        for (DraggableMarker m : markers) {
-            float markerPos = ((m.getFrame()) / (float) getDurationInFrames()) * canvas.getWidth();
-            canvas.drawLine(markerPos, 0, markerPos, canvas.getHeight(), verse);
+        val x = (locationInFrames / durationInFrames.toFloat()) * canvas.width
+        canvas.drawLine(x, 0f, x, canvas.height.toFloat(), location)
+        val start = ((startMarkerFrame) / durationInFrames.toFloat()) * canvas.width
+        val end = ((endMarkerFrame) / durationInFrames.toFloat()) * canvas.width
+        val markers = mMarkerMediator.markers
+        for (m in markers) {
+            val markerPos = ((m.frame) / durationInFrames.toFloat()) * canvas.width
+            canvas.drawLine(markerPos, 0f, markerPos, canvas.height.toFloat(), verse)
         }
-        canvas.drawLine(start, 0, start, canvas.getHeight(), section);
-        canvas.drawLine(end, 0, end, canvas.getHeight(), section);
+        canvas.drawLine(start, 0f, start, canvas.height.toFloat(), section)
+        canvas.drawLine(end, 0f, end, canvas.height.toFloat(), section)
     }
 
-    @Override
-    public boolean onMarkerMovementRequest(int markerId) {
-        boolean isEditMode = mode == MODE.EDIT;
-        boolean isVerseMarkerMode = mode == MODE.VERSE_MARKER;
-        boolean isStartMarker = markerId == MarkerHolder.START_MARKER_ID;
-        boolean isEndMarker = markerId == MarkerHolder.END_MARKER_ID;
+    override fun onMarkerMovementRequest(markerId: Int): Boolean {
+        val isEditMode = mode == MODE.EDIT
+        val isVerseMarkerMode = mode == MODE.VERSE_MARKER
+        val isStartMarker = markerId == MarkerHolder.START_MARKER_ID
+        val isEndMarker = markerId == MarkerHolder.END_MARKER_ID
 
-        if (isEditMode && (isEndMarker || isStartMarker)) {
-            return true;
+        return if (isEditMode && (isEndMarker || isStartMarker)) {
+            true
         } else if (isVerseMarkerMode && !isStartMarker && !isEndMarker) {
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 
-    public boolean isInVerseMarkerMode() {
-        return mode == MODE.VERSE_MARKER;
+    override fun isInVerseMarkerMode(): Boolean {
+        return mode == MODE.VERSE_MARKER
     }
 
-    public boolean isInEditMode() {
-        return mode == MODE.EDIT;
+    override fun isInEditMode(): Boolean {
+        return mode == MODE.EDIT
     }
 
-    private class DrawThread implements Runnable {
+    private inner class DrawThread : Runnable {
+        @Volatile
+        private var finished = false
 
-        private volatile boolean finished = false;
-
-        public DrawThread() {
+        fun finish() {
+            finished = true
         }
 
-        public void finish() {
-            finished = true;
-        }
-
-        @Override
-        public void run() {
-
+        override fun run() {
             while (!finished) {
-                if (mAudioController != null && mAudioController.isPlaying()) {
-                    onLocationUpdated();
+                if (mAudioController.isPlaying) {
+                    onLocationUpdated()
                 }
                 try {
-                    Thread.sleep(45);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.sleep(45)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
                 }
             }
+        }
+    }
+
+    companion object {
+        const val AUDIO_RECORDER_FILE_EXT_WAV: String = ".wav"
+        const val KEY_PROJECT: String = "key_project"
+        const val KEY_WAV_FILE: String = "wavfile"
+        const val KEY_CHAPTER: String = "key_chapter"
+        const val KEY_UNIT: String = "key_unit"
+
+        fun getPlaybackIntent(
+            ctx: Context?,
+            file: WavFile?,
+            project: Project?,
+            chapter: Int,
+            unit: Int
+        ): Intent {
+            val intent = Intent(ctx, PlaybackActivity::class.java)
+            intent.putExtra(KEY_PROJECT, project)
+            intent.putExtra(KEY_WAV_FILE, file)
+            intent.putExtra(KEY_CHAPTER, chapter)
+            intent.putExtra(KEY_UNIT, unit)
+            return intent
         }
     }
 }

@@ -3,13 +3,13 @@ package org.wycliffeassociates.translationrecorder.SettingsPage
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.app.DialogFragment
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.preference.PreferenceManager
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.databinding.DialogBackupRestoreBinding
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -17,6 +17,7 @@ import java.util.Date
 /**
  * Created by sarabiaj on 12/14/2016.
  */
+@AndroidEntryPoint
 class BackupRestoreDialog : DialogFragment() {
     interface BackupRestoreDialogListener {
         fun onCreateBackup(zipFileUri: Uri)
@@ -36,10 +37,9 @@ class BackupRestoreDialog : DialogFragment() {
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = DialogBackupRestoreBinding.inflate(activity.layoutInflater)
+        binding = DialogBackupRestoreBinding.inflate(requireActivity().layoutInflater)
 
-        val builder = AlertDialog.Builder(activity)
-        pref = PreferenceManager.getDefaultSharedPreferences(activity)
+        val builder = AlertDialog.Builder(requireActivity())
 
         with(binding) {
             backupButton.setOnClickListener {

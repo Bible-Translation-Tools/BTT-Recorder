@@ -4,20 +4,18 @@
     android:id="@+id/playback_screen_container"
     android:orientation="vertical"
     android:layout_height="match_parent"
-    android:layout_width="match_parent" >
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true">
 
     <FrameLayout
         android:id="@+id/file_bar_fragment_holder"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/abc_action_bar_default_height_material"
-        android:layout_alignParentTop="true"
-        />
+        android:layout_height="@dimen/abc_action_bar_default_height_material" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_alignBottom="@+id/file_bar_fragment_holder">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <FrameLayout
             android:id="@+id/waveform_fragment_holder"
@@ -31,15 +29,11 @@
     <FrameLayout
         android:id="@+id/tabbed_widget_fragment_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/playback_tools_fragment_holder"
-        />
+        android:layout_height="wrap_content" />
 
     <FrameLayout
         android:id="@+id/playback_tools_fragment_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

@@ -1,256 +1,301 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback;
-import org.wycliffeassociates.translationrecorder.Playback.markers.MarkerHolder;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.DraggableViewFrame;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer;
-import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableImageView;
-import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarkerView;
-import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker;
-import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarkerView;
-
-import java.util.Collection;
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaController
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.ViewCreatedCallback
+import org.wycliffeassociates.translationrecorder.Playback.markers.MarkerHolder
+import org.wycliffeassociates.translationrecorder.Playback.overlays.DraggableViewFrame.PositionChangeMediator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.MarkerLineLayer.MarkerLineDrawDelegator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.RectangularHighlightLayer.HighlightDelegator
+import org.wycliffeassociates.translationrecorder.Playback.overlays.ScrollGestureLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer
+import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer.WaveformDrawDelegator
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentWaveformBinding
+import org.wycliffeassociates.translationrecorder.widgets.marker.DraggableImageView
+import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.SectionMarkerView
+import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarker
+import org.wycliffeassociates.translationrecorder.widgets.marker.VerseMarkerView
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by sarabiaj on 11/4/2016.
  */
-
-public class WaveformFragment extends Fragment implements DraggableViewFrame.PositionChangeMediator,
-        MarkerLineLayer.MarkerLineDrawDelegator, WaveformLayer.WaveformDrawDelegator, ScrollGestureLayer.OnScrollListener,
-        RectangularHighlightLayer.HighlightDelegator
-
-{
+class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDelegator,
+    WaveformDrawDelegator, ScrollGestureLayer.OnScrollListener, HighlightDelegator {
 
     //------------Views-----------------//
-    DraggableViewFrame mDraggableViewFrame;
-    MarkerLineLayer mMarkerLineLayer;
-    WaveformLayer mWaveformLayer;
-    RectangularHighlightLayer mHighlightLayer;
-    ScrollGestureLayer mScrollGestureLayer;
-    MarkerMediator mMarkerMediator;
-    Handler mHandler;
-    FrameLayout mFrame;
+    private var mMarkerLineLayer: MarkerLineLayer? = null
+    private var mWaveformLayer: WaveformLayer? = null
+    private var mHighlightLayer: RectangularHighlightLayer? = null
+    private var mScrollGestureLayer: ScrollGestureLayer? = null
+    private lateinit var mMarkerMediator: MarkerMediator
+    private lateinit var mHandler: Handler
 
-    OnScrollDelegator mOnScrollDelegator;
-    ViewCreatedCallback mViewCreatedCallback;
-    private Paint mPaintPlaback;
-    private Paint mPaintBaseLine;
-    private int mCurrentRelativeFrame;
-    private WavVisualizer mWavVis;
-    private int mCurrentMs;
-    private MediaController mMediaController;
-    private int mCurrentAbsoluteFrame;
+    private var mOnScrollDelegator: OnScrollDelegator? = null
+    private var mViewCreatedCallback: ViewCreatedCallback? = null
+    private var mPaintPlayback: Paint? = null
+    private var mPaintBaseLine: Paint? = null
+    private var mCurrentRelativeFrame = 0
+    private var mWavVis: WavVisualizer? = null
+    private var mCurrentMs = 0
+    private var mMediaController: MediaController? = null
+    private var mCurrentAbsoluteFrame = 0
 
+    private var _binding: FragmentWaveformBinding? = null
+    private val binding get() = _binding!!
 
-    public interface OnScrollDelegator {
-        void delegateOnScroll(float distY);
-        void delegateOnScrollComplete();
-        void onCueScroll(int id, float distY);
+    interface OnScrollDelegator {
+        fun delegateOnScroll(distY: Float)
+        fun delegateOnScrollComplete()
+        fun onCueScroll(id: Int, distY: Float)
     }
 
-    @Override
-    public void onScroll(float x1, float x2, float distX) {
-        mOnScrollDelegator.delegateOnScroll(distX);
+    override fun onScroll(x1: Float, x2: Float, distX: Float) {
+        mOnScrollDelegator!!.delegateOnScroll(distX)
     }
 
-    @Override
-    public void onScrollComplete() {
-        mOnScrollDelegator.delegateOnScrollComplete();
+    override fun onScrollComplete() {
+        mOnScrollDelegator!!.delegateOnScrollComplete()
     }
 
-    public static WaveformFragment newInstance(MarkerMediator mediator){
-        WaveformFragment f = new WaveformFragment();
-        f.setMarkerMediator(mediator);
-        return f;
+    private fun setMarkerMediator(mediator: MarkerMediator) {
+        mMarkerMediator = mediator
     }
 
-    private void setMarkerMediator(MarkerMediator mediator) {
-        mMarkerMediator = mediator;
+    fun setWavRenderer(vis: WavVisualizer?) {
+        mWavVis = vis
     }
 
-    public void setWavRenderer(WavVisualizer vis){
-        mWavVis = vis;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentWaveformBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_waveform, container, false);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mHandler = Handler(Looper.getMainLooper())
+        mWaveformLayer = WaveformLayer.newInstance(activity, this)
+        mMarkerLineLayer = MarkerLineLayer.newInstance(activity, this)
+        mHighlightLayer = RectangularHighlightLayer.newInstance(activity, this)
+        mScrollGestureLayer = ScrollGestureLayer.newInstance(activity, this)
+        mViewCreatedCallback!!.onViewCreated(this)
+        binding.waveformFrame.addView(mWaveformLayer)
+        binding.waveformFrame.addView(mScrollGestureLayer)
+        binding.waveformFrame.addView(mMarkerLineLayer)
+        binding.waveformFrame.addView(mHighlightLayer)
+
+        val dpSize = 2
+
+        mPaintPlayback = Paint()
+        mPaintPlayback!!.color = resources.getColor(R.color.primary)
+        mPaintPlayback!!.style = Paint.Style.STROKE
+        mPaintPlayback!!.strokeWidth = dpSize.toFloat()
+        mPaintBaseLine = Paint()
+        mPaintBaseLine!!.color = resources.getColor(R.color.secondary)
+        mPaintBaseLine!!.style = Paint.Style.STROKE
+        mPaintBaseLine!!.strokeWidth = dpSize.toFloat()
+        binding.draggableViewFrame.bringToFront()
+        binding.draggableViewFrame.setPositionChangeMediator(this)
+        mMarkerMediator.setDraggableViewFrame(binding.draggableViewFrame)
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mHandler = new Handler(Looper.getMainLooper());
-        findViews();
-        mWaveformLayer = WaveformLayer.newInstance(getActivity(), this);
-        mMarkerLineLayer = MarkerLineLayer.newInstance(getActivity(), this);
-        mHighlightLayer = RectangularHighlightLayer.newInstance(getActivity(), this);
-        mScrollGestureLayer = ScrollGestureLayer.newInstance(getActivity(), this);
-        mViewCreatedCallback.onViewCreated(this);
-        mFrame.addView(mWaveformLayer);
-        mFrame.addView(mScrollGestureLayer);
-        mFrame.addView(mMarkerLineLayer);
-        mFrame.addView(mHighlightLayer);
-
-        int dpSize =  2;
-
-        mPaintPlaback = new Paint();
-        mPaintPlaback.setColor(getResources().getColor(R.color.primary));
-        mPaintPlaback.setStyle(Paint.Style.STROKE);
-        mPaintPlaback.setStrokeWidth(dpSize);
-        mPaintBaseLine = new Paint();
-        mPaintBaseLine.setColor(getResources().getColor(R.color.secondary));
-        mPaintBaseLine.setStyle(Paint.Style.STROKE);
-        mPaintBaseLine.setStrokeWidth(dpSize);
-        mDraggableViewFrame.bringToFront();
-        mDraggableViewFrame.setPositionChangeMediator(this);
-        mMarkerMediator.setDraggableViewFrame(mDraggableViewFrame);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mOnScrollDelegator = context as OnScrollDelegator
+        mViewCreatedCallback = context as ViewCreatedCallback
+        mMediaController = context as MediaController
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mOnScrollDelegator = (OnScrollDelegator) activity;
-        mViewCreatedCallback = (ViewCreatedCallback) activity;
-        mMediaController = (MediaController) activity;
+    override fun onDestroy() {
+        super.onDestroy()
+        mOnScrollDelegator = null
+        mViewCreatedCallback = null
+        mMediaController = null
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mOnScrollDelegator = null;
-        mViewCreatedCallback = null;
-        mMediaController = null;
-    }
-
-    private void findViews(){
-        View view = getView();
-        mDraggableViewFrame = (DraggableViewFrame) view.findViewById(R.id.draggable_view_frame);
-        mFrame = (FrameLayout) view.findViewById(R.id.waveform_frame);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     //-------------MARKERS----------------------//
+    fun addStartMarker(frame: Int) {
+        val dpSize = 4
+        val dm = resources.displayMetrics
+        val strokeWidth = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dpSize.toFloat(),
+            dm
+        )
 
-    public void addStartMarker(int frame){
-        int dpSize =  4;
-        DisplayMetrics dm = getResources().getDisplayMetrics() ;
-        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
-
-        int color =  getResources().getColor(R.color.dark_moderate_cyan);
-        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_startmarker_cyan, MarkerHolder.START_MARKER_ID, SectionMarkerView.Orientation.LEFT_MARKER, color, strokeWidth);
-        div.setX(DraggableImageView.mapLocationToScreenSpace(frame, mFrame.getWidth())-div.getWidth());
-        mMarkerMediator.onAddStartSectionMarker(new SectionMarker(div, frame));
-        invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
+        val color = resources.getColor(R.color.dark_moderate_cyan)
+        val div = SectionMarkerView(
+            activity,
+            R.drawable.ic_startmarker_cyan,
+            MarkerHolder.START_MARKER_ID,
+            SectionMarkerView.Orientation.LEFT_MARKER,
+            color,
+            strokeWidth
+        )
+        div.x =
+            (DraggableImageView.mapLocationToScreenSpace(
+                frame,
+                binding.waveformFrame.width
+            ) - div.width).toFloat()
+        mMarkerMediator.onAddStartSectionMarker(SectionMarker(div, frame))
+        invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs)
     }
 
-    public void addEndMarker(int frame){
-        int dpSize =  4;
-        DisplayMetrics dm = getResources().getDisplayMetrics() ;
-        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+    fun addEndMarker(frame: Int) {
+        val dpSize = 4
+        val dm = resources.displayMetrics
+        val strokeWidth =
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize.toFloat(), dm)
 
-        int color =  getResources().getColor(R.color.dark_moderate_cyan);
-        SectionMarkerView div = new SectionMarkerView(getActivity(), R.drawable.ic_endmarker_cyan, Gravity.BOTTOM, MarkerHolder.END_MARKER_ID, SectionMarkerView.Orientation.RIGHT_MARKER, color, strokeWidth);
-        div.setX(DraggableImageView.mapLocationToScreenSpace(frame, mFrame.getWidth()));
-        mMarkerMediator.onAddEndSectionMarker(new SectionMarker(div, frame));
-        invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs);
+        val color = resources.getColor(R.color.dark_moderate_cyan)
+        val div = SectionMarkerView(
+            activity,
+            R.drawable.ic_endmarker_cyan,
+            Gravity.BOTTOM,
+            MarkerHolder.END_MARKER_ID,
+            SectionMarkerView.Orientation.RIGHT_MARKER,
+            color,
+            strokeWidth
+        )
+        div.x = DraggableImageView.mapLocationToScreenSpace(frame, binding.waveformFrame.width).toFloat()
+        mMarkerMediator.onAddEndSectionMarker(SectionMarker(div, frame))
+        invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs)
     }
 
-    public void addVerseMarker(int verseNumber, int frame){
-        int dpSize =  4;
-        DisplayMetrics dm = getResources().getDisplayMetrics() ;
-        float strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize, dm);
+    fun addVerseMarker(verseNumber: Int, frame: Int) {
+        val dpSize = 4
+        val dm = resources.displayMetrics
+        val strokeWidth =
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpSize.toFloat(), dm)
 
-        int color =  getResources().getColor(R.color.yellow);
-        VerseMarkerView div = new VerseMarkerView(getActivity(), R.drawable.verse_marker_yellow, verseNumber, color, strokeWidth);
-        mMarkerMediator.onAddVerseMarker(verseNumber, new VerseMarker(div, frame));
+        val color = resources.getColor(R.color.yellow)
+        val div = VerseMarkerView(
+            activity,
+            R.drawable.verse_marker_yellow,
+            verseNumber,
+            color,
+            strokeWidth
+        )
+        mMarkerMediator.onAddVerseMarker(verseNumber, VerseMarker(div, frame))
     }
 
-    @Override
-    public float onPositionRequested(int id, float x){
-        if(id < 0) {
-            if(id == MarkerHolder.END_MARKER_ID){
-                x = Math.max(mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).getMarkerX(), x);
+    override fun onPositionRequested(id: Int, x: Float): Float {
+        var posX = x
+        if (id < 0) {
+            if (id == MarkerHolder.END_MARKER_ID) {
+                posX = max(
+                    mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).markerX.toDouble(),
+                    posX.toDouble()
+                ).toFloat()
             } else {
-                x += (mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).getWidth());
-                if(mMarkerMediator.contains(MarkerHolder.END_MARKER_ID)) {
-                    x = Math.min(mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).getMarkerX(), x);
+                posX += (mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).width)
+                if (mMarkerMediator.contains(MarkerHolder.END_MARKER_ID)) {
+                    posX = min(
+                        mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).markerX.toDouble(),
+                        posX.toDouble()
+                    ).toFloat()
                 }
             }
         }
-        return x;
+        return posX
     }
 
-    @Override
-    public void onPositionChanged(int id, float x) {
-        mOnScrollDelegator.onCueScroll(id, x);
+    override fun onPositionChanged(id: Int, x: Float) {
+        mOnScrollDelegator?.onCueScroll(id, x)
     }
 
-    @Override
-    public void onDrawMarkers(Canvas canvas) {
-        Collection<DraggableMarker> markers = mMarkerMediator.getMarkers();
-        for (DraggableMarker d : markers) {
-            if(d instanceof VerseMarker && mMediaController.isInEditMode()) {
-                continue;
+    override fun onDrawMarkers(canvas: Canvas) {
+        val markers = mMarkerMediator.markers
+        for (d in markers) {
+            if (d is VerseMarker && mMediaController!!.isInEditMode) {
+                continue
             }
-            d.drawMarkerLine(canvas);
+            d.drawMarkerLine(canvas)
         }
-        canvas.drawLine((float) mWaveformLayer.getWidth() /8, 0, (float) mWaveformLayer.getWidth() /8, mWaveformLayer.getHeight(), mPaintPlaback);
-        canvas.drawLine(0, (float) mWaveformLayer.getHeight() /2, mWaveformLayer.getWidth(), (float) mWaveformLayer.getHeight() /2, mPaintBaseLine);
+        canvas.drawLine(
+            mWaveformLayer!!.width.toFloat() / 8,
+            0f,
+            mWaveformLayer!!.width.toFloat() / 8,
+            mWaveformLayer!!.height.toFloat(),
+            mPaintPlayback!!
+        )
+        canvas.drawLine(
+            0f,
+            mWaveformLayer!!.height.toFloat() / 2,
+            mWaveformLayer!!.width.toFloat(),
+            mWaveformLayer!!.height.toFloat() / 2,
+            mPaintBaseLine!!
+        )
     }
 
-    public void onDrawHighlight(Canvas canvas, Paint paint) {
-        if(mMarkerMediator.contains(MarkerHolder.END_MARKER_ID) && mMarkerMediator.contains(MarkerHolder.START_MARKER_ID)) {
-            canvas.drawRect(mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).getMarkerX(), 0,
-                    mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).getMarkerX(), mFrame.getHeight(), paint);
+    override fun onDrawHighlight(canvas: Canvas, paint: Paint) {
+        if (mMarkerMediator.contains(MarkerHolder.END_MARKER_ID) && mMarkerMediator.contains(
+                MarkerHolder.START_MARKER_ID
+            )
+        ) {
+            canvas.drawRect(
+                mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).markerX,
+                0f,
+                mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).markerX,
+                binding.waveformFrame.height.toFloat(),
+                paint
+            )
         }
     }
 
-    @Override
-    public void onDrawWaveform(Canvas canvas, Paint paint){
-        if(mWavVis != null) {
-            canvas.drawLines(mWavVis.getDataToDraw(mCurrentRelativeFrame), paint);
+    override fun onDrawWaveform(canvas: Canvas, paint: Paint) {
+        if (mWavVis != null) {
+            canvas.drawLines(mWavVis!!.getDataToDraw(mCurrentRelativeFrame), paint)
         }
     }
 
-    public void invalidateFrame(int absoluteFrame, int relativeFrame, int ms) {
-        mCurrentRelativeFrame = relativeFrame;
-        mCurrentAbsoluteFrame = absoluteFrame;
-        mCurrentMs = ms;
+    fun invalidateFrame(absoluteFrame: Int, relativeFrame: Int, ms: Int) {
+        mCurrentRelativeFrame = relativeFrame
+        mCurrentAbsoluteFrame = absoluteFrame
+        mCurrentMs = ms
 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mMarkerMediator.updateCurrentFrame(mCurrentRelativeFrame);
-                mWaveformLayer.invalidate();
-                mDraggableViewFrame.invalidate();
-                mMarkerLineLayer.invalidate();
-                mHighlightLayer.invalidate();
-            }
-        });
+        mHandler.post {
+            mMarkerMediator.updateCurrentFrame(mCurrentRelativeFrame)
+            mWaveformLayer!!.invalidate()
+            binding.draggableViewFrame.invalidate()
+            mMarkerLineLayer!!.invalidate()
+            mHighlightLayer!!.invalidate()
+        }
+    }
+
+    companion object {
+        fun newInstance(mediator: MarkerMediator): WaveformFragment {
+            val f = WaveformFragment()
+            f.setMarkerMediator(mediator)
+            return f
+        }
     }
 }

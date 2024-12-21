@@ -1,203 +1,214 @@
-package org.wycliffeassociates.translationrecorder.FilesPage.Export;
+package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import com.door43.tools.reporting.Logger;
-import net.gotev.uploadservice.*;
-import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.components.User;
-
-import java.io.File;
-import java.util.UUID;
+import android.content.Context
+import android.graphics.Color
+import android.util.Log
+import com.door43.tools.reporting.Logger
+import net.gotev.uploadservice.BinaryUploadRequest
+import net.gotev.uploadservice.ServerResponse
+import net.gotev.uploadservice.UploadInfo
+import net.gotev.uploadservice.UploadNotificationConfig
+import net.gotev.uploadservice.UploadServiceSingleBroadcastReceiver
+import net.gotev.uploadservice.UploadStatusDelegate
+import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.project.Project
+import java.io.File
+import java.util.UUID
 
 /**
  * Created by sarabiaj on 11/16/2017.
  */
+class TranslationExchangeExport(
+    projectToExport: File,
+    project: Project,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider,
+    private val prefs: IPreferenceRepository,
+    private val assetsProvider: AssetsProvider
+) : Export(projectToExport, project, directoryProvider), UploadStatusDelegate {
 
-public class TranslationExchangeExport extends Export implements UploadStatusDelegate {
+    private var differ: TranslationExchangeDiff? = null
+    private var uploadReceiver: UploadServiceSingleBroadcastReceiver
 
-    public static int EXPORT_UPLOAD_ID = 3;
-
-    TranslationExchangeDiff mDiffer;
-    ProjectDatabaseHelper db;
-    UploadServiceSingleBroadcastReceiver uploadReceiver;
-
-    public TranslationExchangeExport(File projectToExport, Project project, ProjectDatabaseHelper db) {
-        super(projectToExport, project);
-        mDirectoryToZip = null;
-        this.db = db;
-        uploadReceiver = new UploadServiceSingleBroadcastReceiver(this);
+    init {
+        directoryToZip = null
+        uploadReceiver = UploadServiceSingleBroadcastReceiver(this)
     }
 
-    @Override
-    protected void initialize() {
-        mDiffer = new TranslationExchangeDiff(
-                (TranslationRecorderApp) mCtx.getActivity().getApplication(),
-                mProject
-        );
-        mDiffer.computeDiff(outputFile(), this);
-    }
-
-    @Override
-    public void onStart(final int id) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (id == TranslationExchangeDiff.DIFF_ID) {
-                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_one));
-                } else if(id == ZipProject.ZIP_PROJECT_ID) {
-                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_two));
-                } else if(id == TranslationExchangeExport.EXPORT_UPLOAD_ID) {
-                    mProgressCallback.setProgressTitle(mCtx.getString(R.string.upload_step_three));
-                }
-
-                mZipDone = false;
-                mProgressCallback.setZipping(true);
-                mProgressCallback.showProgress(ProgressUpdateCallback.ZIP);
-            }
-        });
-    }
-
-    @Override
-    public void onComplete(int id) {
-        super.onComplete(id);
-        if(id == TranslationExchangeDiff.DIFF_ID) {
-            mFilesToZip = mDiffer.getDiff();
-            super.initialize();
-        } else if(id == EXPORT_UPLOAD_ID) {
-            mProgressCallback.setProgressTitle(null);
-            mProgressCallback.setZipping(false);
+    override fun initialize() {
+        differ = TranslationExchangeDiff(
+            project,
+            db,
+            directoryProvider,
+            assetsProvider
+        ).apply {
+            computeDiff(outputFile(), this@TranslationExchangeExport)
         }
     }
 
-    @Override
-    protected void handleUserInput() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Context ctx = mCtx.getActivity().getApplicationContext();
-                uploadBinary(ctx, outputFile());
+    override fun onStart(id: Int) {
+        handler.post {
+            if (id == TranslationExchangeDiff.DIFF_ID) {
+                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_one))
+            } else if (id == ZipProject.ZIP_PROJECT_ID) {
+                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_two))
+            } else if (id == EXPORT_UPLOAD_ID) {
+                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_three))
             }
-        });
-        thread.start();
+            zipDone = false
+            progressCallback?.setZipping(true)
+            progressCallback?.showProgress(ProgressUpdateCallback.ZIP)
+        }
     }
 
-    public void uploadBinary(Context context, File file) {
-        try {
-            this.onStart(EXPORT_UPLOAD_ID);
+    override fun onComplete(id: Int) {
+        super.onComplete(id)
+        if (id == TranslationExchangeDiff.DIFF_ID) {
+            filesToZip = differ?.diff
+            super.initialize()
+        } else if (id == EXPORT_UPLOAD_ID) {
+            progressCallback?.setProgressTitle(null)
+            progressCallback?.setZipping(false)
+        }
+    }
 
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            String uploadServer = sp.getString(Settings.KEY_PREF_UPLOAD_SERVER, "opentranslationtools.org");
+    override fun handleUserInput() {
+        val thread = Thread {
+            val ctx = fragment.requireActivity().applicationContext
+            uploadBinary(ctx, outputFile())
+        }
+        thread.start()
+    }
+
+    fun uploadBinary(context: Context, file: File) {
+        try {
+            this.onStart(EXPORT_UPLOAD_ID)
+
+            val uploadServer = prefs.getDefaultPref(
+                Settings.KEY_PREF_UPLOAD_SERVER,
+                "opentranslationtools.org"
+            )
 
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
-            String filePath = file.getAbsolutePath();
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-            int userId = pref.getInt(Settings.KEY_USER, 1);
-            User user = db.getUser(userId);
-            String hash = user.getHash();
+            val filePath = file.absolutePath
+            val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+            val user = db.getUser(userId)
+            val hash = user.hash
 
-            String uploadId = UUID.randomUUID().toString();
-            uploadReceiver.setUploadID(uploadId);
-            uploadReceiver.register(context);
+            val uploadId = UUID.randomUUID().toString()
+            uploadReceiver.setUploadID(uploadId)
+            uploadReceiver.register(context)
 
-            new BinaryUploadRequest(context, uploadId, "http://" + uploadServer + "/api/upload/zip")
-                            .addHeader("tr-user-hash", hash)
-                            .addHeader("tr-file-name", file.getName())
-                            .setFileToUpload(filePath)
-                            .setNotificationConfig(getNotificationConfig())
-                            .setDelegate(null)
-                            .setAutoDeleteFilesAfterSuccessfulUpload(true)
-                            .setMaxRetries(30)
-                            .startUpload();
-
-        } catch (Exception exc) {
-            Log.e("AndroidUploadService", exc.getMessage(), exc);
+            BinaryUploadRequest(context, uploadId, "http://$uploadServer/api/upload/zip")
+                .addHeader("tr-user-hash", hash)
+                .addHeader("tr-file-name", file.name)
+                .setFileToUpload(filePath)
+                .setNotificationConfig(notificationConfig)
+                .setDelegate(null)
+                .setAutoDeleteFilesAfterSuccessfulUpload(true)
+                .setMaxRetries(30)
+                .startUpload()
+        } catch (exc: Exception) {
+            Log.e("AndroidUploadService", exc.message, exc)
         }
     }
 
-    protected UploadNotificationConfig getNotificationConfig() {
-        UploadNotificationConfig config = new UploadNotificationConfig();
+    protected val notificationConfig: UploadNotificationConfig
+        get() {
+            val config = UploadNotificationConfig()
 
-        config.getProgress().iconResourceID = R.drawable.ic_upload;
-        config.getProgress().iconColorResourceID = Color.BLUE;
+            config.progress.iconResourceID = R.drawable.ic_upload
+            config.progress.iconColorResourceID = Color.BLUE
 
-        config.getCompleted().iconResourceID = R.drawable.ic_upload_success;
-        config.getCompleted().iconColorResourceID = Color.GREEN;
+            config.completed.iconResourceID = R.drawable.ic_upload_success
+            config.completed.iconColorResourceID = Color.GREEN
 
-        config.getError().iconResourceID = R.drawable.ic_upload_error;
-        config.getError().iconColorResourceID = Color.RED;
+            config.error.iconResourceID = R.drawable.ic_upload_error
+            config.error.iconColorResourceID = Color.RED
 
-        config.getCancelled().iconResourceID = R.drawable.ic_cancelled;
-        config.getCancelled().iconColorResourceID = Color.YELLOW;
+            config.cancelled.iconResourceID = R.drawable.ic_cancelled
+            config.cancelled.iconColorResourceID = Color.YELLOW
 
-        return config;
+            return config
+        }
+
+    override fun onProgress(context: Context, uploadInfo: UploadInfo) {
+        this.setUploadProgress(EXPORT_UPLOAD_ID, uploadInfo.progressPercent)
     }
 
-    @Override
-    public void onProgress(Context context, UploadInfo uploadInfo) {
-        this.setUploadProgress(EXPORT_UPLOAD_ID, uploadInfo.getProgressPercent());
-    }
+    override fun onCompleted(
+        context: Context,
+        uploadInfo: UploadInfo,
+        serverResponse: ServerResponse
+    ) {
+        val fd = FeedbackDialog.newInstance(
+            this.fragment.getString(R.string.project_upload),
+            this.fragment.getString(R.string.project_uploaded)
+        )
+        fd.show(this.fragment.parentFragmentManager, "title")
 
-    @Override
-    public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
-        FeedbackDialog fd = FeedbackDialog.newInstance(
-                mCtx.getString(R.string.project_upload),
-                mCtx.getString(R.string.project_uploaded)
-        );
-        fd.show(mCtx.getFragmentManager(), "title");
-
-        mZipFile.delete();
+        zipFile?.delete()
 
         Logger.e(
-                TranslationExchangeExport.class.toString(),
-                "code: " + serverResponse.getHttpCode() + " " + serverResponse.getBodyAsString()
-        );
-        this.onComplete(EXPORT_UPLOAD_ID);
+            TranslationExchangeExport::class.java.toString(),
+            "code: " + serverResponse.httpCode + " " + serverResponse.bodyAsString
+        )
+        this.onComplete(EXPORT_UPLOAD_ID)
     }
 
-    @Override
-    public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
-        String message;
+    override fun onError(
+        context: Context,
+        uploadInfo: UploadInfo,
+        serverResponse: ServerResponse?,
+        exception: Exception?
+    ) {
+        val message: String?
         if (serverResponse != null) {
-            message = String.format("code: %s: %s",
-                    serverResponse.getHttpCode(),
-                    serverResponse.getBodyAsString()
-            );
-            Logger.e(TranslationExchangeExport.class.toString(), message, exception);
+            message = String.format(
+                "code: %s: %s",
+                serverResponse.httpCode,
+                serverResponse.bodyAsString
+            )
+            Logger.e(TranslationExchangeExport::class.java.toString(), message, exception)
         } else if (exception != null) {
-            message = exception.getMessage();
-            Logger.e(TranslationExchangeExport.class.toString(), "Error: " + message, exception);
+            message = exception.message
+            Logger.e(
+                TranslationExchangeExport::class.java.toString(),
+                "Error: $message", exception
+            )
         } else {
-            message = "An error occurred without a response or exception, upload percent is "
-                    + uploadInfo.getProgressPercent();
-            Logger.e(TranslationExchangeExport.class.toString(), message);
+            message = ("An error occurred without a response or exception, upload percent is "
+                    + uploadInfo.progressPercent)
+            Logger.e(TranslationExchangeExport::class.java.toString(), message)
         }
 
-        FeedbackDialog fd = FeedbackDialog.newInstance(
-                mCtx.getString(R.string.project_upload),
-                mCtx.getString(R.string.project_upload_failed, message)
-        );
-        fd.show(mCtx.getFragmentManager(), "UPLOAD_FEEDBACK");
-        this.onComplete(EXPORT_UPLOAD_ID);
+        val fd = FeedbackDialog.newInstance(
+            this.fragment.getString(R.string.project_upload),
+            this.fragment.getString(R.string.project_upload_failed, message)
+        )
+        fd.show(this.fragment.parentFragmentManager, "UPLOAD_FEEDBACK")
+        this.onComplete(EXPORT_UPLOAD_ID)
     }
 
-    @Override
-    public void onCancelled(Context context, UploadInfo uploadInfo) {
-        Logger.e(TranslationExchangeExport.class.toString(), "Cancelled upload");
+    override fun onCancelled(context: Context, uploadInfo: UploadInfo?) {
+        Logger.e(TranslationExchangeExport::class.java.toString(), "Cancelled upload")
         if (uploadInfo != null) {
             Logger.e(
-                    TranslationExchangeExport.class.toString(),
-                    "Upload percent was " + uploadInfo.getProgressPercent()
-            );
+                TranslationExchangeExport::class.java.toString(),
+                "Upload percent was " + uploadInfo.progressPercent
+            )
         }
-        this.onComplete(EXPORT_UPLOAD_ID);
+        this.onComplete(EXPORT_UPLOAD_ID)
+    }
+
+    companion object {
+        var EXPORT_UPLOAD_ID: Int = 3
     }
 }

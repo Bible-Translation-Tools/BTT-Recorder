@@ -130,6 +130,7 @@
     <string name="label_close">Close</string>
     <string name="title_cancel">Cancel</string>
     <string name="please_wait">Please wait</string>
+    <string name="label_continue">Continue</string>
 
     <!--Anthologies-->
     <string name="bible">Bible</string>

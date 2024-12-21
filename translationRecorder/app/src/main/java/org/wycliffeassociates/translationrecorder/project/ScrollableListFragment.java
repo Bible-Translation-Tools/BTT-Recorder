@@ -1,17 +1,18 @@
 package org.wycliffeassociates.translationrecorder.project;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+
+import androidx.fragment.app.Fragment;
 
 import org.wycliffeassociates.translationrecorder.R;
 
@@ -28,25 +29,20 @@ public class ScrollableListFragment extends Fragment implements Searchable {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_scroll_list, container, false);
-        ImageButton searchBackButton = (ImageButton) rootView.findViewById(R.id.search_back_button);
+        ImageButton searchBackButton = rootView.findViewById(R.id.search_back_button);
         searchBackButton.setVisibility(View.GONE);
-        ImageView searchIcon = (ImageView) rootView.findViewById(R.id.search_mag_icon);
+        ImageView searchIcon = rootView.findViewById(R.id.search_mag_icon);
         searchIcon.setVisibility(View.GONE);
 
-        ListView list = (ListView) rootView.findViewById(R.id.list);
+        ListView list = rootView.findViewById(R.id.list);
         list.setAdapter(mAdapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mListener.onItemClick(mAdapter.getItem(position));
-            }
-        });
+        list.setOnItemClickListener((parent, view, position, id) -> mListener.onItemClick(mAdapter.getItem(position)));
 
         //if only one item is in the adapter, just choose it and continue on in the project wizard
         if(mAdapter != null && mAdapter.getCount() == 1) {
             mListener.onItemClick(mAdapter.getItem(0));
         }
-        EditText searchView = (EditText) rootView.findViewById(R.id.search_text);
+        EditText searchView = rootView.findViewById(R.id.search_text);
         searchView.setHint(mSearchHint);
         searchView.setEnabled(false);
 
@@ -61,12 +57,12 @@ public class ScrollableListFragment extends Fragment implements Searchable {
         mSearchHint = hint;
     }
 
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            this.mListener = (OnItemClickListener) activity;
+            this.mListener = (OnItemClickListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement OnItemClickListener");
+            throw new ClassCastException(context + " must implement OnItemClickListener");
         }
     }
 

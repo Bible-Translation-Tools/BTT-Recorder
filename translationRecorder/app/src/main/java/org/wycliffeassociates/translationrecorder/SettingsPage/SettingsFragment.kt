@@ -6,137 +6,89 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.net.Uri
 import android.os.Bundle
-import android.preference.Preference.OnPreferenceClickListener
-import android.preference.PreferenceFragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ListView
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceScreen
+import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.CreateBackupTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.RestoreBackupTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncLanguageNamesTask
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.BackupRestoreDialog.BackupRestoreDialogListener
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.BACKUP_TASK_TAG
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_ADD_LANGUAGE
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_BACKUP_RESTORE
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_GLOBAL_LANG_SRC
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_GLOBAL_SOURCE_LOC
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_LANGUAGES_URL
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_UPDATE_LANGUAGES
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_UPDATE_LANGUAGES_URL
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_UPLOAD_SERVER
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.RESTORE_TASK_TAG
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.RESYNC_LANGUAGE_NAMES_TASK_TAG
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
+import javax.inject.Inject
 
 /**
  * Created by leongv on 12/17/2015.
  */
-class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener,
+@AndroidEntryPoint
+class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener,
     BackupRestoreDialogListener {
 
-    private companion object {
-        const val FILE_GET_REQUEST_CODE = 45
-        const val TAG_TASK_FRAGMENT = "tag_task_fragment"
-    }
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    private var mParent: LanguageSelector? = null
-    private lateinit var mSharedPreferences: SharedPreferences
-    private lateinit var mTaskFragment: TaskFragment
-
-    var db: ProjectDatabaseHelper? = null
+    private var parent: LanguageSelector? = null
+    private lateinit var taskFragment: TaskFragment
 
     interface LanguageSelector {
         fun sourceLanguageSelected()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        parent = activity as LanguageSelector
+
+        preferenceManager.createPreferenceScreen(requireContext())
         addPreferencesFromResource(R.xml.preference)
 
-        mSharedPreferences = preferenceScreen.sharedPreferences
-        mParent = activity as LanguageSelector
-        db = (activity.application as TranslationRecorderApp).database
-
-        // Below is the code to clear the SharedPreferences. Use it wisely.
-        // mSharedPreferences.edit().clear().commit();
-
-        // Register listener(s)
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(this)
-
-        val fm = fragmentManager
-        mTaskFragment = (fm.findFragmentByTag(TAG_TASK_FRAGMENT) as? TaskFragment) ?: run {
+        val fm = parentFragmentManager
+        taskFragment = (fm.findFragmentByTag(TAG_TASK_FRAGMENT) as? TaskFragment) ?: run {
             val fragment = TaskFragment()
             fm.beginTransaction().add(fragment, TAG_TASK_FRAGMENT).commit()
             fm.executePendingTransactions()
             fragment
         }
 
-        val sourceLanguageButton = findPreference(Settings.KEY_PREF_GLOBAL_LANG_SRC)
-        sourceLanguageButton.onPreferenceClickListener = OnPreferenceClickListener {
-            mParent!!.sourceLanguageSelected()
-            true
-        }
+        setPreferenceSummaryFromValue(KEY_PREF_GLOBAL_LANG_SRC)
+        setPreferenceSummaryFromValue(KEY_PREF_ADD_LANGUAGE)
+        setPreferenceSummaryFromValue(KEY_PREF_UPDATE_LANGUAGES)
+        setPreferenceSummaryFromValue(KEY_PREF_UPDATE_LANGUAGES_FROM_FILE)
+        setPreferenceSummaryFromValue(KEY_PREF_LANGUAGES_URL)
+        setPreferenceSummaryFromValue(KEY_PREF_UPLOAD_SERVER)
+        setPreferenceSummaryFromValue(KEY_PREF_BACKUP_RESTORE)
 
-        val addTemporaryLanguageButton = findPreference(Settings.KEY_PREF_ADD_LANGUAGE)
-        addTemporaryLanguageButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val add = AddTargetLanguageDialog()
-            add.show(fragmentManager, "add")
-            false
-        }
-
-        val updateLanguagesButton = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES)
-        updateLanguagesButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val updateLanguagesUrlPref = findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_URL)
-            val updateLanguagesUrl = updateLanguagesUrlPref.summary.toString()
-
-            mTaskFragment.executeRunnable(
-                ResyncLanguageNamesTask(
-                    Settings.RESYNC_LANGUAGE_NAMES_TASK_TAG,
-                    activity,
-                    db,
-                    updateLanguagesUrl
-                ),
-                getString(R.string.updating_languages),
-                getString(R.string.please_wait),
-                true
-            )
-            true
-        }
-
-        val updateLanguagesFromFileButton =
-            findPreference(Settings.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE)
-        updateLanguagesFromFileButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intent.setType("application/octet-stream")
-            startActivityForResult(intent, FILE_GET_REQUEST_CODE)
-            true
-        }
-
-        val languagesUrlButton = findPreference(Settings.KEY_PREF_LANGUAGES_URL)
-        languagesUrlButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val add = LanguagesUrlDialog()
-            add.show(fragmentManager, "save")
-            false
-        }
-
-        val uploadServerButton = findPreference(Settings.KEY_PREF_UPLOAD_SERVER)
-        uploadServerButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val add = UploadServerDialog()
-            add.show(fragmentManager, "save")
-            false
-        }
-
-        val backupRestoreButton = findPreference(Settings.KEY_PREF_BACKUP_RESTORE)
-        backupRestoreButton.onPreferenceClickListener = OnPreferenceClickListener {
-            val dialog = BackupRestoreDialog()
-            dialog.setListener(this)
-            dialog.show(fragmentManager, "backup")
-            false
-        }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == FILE_GET_REQUEST_CODE) {
-                val uri = resultData.data
-                mTaskFragment.executeRunnable(
+                val uri = data?.data
+                taskFragment.executeRunnable(
                     ResyncLanguageNamesTask(
-                        Settings.RESYNC_LANGUAGE_NAMES_TASK_TAG,
-                        activity,
+                        RESYNC_LANGUAGE_NAMES_TASK_TAG,
+                        requireContext(),
                         db,
+                        assetsProvider,
                         uri
                     ),
                     getString(R.string.updating_languages),
@@ -148,8 +100,8 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener,
     }
 
     override fun onCreateBackup(zipFileUri: Uri) {
-        mTaskFragment.executeRunnable(
-            CreateBackupTask(Settings.BACKUP_TASK_TAG, activity, zipFileUri),
+        taskFragment.executeRunnable(
+            CreateBackupTask(BACKUP_TASK_TAG, requireActivity(), zipFileUri, directoryProvider),
             getString(R.string.creating_backup),
             getString(R.string.please_wait),
             true
@@ -157,72 +109,139 @@ class SettingsFragment : PreferenceFragment(), OnSharedPreferenceChangeListener,
     }
 
     override fun onRestoreBackup(zipFileUri: Uri) {
-        mTaskFragment.executeRunnable(
-            RestoreBackupTask(Settings.RESTORE_TASK_TAG, activity, zipFileUri),
+        taskFragment.executeRunnable(
+            RestoreBackupTask(RESTORE_TASK_TAG, requireActivity(), zipFileUri, directoryProvider),
             getString(R.string.restoring_backup),
             getString(R.string.please_wait),
             true
         )
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Get rid of the extra padding in the settings page body (where it loads this fragment)
-        val view = super.onCreateView(inflater, container, savedInstanceState)
-        if (view != null) {
-            val lv = view.findViewById<View>(android.R.id.list) as ListView
-            lv.setPadding(0, 0, 0, 0)
-        }
-        return view
-    }
-
     override fun onResume() {
         super.onResume()
-        preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
-        for (k in mSharedPreferences.all.keys) {
-            updateSummaryText(mSharedPreferences, k)
-        }
+        preferenceScreen
+            .sharedPreferences
+            ?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+        preferenceScreen
+            .sharedPreferences
+            ?.unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onSharedPreferenceChanged(mSharedPreferences: SharedPreferences, key: String?) {
-        updateSummaryText(mSharedPreferences, key)
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        sharedPreferences?.getString(key, "")?.let { value ->
+            when (key) {
+                KEY_PREF_GLOBAL_LANG_SRC -> parent?.sourceLanguageSelected()
+                KEY_PREF_ADD_LANGUAGE -> {
+                    val add = AddTargetLanguageDialog()
+                    add.show(parentFragmentManager, "add")
+                }
+                KEY_PREF_UPDATE_LANGUAGES -> {
+                    val updateLanguagesUrlPref: Preference? = findPreference(KEY_PREF_UPDATE_LANGUAGES_URL)
+                    val updateLanguagesUrl = updateLanguagesUrlPref?.summary?.toString()
+
+                    updateLanguagesUrl?.let { url ->
+                        taskFragment.executeRunnable(
+                            ResyncLanguageNamesTask(
+                                RESYNC_LANGUAGE_NAMES_TASK_TAG,
+                                requireContext(),
+                                db,
+                                assetsProvider,
+                                url
+                            ),
+                            getString(R.string.updating_languages),
+                            getString(R.string.please_wait),
+                            true
+                        )
+                    }
+                }
+                KEY_PREF_UPDATE_LANGUAGES_FROM_FILE -> {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    intent.setType("application/octet-stream")
+                    startActivityForResult(intent, FILE_GET_REQUEST_CODE)
+                }
+                KEY_PREF_LANGUAGES_URL -> {
+                    val add = LanguagesUrlDialog()
+                    add.show(parentFragmentManager, "save")
+                }
+                KEY_PREF_UPLOAD_SERVER -> {
+                    val add = UploadServerDialog()
+                    add.show(parentFragmentManager, "save")
+                }
+                KEY_PREF_BACKUP_RESTORE -> {
+                    val dialog = BackupRestoreDialog()
+                    dialog.setListener(this)
+                    dialog.show(parentFragmentManager, "backup")
+                }
+                else -> {}
+            }
+        }
+
+        key?.let { setPreferenceSummaryFromValue(it) }
     }
 
-    private fun updateSummariesSetViaActivities(mSharedPreferences: SharedPreferences) {
-        var uristring = mSharedPreferences.getString(
-            Settings.KEY_PREF_GLOBAL_SOURCE_LOC,
-            ""
-        )
-        val dir = Uri.parse(uristring)
-        if (dir != null) {
-            uristring = dir.lastPathSegment
-            findPreference(Settings.KEY_PREF_GLOBAL_SOURCE_LOC).summary = uristring
-        } else {
-            findPreference(Settings.KEY_PREF_GLOBAL_SOURCE_LOC).summary =
-                mSharedPreferences.getString(
-                    Settings.KEY_PREF_GLOBAL_SOURCE_LOC,
-                    ""
+    /**
+     * Sets a preference's summary based on its value. More specifically, when the
+     * preference's value is changed, its summary (line of text below the
+     * preference title) is updated to reflect the value. The exact display format is
+     * dependent on the type of preference.
+     *
+     */
+    private fun setPreferenceSummaryFromValue(key: String) {
+        val preference: Preference? = findPreference(key)
+
+        preference?.let { pref ->
+            val value = prefs.getDefaultPref(preference.key, "")
+
+            if (pref is ListPreference) {
+                // For list preferences, look up the correct display value in
+                // the preference's 'entries' list.
+                val index = pref.findIndexOfValue(value)
+
+                // Set the summary to reflect the new value.
+                pref.setSummary(
+                    if (index >= 0) pref.entries[index] else null
                 )
+            } else {
+                // For all other preferences, set the summary to the value's
+                // simple string representation.
+                pref.summary = value
+            }
         }
     }
 
-    private fun updateSummaryText(mSharedPreferences: SharedPreferences, key: String?) {
+    private fun updateSummariesSetViaActivities(sharedPreferences: SharedPreferences) {
+        var uriString = sharedPreferences.getString(
+            KEY_PREF_GLOBAL_SOURCE_LOC,
+            ""
+        )
+        val pref = findPreference(KEY_PREF_GLOBAL_SOURCE_LOC) as? PreferenceScreen
+        val dir = Uri.parse(uriString).lastPathSegment
+        if (dir != null) {
+            uriString = dir
+            pref?.summary = uriString
+        } else {
+            pref?.summary = sharedPreferences
+                .getString(KEY_PREF_GLOBAL_SOURCE_LOC, "")
+        }
+    }
+
+    private fun updateSummaryText(sharedPreferences: SharedPreferences, key: String) {
         try {
-            updateSummariesSetViaActivities(mSharedPreferences)
-            val text = mSharedPreferences.getString(key, "")
-            if (findPreference(key) != null) {
-                findPreference(key).summary = text
-            }
+            updateSummariesSetViaActivities(sharedPreferences)
+            val text = sharedPreferences.getString(key, "")
+            val pref = findPreference(key) as? PreferenceScreen
+            pref?.summary = text
         } catch (err: ClassCastException) {
             println("IGNORING SUMMARY UPDATE FOR $key")
         }
+    }
+
+    private companion object {
+        const val FILE_GET_REQUEST_CODE = 45
+        const val TAG_TASK_FRAGMENT = "tag_task_fragment"
     }
 }

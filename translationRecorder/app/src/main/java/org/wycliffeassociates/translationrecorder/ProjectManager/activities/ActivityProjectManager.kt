@@ -1,121 +1,124 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.activities;
+package org.wycliffeassociates.translationrecorder.ProjectManager.activities
 
-import android.app.AlertDialog;
-import android.app.FragmentManager;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-
-import com.door43.tools.reporting.Logger;
-
-import com.pixplicity.sharp.Sharp;
-import jdenticon.Jdenticon;
-import org.wycliffeassociates.translationrecorder.DocumentationActivity;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export;
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFragment;
-import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ProjectAdapter;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog;
-import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ExportSourceAudioTask;
-import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings;
-import org.wycliffeassociates.translationrecorder.SplashScreen;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity;
-import org.wycliffeassociates.translationrecorder.project.components.User;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-import org.wycliffeassociates.translationrecorder.utilities.TaskFragment;
-
-import java.io.*;
-import java.util.List;
+import android.app.AlertDialog
+import android.app.ProgressDialog
+import android.content.DialogInterface
+import android.content.Intent
+import android.media.MediaPlayer
+import android.media.MediaPlayer.OnCompletionListener
+import android.media.MediaPlayer.OnPreparedListener
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.ListAdapter
+import androidx.appcompat.app.AppCompatActivity
+import com.door43.tools.reporting.Logger
+import com.pixplicity.sharp.Sharp
+import dagger.hilt.android.AndroidEntryPoint
+import jdenticon.Jdenticon
+import org.wycliffeassociates.translationrecorder.DocumentationActivity
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export.ProgressUpdateCallback
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFragment
+import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ProjectAdapter
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ProjectAdapter.Companion.initializeProjectCard
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog.ExportDelegator
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog.InfoDialogCallback
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog.SourceAudioDelegator
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ExportSourceAudioTask
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SplashScreen
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.ActivityProjectManagementBinding
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.Project.Companion.getProjectFromPreferences
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
+import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
+import javax.inject.Inject
+import kotlin.concurrent.Volatile
 
 /**
  * Created by sarabiaj on 6/23/2016.
  */
-public class ActivityProjectManager extends AppCompatActivity implements ProjectInfoDialog.InfoDialogCallback,
-        ProjectInfoDialog.ExportDelegator, Export.ProgressUpdateCallback,
-        ProjectInfoDialog.SourceAudioDelegator, TaskFragment.OnTaskComplete {
+@AndroidEntryPoint
+class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDelegator,
+    ProgressUpdateCallback, SourceAudioDelegator, OnTaskComplete {
 
-    LinearLayout mProjectLayout;
-    Button mNewProjectButton;
-    ImageView mAddProject;
-    ListView mProjectList;
-    SharedPreferences pref;
-    ListAdapter mAdapter;
-    private int mNumProjects = 0;
-    private ProgressDialog mPd;
-    private volatile int mProgress = 0;
-    private volatile String mProgressTitle = null;
-    private volatile boolean mZipping = false;
-    private volatile boolean mExporting = false;
-    private ExportTaskFragment mExportTaskFragment;
-    private TaskFragment mTaskFragment;
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var prefs: IPreferenceRepository
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    public static final int SOURCE_AUDIO_TASK = Task.FIRST_TASK;
-    private static final int DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1;
-    public static final int EXPORT_TASK = Task.FIRST_TASK + 2;
+    private lateinit var binding: ActivityProjectManagementBinding
 
-    private final String TAG_EXPORT_TASK_FRAGMENT = "export_task_fragment";
-    private final String TAG_TASK_FRAGMENT = "task_fragment";
-    private final String STATE_EXPORTING = "was_exporting";
-    private final String STATE_ZIPPING = "was_zipping";
-    private final String STATE_RESYNC = "db_resync";
+    var mAdapter: ListAdapter? = null
+    private var mNumProjects = 0
+    private var mPd: ProgressDialog? = null
 
-    private final String STATE_PROGRESS = "upload_progress";
-    private final String STATE_PROGRESS_TITLE = "upload_progress_title";
-    public static final int PROJECT_WIZARD_REQUEST = RESULT_FIRST_USER;
-    public static final int SAVE_SOURCE_AUDIO_REQUEST = RESULT_FIRST_USER + 1;
-    private boolean mDbResyncing = false;
-    private File mSourceAudioFile;
-    private Project mProjectToExport;
-    private ProjectDatabaseHelper db;
-    private boolean isIdenticonPlaying = false;
+    @Volatile
+    private var mProgress = 0
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_project_management);
+    @Volatile
+    private var mProgressTitle: String? = null
 
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        db = ((TranslationRecorderApp)getApplication()).getDatabase();
+    @Volatile
+    private var mZipping = false
 
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.project_management_toolbar);
-        setSupportActionBar(mToolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-            initializeIdenticon();
+    @Volatile
+    private var mExporting = false
+    private var mExportTaskFragment: ExportTaskFragment? = null
+    private var mTaskFragment: TaskFragment? = null
+
+    private val TAG_EXPORT_TASK_FRAGMENT = "export_task_fragment"
+    private val TAG_TASK_FRAGMENT = "task_fragment"
+    private val STATE_EXPORTING = "was_exporting"
+    private val STATE_ZIPPING = "was_zipping"
+    private val STATE_RESYNC = "db_resync"
+
+    private val STATE_PROGRESS = "upload_progress"
+    private val STATE_PROGRESS_TITLE = "upload_progress_title"
+    private var mDbResyncing = false
+    private var mSourceAudioFile: File? = null
+    private var mProjectToExport: Project? = null
+    private var isIdenticonPlaying = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityProjectManagementBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.projectManagementToolbar)
+        if (supportActionBar != null) {
+            supportActionBar!!.setDisplayShowTitleEnabled(false)
+            initializeIdenticon()
         }
 
         if (savedInstanceState != null) {
-            mZipping = savedInstanceState.getBoolean(STATE_ZIPPING, false);
-            mExporting = savedInstanceState.getBoolean(STATE_EXPORTING, false);
-            mProgress = savedInstanceState.getInt(STATE_PROGRESS, 0);
-            mProgressTitle = savedInstanceState.getString(STATE_PROGRESS_TITLE, null);
-            mDbResyncing = savedInstanceState.getBoolean(STATE_RESYNC, false);
+            mZipping = savedInstanceState.getBoolean(STATE_ZIPPING, false)
+            mExporting = savedInstanceState.getBoolean(STATE_EXPORTING, false)
+            mProgress = savedInstanceState.getInt(STATE_PROGRESS, 0)
+            mProgressTitle = savedInstanceState.getString(STATE_PROGRESS_TITLE, null)
+            mDbResyncing = savedInstanceState.getBoolean(STATE_RESYNC, false)
         }
     }
 
@@ -123,475 +126,456 @@ public class ActivityProjectManager extends AppCompatActivity implements Project
     //This scenario occurs when the user begins to create a new project and backs out. Calling onResume()
     //twice will result in two background processes trying to sync the database, and only one reference
     //will be kept in the activity- thus leaking the reference to the first dialog causing in it never closing
-    @Override
-    protected void onStart() {
-        super.onStart();
+    override fun onStart() {
+        super.onStart()
         //Moved this section to onResume so that these dialogs pop up above the dialog info fragment
         //check if fragment was retained from a screen rotation
-        FragmentManager fm = getFragmentManager();
-        mExportTaskFragment = (ExportTaskFragment) fm.findFragmentByTag(TAG_EXPORT_TASK_FRAGMENT);
-        mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
-        //TODO: refactor export to fit the new taskfragment
+        val fm = supportFragmentManager
+        mExportTaskFragment = fm.findFragmentByTag(TAG_EXPORT_TASK_FRAGMENT) as ExportTaskFragment?
+        mTaskFragment = fm.findFragmentByTag(TAG_TASK_FRAGMENT) as TaskFragment?
+        //TODO: refactor export to fit the new task fragment
         if (mExportTaskFragment == null) {
-            mExportTaskFragment = new ExportTaskFragment();
-            fm.beginTransaction().add(mExportTaskFragment, TAG_EXPORT_TASK_FRAGMENT).commit();
-            fm.executePendingTransactions();
+            mExportTaskFragment = ExportTaskFragment()
+            fm.beginTransaction().add(mExportTaskFragment!!, TAG_EXPORT_TASK_FRAGMENT).commit()
+            fm.executePendingTransactions()
         } else {
             if (mZipping) {
-                zipProgress(mProgress, mProgressTitle);
+                zipProgress(mProgress, mProgressTitle)
             } else if (mExporting) {
-                exportProgress(mProgress, mProgressTitle);
+                exportProgress(mProgress, mProgressTitle)
             }
         }
         if (mTaskFragment == null) {
-            mTaskFragment = new TaskFragment();
-            fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
-            fm.executePendingTransactions();
+            mTaskFragment = TaskFragment()
+            fm.beginTransaction().add(mTaskFragment!!, TAG_TASK_FRAGMENT).commit()
+            fm.executePendingTransactions()
         }
-        //still need to track whether a db resync was issued so as to not issue them in the middle of another
+        //still need to track whether a db re-sync was issued so as to not issue them in the middle of another
         if (!mDbResyncing) {
-            mDbResyncing = true;
-            ProjectListResyncTask task = new ProjectListResyncTask(
-                    DATABASE_RESYNC_TASK,
-                    getFragmentManager(),
-                    db,
-                    new ChunkPluginLoader(this)
-            );
-            mTaskFragment.executeRunnable(
-                    task,
-                    getString(R.string.resyncing_database),
-                    getString(R.string.please_wait),
-                    true
-            );
+            mDbResyncing = true
+            val task = ProjectListResyncTask(
+                DATABASE_RESYNC_TASK,
+                supportFragmentManager,
+                db,
+                directoryProvider,
+                ChunkPluginLoader(directoryProvider, assetsProvider)
+            )
+            mTaskFragment?.executeRunnable(
+                task,
+                getString(R.string.resyncing_database),
+                getString(R.string.please_wait),
+                true
+            )
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
         if (mPd != null) {
-            savedInstanceState.putInt(STATE_PROGRESS, mPd.getProgress());
+            outState.putInt(STATE_PROGRESS, mPd!!.progress)
         }
-        savedInstanceState.putString(STATE_PROGRESS_TITLE, mProgressTitle);
-        savedInstanceState.putBoolean(STATE_EXPORTING, mExporting);
-        savedInstanceState.putBoolean(STATE_ZIPPING, mZipping);
-        savedInstanceState.putBoolean(STATE_RESYNC, mDbResyncing);
+        outState.putString(STATE_PROGRESS_TITLE, mProgressTitle)
+        outState.putBoolean(STATE_EXPORTING, mExporting)
+        outState.putBoolean(STATE_ZIPPING, mZipping)
+        outState.putBoolean(STATE_RESYNC, mDbResyncing)
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.project_management_menu, menu);
-        return true;
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.project_management_menu, menu)
+        return true
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.action_logout:
-                logout();
-                return true;
-            case R.id.action_settings:
-                Intent intent = new Intent(this, Settings.class);
-                startActivity(intent);
-                return true;
-            case R.id.action_help:
-                Intent help = new Intent(this, DocumentationActivity.class);
-                startActivity(help);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        when (item.itemId) {
+            R.id.action_logout -> {
+                logout()
+                return true
+            }
+            R.id.action_settings -> {
+                val intent = Intent(this, Settings::class.java)
+                startActivity(intent)
+                return true
+            }
+            R.id.action_help -> {
+                val help = Intent(this, DocumentationActivity::class.java)
+                startActivity(help)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    private void initializeViews() {
-        mProjectLayout = (LinearLayout) findViewById(R.id.project_list_layout);
-        mNewProjectButton = (Button) findViewById(R.id.new_project_button);
-        mAddProject = (ImageView) findViewById(R.id.new_project_fab);
-        mProjectList = (ListView) findViewById(R.id.project_list);
+    private fun initializeViews() {
+        binding.newProjectFab.setOnClickListener(btnClick)
+        binding.newProjectButton.setOnClickListener(btnClick)
 
-        mAddProject.setOnClickListener(btnClick);
-        mNewProjectButton.setOnClickListener(btnClick);
-
-        hideProjectsIfEmpty(mNumProjects);
+        hideProjectsIfEmpty(mNumProjects)
         if (mNumProjects > 0) {
-            Project recent = initializeRecentProject();
-            populateProjectList(recent);
+            val recent = initializeRecentProject()
+            populateProjectList(recent)
         }
     }
-
 
     //Returns the project that was initialized
-    public Project initializeRecentProject() {
-        Project project = null;
-        int projectId = pref.getInt(Settings.KEY_RECENT_PROJECT_ID, -1);
+    private fun initializeRecentProject(): Project? {
+        var project: Project? = null
+        val projectId = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
         if (projectId != -1) {
-            project = db.getProject(projectId);
-            Logger.w(this.toString(), "Recent Project: language " + project.getTargetLanguageSlug()
-                    + " book " + project.getBookSlug() + " version "
-                    + project.getVersionSlug() + " mode " + project.getModeSlug());
+            project = db.getProject(projectId)
+            Logger.w(
+                this.toString(), ("Recent Project: language " + project!!.targetLanguageSlug
+                        + " book " + project.bookSlug + " version "
+                        + project.versionSlug + " mode " + project.modeSlug)
+            )
         } else {
-            List<Project> projects = db.getAllProjects();
-            if (projects.size() > 0) {
-                project = projects.get(0);
+            val projects = db.allProjects
+            if (projects.isNotEmpty()) {
+                project = projects[0]
             }
         }
         if (project != null) {
-            ProjectAdapter.initializeProjectCard(this, project, db, findViewById(R.id.recent_project));
-            return project;
+            initializeProjectCard(this, project, db, prefs, binding.recentProject)
+            return project
         } else {
-            findViewById(R.id.recent_project).setVisibility(View.GONE);
-            return null;
+            findViewById<View>(R.id.recent_project).visibility = View.GONE
+            return null
         }
     }
 
-    public void initializeIdenticon() {
-        ImageView imageView = findViewById(R.id.identicon);
-        int userId = pref.getInt(Settings.KEY_PROFILE, -1);
-        final User user = db.getUser(userId);
-        String svg = Jdenticon.Companion.toSvg(user.getHash(), 512, 0f);
-        imageView.setBackground(Sharp.loadString(svg).getDrawable());
-        imageView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        imageView.setOnClickListener(identiconPlayerClick(user.getAudio().toString()));
+    private fun initializeIdenticon() {
+        val userId = prefs.getDefaultPref(Settings.KEY_PROFILE, -1)
+        val user = db.getUser(userId)
+        val svg = Jdenticon.toSvg(user.hash, 512, 0f)
+        binding.identicon?.background = Sharp.loadString(svg).drawable
+        binding.identicon?.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        binding.identicon?.setOnClickListener(identiconPlayerClick(user.audio.toString()))
     }
 
-    public void hideProjectsIfEmpty(int numProjects) {
+    fun hideProjectsIfEmpty(numProjects: Int) {
         if (numProjects > 0) {
-            mNewProjectButton.setVisibility(View.GONE);
+            binding.newProjectButton.visibility = View.GONE
         } else {
-            mProjectLayout.setVisibility(View.GONE);
-            mNewProjectButton.setVisibility(View.VISIBLE);
+            binding.projectListLayout.visibility = View.GONE
+            binding.newProjectButton.visibility = View.VISIBLE
         }
     }
 
-    private void removeProjectFromPreferences() {
-        pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, -1).commit();
+    private fun removeProjectFromPreferences() {
+        prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
     }
 
-    private void populateProjectList(Project recent) {
-        List<Project> projects = db.getAllProjects();
+    private fun populateProjectList(recent: Project?) {
+        val projects = db.allProjects
         if (recent != null) {
-            for (int i = 0; i < projects.size(); i++) {
-                if (recent.equals(projects.get(i))) {
-                    projects.remove(i);
-                    break;
+            for (i in projects.indices) {
+                if (recent == projects[i]) {
+                    projects as MutableList
+                    projects.removeAt(i)
+                    break
                 }
             }
         }
-        for (Project p : projects) {
-            String projectName = "language " + p.getTargetLanguageSlug()
-                    + " book " + p.getBookSlug()
-                    + " version " + p.getVersionSlug()
-                    + " mode " + p.getModeSlug();
-            Logger.w(this.toString(), "Project: " + projectName);
+        for (p in projects) {
+            val projectName = ("language " + p.targetLanguageSlug
+                    + " book " + p.bookSlug
+                    + " version " + p.versionSlug
+                    + " mode " + p.modeSlug)
+            Logger.w(
+                this.toString(),
+                "Project: $projectName"
+            )
         }
-        mAdapter = new ProjectAdapter(this, projects, db);
-        mProjectList.setAdapter(mAdapter);
+        mAdapter = ProjectAdapter(this, projects, db, prefs)
+        binding.projectList.adapter = mAdapter
     }
 
     //sets the profile in the preferences to "" then returns to the splash screen
-    private void logout() {
-        pref.edit().remove(Settings.KEY_PROFILE).commit();
-        finishAffinity();
-        Intent intent = new Intent(this, SplashScreen.class);
-        startActivity(intent);
+    private fun logout() {
+        prefs.setDefaultPref<Int>(Settings.KEY_PROFILE, null)
+        finishAffinity()
+        val intent = Intent(this, SplashScreen::class.java)
+        startActivity(intent)
     }
 
-    private void createNewProject() {
-        startActivityForResult(new Intent(getBaseContext(), ProjectWizardActivity.class), PROJECT_WIZARD_REQUEST);
+    private fun createNewProject() {
+        startActivityForResult(
+            Intent(baseContext, ProjectWizardActivity::class.java),
+            PROJECT_WIZARD_REQUEST
+        )
     }
 
-    private void loadProject(Project project) {
+    private fun loadProject(project: Project) {
         if (!db.projectExists(project)) {
-            Logger.e(this.toString(), "Project " + project + " does not exist");
+            Logger.e(
+                this.toString(),
+                "Project $project does not exist"
+            )
         }
-        int projectId = db.getProjectId(project);
-        pref.edit().putInt(Settings.KEY_RECENT_PROJECT_ID, projectId).commit();
+        val projectId = db.getProjectId(project)
+        prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, projectId)
     }
 
-    private boolean addProjectToDatabase(Project project) {
+    private fun addProjectToDatabase(project: Project): Boolean {
         if (db.projectExists(project)) {
-            ProjectWizardActivity.displayProjectExists(this);
-            return false;
+            ProjectWizardActivity.displayProjectExists(this)
+            return false
         } else {
-            db.addProject(project);
-            return true;
+            db.addProject(project)
+            return true
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case PROJECT_WIZARD_REQUEST: {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            PROJECT_WIZARD_REQUEST -> {
                 if (resultCode == RESULT_OK) {
-                    Project project = data.getParcelableExtra(Project.PROJECT_EXTRA);
-                    if (addProjectToDatabase(project)) {
-                        loadProject(project);
-                        finish();
+                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)
+                    if (addProjectToDatabase(project!!)) {
+                        loadProject(project)
+                        finish()
                         //TODO: should find place left off at?
-                        Intent intent = RecordingActivity.getNewRecordingIntent(
-                                this,
-                                project,
-                                ChunkPlugin.DEFAULT_CHAPTER,
-                                ChunkPlugin.DEFAULT_UNIT
-                        );
-                        startActivity(intent);
+                        val intent = RecordingActivity.getNewRecordingIntent(
+                            this,
+                            project,
+                            ChunkPlugin.DEFAULT_CHAPTER,
+                            ChunkPlugin.DEFAULT_UNIT
+                        )
+                        startActivity(intent)
                     } else {
-                        onResume();
+                        onResume()
                     }
                 } else {
-                    onResume();
+                    onResume()
                 }
-                break;
             }
-            case SAVE_SOURCE_AUDIO_REQUEST: {
+            SAVE_SOURCE_AUDIO_REQUEST -> {
                 if (resultCode == RESULT_OK) {
-                    Uri uri = data.getData();
-                    OutputStream fos = null;
-                    BufferedOutputStream bos = null;
-                    try {
-                        fos = getContentResolver().openOutputStream(uri, "w");
-                        bos = new BufferedOutputStream(fos);
-                        //sending output streams to the task to run in a thread means
-                        // they cannot be closed in a finally block here
-                        ExportSourceAudioTask task = new ExportSourceAudioTask(
-                                SOURCE_AUDIO_TASK,
-                                mProjectToExport,
-                                ProjectFileUtils.getProjectDirectory(mProjectToExport),
-                                getFilesDir(),
-                                bos
-                        );
-                        mTaskFragment.executeRunnable(
-                                task,
-                                getString(R.string.exporting_source_audio),
-                                getString(R.string.please_wait),
-                                false
-                        );
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            }
-            default:
-        }
-    }
-
-    private View.OnClickListener btnClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.new_project_button:
-                case R.id.new_project_fab:
-                    createNewProject();
-                    break;
-            }
-        }
-    };
-
-    private View.OnClickListener identiconPlayerClick(final String audioPath) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(!isIdenticonPlaying) {
-                    try {
-                        final MediaPlayer player = new MediaPlayer();
-                        player.setDataSource(audioPath);
-                        player.prepare();
-                        player.setOnPreparedListener(onIdenticonPlayerPrepared());
-                        player.setOnCompletionListener(onIdenticonPlayerCompleted());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-    }
-
-    private MediaPlayer.OnCompletionListener onIdenticonPlayerCompleted() {
-        return new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mp.release();
-                isIdenticonPlaying = false;
-            }
-        };
-    }
-
-    private MediaPlayer.OnPreparedListener onIdenticonPlayerPrepared() {
-        return new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                isIdenticonPlaying = true;
-                mp.start();
-            }
-        };
-    }
-
-    @Override
-    public void onDelete(final Project project) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder
-                .setTitle(getString(R.string.delete_project))
-                .setMessage(getString(R.string.confirm_delete_project_alt))
-                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == dialog.BUTTON_POSITIVE) {
-                            String projectName = "language " + project.getTargetLanguageSlug()
-                                    + " book " + project.getBookSlug() + " version "
-                                    + project.getVersionSlug() + " mode " + project.getModeSlug();
-                            Logger.w(this.toString(), "Delete Project: " + projectName);
-                            if (project.equals(Project.getProjectFromPreferences(ActivityProjectManager.this, db))) {
-                                removeProjectFromPreferences();
+                    val uri = data?.data
+                    uri?.let {
+                        contentResolver.openOutputStream(it, "w").use { fos ->
+                            BufferedOutputStream(fos).use { bos ->
+                                try {
+                                    //sending output streams to the task to run in a thread means
+                                    // they cannot be closed in a finally block here
+                                    mProjectToExport?.let { project ->
+                                        val task = ExportSourceAudioTask(
+                                            SOURCE_AUDIO_TASK,
+                                            project,
+                                            ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                                            filesDir,
+                                            bos
+                                        )
+                                        mTaskFragment!!.executeRunnable(
+                                            task,
+                                            getString(R.string.exporting_source_audio),
+                                            getString(R.string.please_wait),
+                                            false
+                                        )
+                                    }
+                                } catch (e: FileNotFoundException) {
+                                    e.printStackTrace()
+                                }
                             }
-                            ProjectFileUtils.deleteProject(project, db);
-                            hideProjectsIfEmpty(mAdapter.getCount());
-                            mNumProjects--;
-                            initializeViews();
                         }
                     }
-                })
-                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
+                }
+            }
+            else -> {}
+        }
+    }
+
+    private val btnClick = View.OnClickListener { v ->
+        when (v.id) {
+            R.id.new_project_button, R.id.new_project_fab -> createNewProject()
+        }
+    }
+
+    private fun identiconPlayerClick(audioPath: String): View.OnClickListener {
+        return View.OnClickListener {
+            if (!isIdenticonPlaying) {
+                try {
+                    val player = MediaPlayer()
+                    player.setDataSource(audioPath)
+                    player.prepare()
+                    player.setOnPreparedListener(onIdenticonPlayerPrepared())
+                    player.setOnCompletionListener(onIdenticonPlayerCompleted())
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun onIdenticonPlayerCompleted(): OnCompletionListener {
+        return OnCompletionListener { mp ->
+            mp.release()
+            isIdenticonPlaying = false
+        }
+    }
+
+    private fun onIdenticonPlayerPrepared(): OnPreparedListener {
+        return OnPreparedListener { mp ->
+            isIdenticonPlaying = true
+            mp.start()
+        }
+    }
+
+    override fun onDelete(project: Project) {
+        val builder = AlertDialog.Builder(this)
+        builder
+            .setTitle(getString(R.string.delete_project))
+            .setMessage(getString(R.string.confirm_delete_project_alt))
+            .setPositiveButton(getString(R.string.yes), object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    if (which == DialogInterface.BUTTON_POSITIVE) {
+                        val projectName = ("language " + project.targetLanguageSlug
+                                + " book " + project.bookSlug + " version "
+                                + project.versionSlug + " mode " + project.modeSlug)
+                        Logger.w(
+                            this.toString(),
+                            "Delete Project: $projectName"
+                        )
+                        if (project == getProjectFromPreferences(db, prefs)) {
+                            removeProjectFromPreferences()
+                        }
+                        ProjectFileUtils.deleteProject(project, directoryProvider, db)
+                        hideProjectsIfEmpty(mAdapter!!.count)
+                        mNumProjects--
+                        initializeViews()
                     }
-                });
+                }
+            })
+            .setNegativeButton(
+                getString(R.string.no)
+            ) { dialog, _ -> dialog.dismiss() }
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        val dialog = builder.create()
+        dialog.show()
     }
 
-    public void exportProgress(int progress, String title) {
-        mPd = new ProgressDialog(this);
-        mPd.setTitle(title != null ? title : getString(R.string.uploading));
-        mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mPd.setProgress(progress);
-        mPd.setCancelable(false);
-        mPd.show();
+    fun exportProgress(progress: Int, title: String?) {
+        mPd = ProgressDialog(this)
+        mPd!!.setTitle(title ?: getString(R.string.uploading))
+        mPd!!.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+        mPd!!.progress = progress
+        mPd!!.setCancelable(false)
+        mPd!!.show()
     }
 
-    public void zipProgress(int progress, String title) {
-        mPd = new ProgressDialog(this);
-        mPd.setTitle(title != null ? title : getString(R.string.packaging_files));
-        mPd.setMessage(getString(R.string.please_wait));
-        mPd.setProgress(progress);
-        mPd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mPd.setCancelable(false);
-        mPd.show();
-    }
-
-    public void dismissProgress() {
-        if(mPd != null) {
-            mPd.dismiss();
+    fun zipProgress(progress: Int, title: String?) {
+        mPd = ProgressDialog(this).apply {
+            setTitle(title ?: getString(R.string.packaging_files))
+            setMessage(getString(R.string.please_wait))
+            this.progress = progress
+            setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+            setCancelable(false)
+            show()
         }
     }
 
-    public void incrementProgress(int progress) {
-        if(mPd != null) {
-            mPd.incrementProgressBy(progress);
-        }
+    override fun dismissProgress() {
+        mPd?.dismiss()
     }
 
-    public void setUploadProgress(int progress) {
-        if(mPd != null) {
-            mPd.setProgress(progress);
-        }
+    override fun incrementProgress(progress: Int) {
+        mPd?.incrementProgressBy(progress)
     }
 
-    public void showProgress(boolean mode) {
-        if (mode == true) {
-            zipProgress(0, mProgressTitle);
+    override fun setUploadProgress(progress: Int) {
+        mPd?.progress = progress
+    }
+
+    override fun showProgress(mode: Boolean) {
+        if (mode) {
+            zipProgress(0, mProgressTitle)
         } else {
-            exportProgress(0, mProgressTitle);
+            exportProgress(0, mProgressTitle)
         }
     }
 
-    @Override
-    public void setZipping(boolean zipping) {
-        mZipping = zipping;
+    override fun setZipping(zipping: Boolean) {
+        mZipping = zipping
     }
 
-    @Override
-    public void setExporting(boolean exporting) {
-        mExporting = exporting;
+    override fun setExporting(exporting: Boolean) {
+        mExporting = exporting
     }
 
-    @Override
-    public void setCurrentFile(String currentFile) {
-        if(mPd != null) {
-            mPd.setMessage(currentFile);
+    override fun setCurrentFile(currentFile: String?) {
+        mPd?.setMessage(currentFile)
+    }
+
+    override fun setProgressTitle(title: String?) {
+        mProgressTitle = title
+        mPd?.setTitle(mProgressTitle)
+    }
+
+    public override fun onPause() {
+        super.onPause()
+        dismissExportProgressDialog()
+    }
+
+    private fun dismissExportProgressDialog() {
+        if (mPd != null && mPd!!.isShowing) {
+            mPd?.dismiss()
+            mPd = null
         }
     }
 
-    @Override
-    public void setProgressTitle(String title) {
-        mProgressTitle = title;
-        if (mPd != null) {
-            mPd.setTitle(mProgressTitle);
-        }
+    override fun delegateExport(exp: Export) {
+        exp.setFragmentContext(mExportTaskFragment!!)
+        mExportTaskFragment!!.delegateExport(exp)
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        dismissExportProgressDialog();
+    override fun delegateSourceAudio(project: Project) {
+        mProjectToExport = project
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.setType("*/*")
+        val trName = (project.targetLanguageSlug + "_"
+                + project.versionSlug + "_"
+                + project.bookSlug + "_"
+                + project.modeSlug
+                + ".tr")
+        mSourceAudioFile = File(filesDir, trName)
+        intent.putExtra(Intent.EXTRA_TITLE, mSourceAudioFile!!.name)
+        startActivityForResult(intent, SAVE_SOURCE_AUDIO_REQUEST)
     }
 
-    private void dismissExportProgressDialog() {
-        if (mPd != null && mPd.isShowing()) {
-            mPd.dismiss();
-            mPd = null;
-        }
-    }
-
-    @Override
-    public void delegateExport(Export exp) {
-        exp.setFragmentContext(mExportTaskFragment);
-        mExportTaskFragment.delegateExport(exp);
-    }
-
-    @Override
-    public void delegateSourceAudio(Project project) {
-        mProjectToExport = project;
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        String trName = project.getTargetLanguageSlug() + "_"
-                + project.getVersionSlug() + "_"
-                + project.getBookSlug() + "_"
-                + project.getModeSlug()
-                + ".tr";
-        mSourceAudioFile = new File(getFilesDir(), trName);
-        intent.putExtra(Intent.EXTRA_TITLE, mSourceAudioFile.getName());
-        startActivityForResult(intent, SAVE_SOURCE_AUDIO_REQUEST);
-    }
-
-    @Override
-    public void onTaskComplete(int taskTag, int resultCode) {
+    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
         if (resultCode == TaskFragment.STATUS_OK) {
             if (taskTag == DATABASE_RESYNC_TASK) {
-                mNumProjects = db.getNumProjects();
-                mDbResyncing = false;
-                initializeViews();
-            } else if(taskTag == SOURCE_AUDIO_TASK) {
-                FeedbackDialog fd = FeedbackDialog.newInstance(
-                        getString(R.string.source_audio),
-                        getString(R.string.source_generation_complete)
-                );
-                fd.show(getFragmentManager(), "SOURCE_AUDIO");
+                mNumProjects = db.numProjects
+                mDbResyncing = false
+                initializeViews()
+            } else if (taskTag == SOURCE_AUDIO_TASK) {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.source_audio),
+                    getString(R.string.source_generation_complete)
+                )
+                fd.show(supportFragmentManager, "SOURCE_AUDIO")
             }
-        } else if(resultCode == TaskFragment.STATUS_ERROR) {
-            if(taskTag == SOURCE_AUDIO_TASK) {
-                FeedbackDialog fd = FeedbackDialog.newInstance(
-                        getString(R.string.source_audio),
-                        getString(R.string.source_generation_failed)
+        } else if (resultCode == TaskFragment.STATUS_ERROR) {
+            if (taskTag == SOURCE_AUDIO_TASK) {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.source_audio),
+                    getString(R.string.source_generation_failed)
 
-                );
-                fd.show(getFragmentManager(), "SOURCE_AUDIO");
+                )
+                fd.show(supportFragmentManager, "SOURCE_AUDIO")
             }
         }
+    }
+
+    companion object {
+        val SOURCE_AUDIO_TASK: Int = Task.FIRST_TASK
+        private val DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1
+        val EXPORT_TASK: Int = Task.FIRST_TASK + 2
+
+        const val PROJECT_WIZARD_REQUEST: Int = RESULT_FIRST_USER
+        const val SAVE_SOURCE_AUDIO_REQUEST: Int = RESULT_FIRST_USER + 1
     }
 }

@@ -1,202 +1,207 @@
-package org.wycliffeassociates.translationrecorder.Playback;
+package org.wycliffeassociates.translationrecorder.Playback
 
-import android.content.Context;
-import android.media.AudioTrack;
-import android.os.Handler;
-import android.os.Looper;
-
-import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioStateCallback;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaControlReceiver;
-import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer;
-import org.wycliffeassociates.translationrecorder.WavFileLoader;
-import org.wycliffeassociates.translationrecorder.wav.WavCue;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-
-import java.io.IOException;
-import java.nio.ShortBuffer;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import android.content.Context
+import android.media.AudioTrack
+import android.os.Handler
+import android.os.Looper
+import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioStateCallback
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaControlReceiver
+import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer
+import org.wycliffeassociates.translationrecorder.WavFileLoader
+import org.wycliffeassociates.translationrecorder.wav.WavCue
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import java.io.IOException
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by sarabiaj on 10/27/2016.
  */
+class AudioVisualController(
+    audioTrack: AudioTrack,
+    trackBufferSize: Int,
+    wav: WavFile,
+    ctx: Context,
+    private var mCallback: AudioStateCallback,
+) : MediaControlReceiver {
 
-public class AudioVisualController implements MediaControlReceiver {
+    private lateinit var mPlayer: WavPlayer
+    lateinit var wavLoader: WavFileLoader
 
-    WavPlayer mPlayer;
-    CutOp mCutOp = new CutOp();
+    var cutOp: CutOp = CutOp()
+    private val mHandler: Handler
+    private val mCues: MutableList<WavCue> = arrayListOf()
 
-    AudioStateCallback mCallback;
-
-    Handler mHandler;
-    private List<WavCue> mCues;
-    private int durationInFrames;
-    WavFileLoader mWavLoader;
-
-    public AudioVisualController(final AudioTrack audioTrack, final int trackBufferSize, final AudioStateCallback callback, final WavFile wav, Context ctx) throws IOException {
-        mCallback = callback;
-        initPlayer(audioTrack, trackBufferSize, wav, ctx);
-        mHandler = new Handler(Looper.getMainLooper());
-        mPlayer.setOnCompleteListener(new WavPlayer.OnCompleteListener() {
-            @Override
-            public void onComplete() {
-                mCallback.onPlayerPaused();
-            }
-        });
-    }
-
-    public void setCueList(List<WavCue> cueList) {
-        mCues = cueList;
-        mPlayer.setCueList(cueList);
-    }
-
-    private void initPlayer(final AudioTrack audioTrack, final int trackBufferSize, WavFile wav, Context ctx) throws IOException {
-        mWavLoader = new WavFileLoader(wav, ctx);
-        mWavLoader.setOnVisualizationFileCreatedListener(new WavFileLoader.OnVisualizationFileCreatedListener() {
-            @Override
-            public void onVisualizationCreated(ShortBuffer mappedVisualizationFile) {
-                mCallback.onVisualizationLoaded(mappedVisualizationFile);
-            }
-        });
-        mCues = wav.getMetadata().getCuePoints();
-        if (mCues != null) {
-            sortCues(mCues);
-        }
-        mPlayer = new WavPlayer(audioTrack, trackBufferSize, mWavLoader.mapAndGetAudioBuffer(), mCutOp, mCues);
-    }
-
-    private void sortCues(List<WavCue> cues) {
-        Collections.sort(cues, new Comparator<WavCue>() {
-            @Override
-            public int compare(WavCue lhs, WavCue rhs) {
-                return Integer.compare(lhs.getLocation(), rhs.getLocation());
-            }
-        });
-    }
-
-    public void play() throws IllegalStateException {
-        mPlayer.play();
-    }
-
-    public void pause() {
-        mPlayer.pause();
-    }
-
-    public void seekNext() throws IllegalStateException {
-        mPlayer.seekNext();
-    }
-
-    public void seekPrevious() throws IllegalStateException {
-        mPlayer.seekPrevious();
-    }
-
-    public void seekTo(int frame) {
-        mPlayer.seekToAbsolute(frame);
-    }
-
-    @Override
-    public int getAbsoluteLocationMs() throws IllegalStateException {
-        return mPlayer.getAbsoluteLocationMs();
-    }
-
-    public int getAbsoluteLocationInFrames() throws IllegalStateException {
-        return mPlayer.getAbsoluteLocationInFrames();
-    }
-
-    public int getRelativeLocationMs() throws IllegalStateException {
-        return mPlayer.getRelativeLocationMs();
-    }
-
-    public int getRelativeLocationInFrames() throws IllegalStateException {
-        return mPlayer.getRelativeLocationInFrames();
-    }
-
-    @Override
-    public int getRelativeDurationMs() throws IllegalStateException {
-        return mPlayer.getRelativeDurationMs();
-    }
-
-    public int getAbsoluteDurationInFrames() throws IllegalStateException {
-        return mPlayer.getAbsoluteDurationInFrames();
-    }
-
-    public int getRelativeDurationInFrames() throws IllegalStateException {
-        return mPlayer.getRelativeDurationInFrames();
-    }
-
-    public boolean isPlaying() {
-        return mPlayer.isPlaying();
-    }
-
-    public void cut() {
-        mCutOp.cut(mPlayer.getLoopStart(), mPlayer.getLoopEnd());
-        mPlayer.clearLoopPoints();
-    }
-
-    public CutOp getCutOp() {
-        return mCutOp;
-    }
-
-    public void dropStartMarker() throws IllegalStateException {
-        mPlayer.setLoopStart(mPlayer.getAbsoluteLocationInFrames());
-    }
-
-    public void dropEndMarker() throws IllegalStateException {
-        mPlayer.setLoopEnd(mPlayer.getAbsoluteLocationInFrames());
-    }
-
-    public void dropVerseMarker(String label, int location) {
-        mCues.add(new WavCue(label, location));
-    }
-
-    public void clearLoopPoints() {
-        System.out.println("cues " + mCues.size());
-        mPlayer.clearLoopPoints();
-        System.out.println("cues " + mCues.size());
-    }
-
-    public void undo() {
-        if (mCutOp.hasCut()) {
-            mCutOp.undo();
+    init {
+        initPlayer(audioTrack, trackBufferSize, wav, ctx)
+        mHandler = Handler(Looper.getMainLooper())
+        mPlayer.setOnCompleteListener {
+            mCallback.onPlayerPaused()
         }
     }
 
-    public int getLoopStart() {
-        return mPlayer.getLoopStart();
+    fun setCueList(cueList: List<WavCue>) {
+        mCues.clear()
+        mCues.addAll(cueList)
+        mPlayer.setCueList(cueList)
     }
 
-    public int getLoopEnd() {
-        return mPlayer.getLoopEnd();
+    @Throws(IOException::class)
+    private fun initPlayer(
+        audioTrack: AudioTrack,
+        trackBufferSize: Int,
+        wav: WavFile,
+        ctx: Context
+    ) {
+        wavLoader = WavFileLoader(wav, ctx).apply {
+            setOnVisualizationFileCreatedListener { mappedVisualizationFile ->
+                mCallback.onVisualizationLoaded(
+                    mappedVisualizationFile
+                )
+            }
+        }
+        mCues.clear()
+        mCues.addAll(wav.metadata.cuePoints)
+        mCues.sortBy { it.location }
+
+        mPlayer = WavPlayer(
+            audioTrack,
+            trackBufferSize,
+            wavLoader.mapAndGetAudioBuffer(),
+            cutOp,
+            mCues
+        )
     }
 
-    public void scrollAudio(float distX) throws IllegalStateException {
-        int seekTo = Math.max(Math.min((int) ((distX * 230) + mPlayer.getAbsoluteLocationInFrames()), mPlayer.getAbsoluteDurationInFrames()), 0);
+    @Throws(IllegalStateException::class)
+    override fun play() {
+        mPlayer.play()
+    }
+
+    override fun pause() {
+        mPlayer.pause()
+    }
+
+    @Throws(IllegalStateException::class)
+    override fun seekNext() {
+        mPlayer.seekNext()
+    }
+
+    @Throws(IllegalStateException::class)
+    override fun seekPrevious() {
+        mPlayer.seekPrevious()
+    }
+
+    fun seekTo(frame: Int) {
+        mPlayer.seekToAbsolute(frame)
+    }
+
+    @Throws(IllegalStateException::class)
+    override fun getAbsoluteLocationMs(): Int {
+        return mPlayer.absoluteLocationMs
+    }
+
+    @get:Throws(IllegalStateException::class)
+    val absoluteLocationInFrames: Int
+        get() = mPlayer.absoluteLocationInFrames
+
+    @get:Throws(IllegalStateException::class)
+    val relativeLocationMs: Int
+        get() = mPlayer.relativeLocationMs
+
+    @get:Throws(IllegalStateException::class)
+    val relativeLocationInFrames: Int
+        get() = mPlayer.relativeLocationInFrames
+
+    @Throws(IllegalStateException::class)
+    override fun getRelativeDurationMs(): Int {
+        return mPlayer.relativeDurationMs
+    }
+
+    @get:Throws(IllegalStateException::class)
+    val absoluteDurationInFrames: Int
+        get() = mPlayer.absoluteDurationInFrames
+
+    @get:Throws(IllegalStateException::class)
+    val relativeDurationInFrames: Int
+        get() = mPlayer.relativeDurationInFrames
+
+    val isPlaying: Boolean
+        get() = mPlayer.isPlaying
+
+    fun cut() {
+        cutOp.cut(mPlayer.loopStart, mPlayer.loopEnd)
+        mPlayer.clearLoopPoints()
+    }
+
+    @Throws(IllegalStateException::class)
+    fun dropStartMarker() {
+        mPlayer.loopStart = mPlayer.absoluteLocationInFrames
+    }
+
+    @Throws(IllegalStateException::class)
+    fun dropEndMarker() {
+        mPlayer.loopEnd = mPlayer.absoluteLocationInFrames
+    }
+
+    fun dropVerseMarker(label: String?, location: Int) {
+        mCues.add(WavCue(label, location))
+    }
+
+    fun clearLoopPoints() {
+        println("cues " + mCues.size)
+        mPlayer.clearLoopPoints()
+        println("cues " + mCues.size)
+    }
+
+    fun undo() {
+        if (cutOp.hasCut()) {
+            cutOp.undo()
+        }
+    }
+
+    val loopStart: Int
+        get() = mPlayer.loopStart
+
+    val loopEnd: Int
+        get() = mPlayer.loopEnd
+
+    @Throws(IllegalStateException::class)
+    fun scrollAudio(distX: Float) {
+        var seekTo = max(
+            min(
+                ((distX * 230) + mPlayer.absoluteLocationInFrames).toInt().toDouble(),
+                mPlayer.absoluteDurationInFrames.toDouble()
+            ), 0.0
+        ).toInt()
         if (distX > 0) {
-            int skip = mCutOp.skip(seekTo);
+            val skip = cutOp.skip(seekTo)
             if (skip != -1) {
-                seekTo = skip + 1;
+                seekTo = skip + 1
             }
         } else {
-            int skip = mCutOp.skipReverse(seekTo);
-            if (skip != Integer.MAX_VALUE) {
-                seekTo = skip - 1;
+            val skip = cutOp.skipReverse(seekTo)
+            if (skip != Int.MAX_VALUE) {
+                seekTo = skip - 1
             }
         }
-        mPlayer.seekToAbsolute(seekTo);
-        mCallback.onLocationUpdated();
+        mPlayer.seekToAbsolute(seekTo)
+        mCallback.onLocationUpdated()
     }
 
-    public void setStartMarker(int relativeLocation) throws IllegalStateException {
-        mPlayer.setLoopStart(Math.max(mCutOp.relativeLocToAbsolute(relativeLocation, false), 0));
+    @Throws(IllegalStateException::class)
+    fun setStartMarker(relativeLocation: Int) {
+        mPlayer.loopStart = max(
+            cutOp.relativeLocToAbsolute(relativeLocation, false).toDouble(), 0.0
+        ).toInt()
     }
 
-    public void setEndMarker(int relativeLocation) throws IllegalStateException {
-        mPlayer.setLoopEnd(Math.min(mCutOp.relativeLocToAbsolute(relativeLocation, false), mPlayer.getAbsoluteDurationInFrames()));
-    }
-
-    public WavFileLoader getWavLoader() {
-        return mWavLoader;
+    @Throws(IllegalStateException::class)
+    fun setEndMarker(relativeLocation: Int) {
+        mPlayer.loopEnd = min(
+            cutOp.relativeLocToAbsolute(relativeLocation, false).toDouble(),
+            mPlayer.absoluteDurationInFrames.toDouble()
+        ).toInt()
     }
 }

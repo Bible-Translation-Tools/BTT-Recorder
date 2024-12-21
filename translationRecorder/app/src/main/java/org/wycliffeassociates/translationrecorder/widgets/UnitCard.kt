@@ -1,607 +1,523 @@
-package org.wycliffeassociates.translationrecorder.widgets;
+package org.wycliffeassociates.translationrecorder.widgets
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import androidx.appcompat.app.AlertDialog;
-import android.view.View;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity;
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.RatingDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-
-import java.io.File;
-import java.lang.ref.SoftReference;
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.view.View
+import androidx.appcompat.app.AlertDialog
+import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
+import org.wycliffeassociates.translationrecorder.project.TakeInfo
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import java.io.File
+import java.lang.ref.SoftReference
+import java.text.Format
+import java.text.SimpleDateFormat
+import java.util.Date
+import kotlin.math.max
 
 /**
  * Created by leongv on 7/28/2016.
  */
-public class UnitCard {
-
-    public interface DatabaseAccessor {
-        void updateSelectedTake(TakeInfo takeInfo);
-        int selectedTakeNumber(TakeInfo takeInfo);
-        int takeCount(Project project, int chapter, int firstVerse);
-        void deleteTake(TakeInfo takeInfo);
-        void removeSelectedTake(TakeInfo takeInfo);
-        void selectTake(TakeInfo takeInfo);
-        int takeRating(TakeInfo takeInfo);
+class UnitCard(
+    private val databaseAccessor: DatabaseAccessor,
+    private val project: Project,
+    val title: String,
+    private val chapter: Int,
+    val startVerse: Int,
+    private val endVerse: Int,
+    private val onTakeActionListener: OnTakeActionListener,
+    private val directoryProvider: IDirectoryProvider
+) {
+    interface DatabaseAccessor {
+        fun updateSelectedTake(takeInfo: TakeInfo)
+        fun selectedTakeNumber(takeInfo: TakeInfo): Int
+        fun takeCount(project: Project, chapter: Int, firstVerse: Int): Int
+        fun deleteTake(takeInfo: TakeInfo)
+        fun removeSelectedTake(takeInfo: TakeInfo)
+        fun selectTake(takeInfo: TakeInfo)
+        fun takeRating(takeInfo: TakeInfo): Int
     }
 
-    public interface OnTakeDeleteListener {
-        void onTakeDeleted();
+    interface OnTakeActionListener {
+        fun onTakeDeleted()
+        fun onRated(name: String, currentTakeRating: Int)
     }
 
-    public static int NO_TAKES = -1;
-    public static int MIN_TAKE_THRESHOLD = 2;
-
-    public interface OnClickListener extends View.OnClickListener {
-        void onClick(View v, UnitCardAdapter.ViewHolder vh, List<Integer> expandedCards, int position);
+    interface OnClickListener : View.OnClickListener {
+        fun onClick(
+            v: View,
+            vh: UnitCardAdapter.ViewHolder,
+            expandedCards: List<Int>,
+            position: Int
+        )
     }
 
     // Constants
     //public static boolean RATING_MODE = true;
     //public static boolean CHECKING_MODE = false;
-
     // State
-    private boolean mIsExpanded = false;
-    private int mTakeIndex = 0;
-    private boolean mIsEmpty = true;
-    private int mCurrentTakeRating;
+    var isExpanded = false
+        private set
+    private var takeIndex = 0
+    var isEmpty = true
+        private set
+    private var currentTakeRating = 0
 
     // Attributes
-    private UnitCardAdapter.ViewHolder mViewHolder;
-    private String mTitle;
-    private final Project mProject;
-    private final int mChapter;
-    private final int mFirstVerse;
-    private final int mEndVerse;
-    private int mTakeCount;
-    private SoftReference<List<File>> mTakeList;
-    private SoftReference<AudioPlayer> mAudioPlayer;
-    private OnTakeDeleteListener onTakeDeleteListener;
-    private final DatabaseAccessor databaseAccessor;
+    private lateinit var viewHolder: UnitCardAdapter.ViewHolder
+    var takeCount = 0
+        private set
 
     // Constructors
-    public UnitCard(
-            DatabaseAccessor db,
-            Project project,
-            String title,
-            int chapter,
-            int firstVerse,
-            int endVerse,
-            OnTakeDeleteListener listener
-    ) {
-        mTitle = title;
-        mFirstVerse = firstVerse;
-        mEndVerse = endVerse;
-        mChapter = chapter;
-        mProject = project;
-        onTakeDeleteListener = listener;
-        databaseAccessor = db;
-        refreshTakeCount();
+    init {
+        refreshTakeCount()
     }
 
-    // Setters
-    public void setTitle(String title) {
-        mTitle = title;
-    }
-
-    public void setViewHolder(UnitCardAdapter.ViewHolder vh) {
-        mViewHolder = vh;
-    }
-
-    // Getters
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public int getTakeCount() {
-        return mTakeCount;
-    }
-
-    public int getStartVerse() {
-        return mFirstVerse;
-    }
-
-    public boolean isExpanded() {
-        return mIsExpanded;
-    }
-
-    public boolean isEmpty() {
-        return mIsEmpty;
+    fun setViewHolder(vh: UnitCardAdapter.ViewHolder) {
+        viewHolder = vh
     }
 
     // Private Methods
-    private AudioPlayer initializeAudioPlayer() {
-        AudioPlayer ap = new AudioPlayer();
-        if (mViewHolder != null) {
-            ap.refreshView(
-                    mViewHolder.elapsed,
-                    mViewHolder.duration,
-                    mViewHolder.takePlayPauseBtn,
-                    mViewHolder.seekBar
-            );
-        }
-        mAudioPlayer = new SoftReference<AudioPlayer>(ap);
-        return ap;
+    private fun initializeAudioPlayer(): AudioPlayer {
+        val ap = AudioPlayer()
+        ap.refreshView(
+            viewHolder.binding.timeElapsed,
+            viewHolder.binding.timeDuration,
+            viewHolder.binding.playTakeBtn,
+            viewHolder.binding.seekBar
+        )
+        _audioPlayer = SoftReference(ap)
+        return ap
     }
 
-    private AudioPlayer getAudioPlayer() {
-        AudioPlayer ap = null;
-        if (mAudioPlayer != null) {
-            ap = mAudioPlayer.get();
+    private var _audioPlayer: SoftReference<AudioPlayer>? = null
+    private val audioPlayer: AudioPlayer
+        get() {
+            var ap: AudioPlayer? = _audioPlayer?.get()
+            if (ap == null) {
+                ap = initializeAudioPlayer()
+            }
+            return ap
         }
-        if (ap == null) {
-            ap = initializeAudioPlayer();
-        }
-        return ap;
-    }
 
-    private void refreshAudioPlayer() {
-        AudioPlayer ap = getAudioPlayer();
-        if (!ap.isLoaded()) {
-            ap.reset();
-            List<File> takes = getTakeList();
-            if (mTakeIndex < takes.size()) {
-                ap.loadFile(getTakeList().get(mTakeIndex));
+    private fun refreshAudioPlayer() {
+        val ap: AudioPlayer = audioPlayer
+        if (!ap.isLoaded) {
+            ap.reset()
+            val takes: List<File> = takeList
+            if (takeIndex < takes.size) {
+                ap.loadFile(takeList[takeIndex])
             }
         }
         ap.refreshView(
-                mViewHolder.elapsed,
-                mViewHolder.duration,
-                mViewHolder.takePlayPauseBtn,
-                mViewHolder.seekBar
-        );
+            viewHolder.binding.timeElapsed,
+            viewHolder.binding.timeDuration,
+            viewHolder.binding.playTakeBtn,
+            viewHolder.binding.seekBar
+        )
     }
 
-    private List<File> getTakeList() {
-        List<File> takes = null;
-        if (mTakeList != null) {
-            takes = mTakeList.get();
+    private var _takeList: SoftReference<MutableList<File>>? = null
+    private val takeList: MutableList<File>
+        get() {
+            var takes: MutableList<File>? = _takeList?.get()
+            if (takes == null) {
+                takes = populateTakeList()
+            }
+            return takes
         }
-        if (takes == null) {
-            takes = populateTakeList();
-        }
-        return takes;
-    }
 
-    private List<File> populateTakeList() {
-        File root = ProjectFileUtils.getProjectDirectory(mProject);
-        String chap = ProjectFileUtils.chapterIntToString(mProject, mChapter);
-        File folder = new File(root, chap);
-        File[] files = folder.listFiles();
-        ProjectPatternMatcher ppm;
-        int first = mFirstVerse;
-        int end = mEndVerse;
+    private fun populateTakeList(): MutableList<File> {
+        val root: File = ProjectFileUtils.getProjectDirectory(project, directoryProvider)
+        val chap: String = ProjectFileUtils.chapterIntToString(project, chapter)
+        val folder = File(root, chap)
+        val files: Array<File>? = folder.listFiles()
+        var ppm: ProjectPatternMatcher
+        val first: Int = startVerse
+        val end: Int = endVerse
         //Get only the files of the appropriate unit
-        List<File> resultFiles = new ArrayList<>();
+        val resultFiles: MutableList<File> = ArrayList()
         if (files != null) {
-            for (File file : files) {
-                ppm = mProject.getPatternMatcher();
-                ppm.match(file);
-                if(ppm.matched()) {
-                    TakeInfo ti = ppm.getTakeInfo();
-                    if (ti != null && ti.getStartVerse() == first && ti.getEndVerse() == end) {
-                        resultFiles.add(file);
+            for (file: File in files) {
+                ppm = project.patternMatcher
+                ppm.match(file)
+                if (ppm.matched()) {
+                    val ti: TakeInfo? = ppm.takeInfo
+                    if (ti != null && ti.startVerse == first && ti.endVerse == end) {
+                        resultFiles.add(file)
                     }
                 }
             }
         }
-        Collections.sort(resultFiles, new Comparator<File>() {
-            @Override
-            public int compare(File f, File s) {
-                ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                ProjectPatternMatcher ppm2 = mProject.getPatternMatcher();
-                ppm.match(f);
-                TakeInfo takeInfo = ppm.getTakeInfo();
-                ppm2.match(s);
-                TakeInfo takeInfo2 = ppm2.getTakeInfo();
+        resultFiles.sortWith { f, s ->
+            val ppm: ProjectPatternMatcher = project.patternMatcher
+            val ppm2: ProjectPatternMatcher = project.patternMatcher
+            ppm.match(f)
+            val takeInfo: TakeInfo = ppm.takeInfo
+            ppm2.match(s)
+            val takeInfo2: TakeInfo = ppm2.takeInfo
 
-
-//                Long first = f.lastModified();
-//                Long second = s.lastModified();
-                //Change to take name rather than last modified because editing verse markers modifies the file
-                //this means that adding verse markers would change the postition in the list when returning to the card
-                Integer first = takeInfo.getTake();
-                Integer second = takeInfo2.getTake();
-                return first.compareTo(second);
-            }
-        });
-        mTakeList = new SoftReference<>(resultFiles);
-        return resultFiles;
+            //                Long first = f.lastModified();
+            //                Long second = s.lastModified();
+            //Change to take name rather than last modified because editing verse markers modifies the file
+            //this means that adding verse markers would change the position in the list when returning to the card
+            val first: Int = takeInfo.take
+            val second: Int = takeInfo2.take
+            first.compareTo(second)
+        }
+        _takeList = SoftReference(resultFiles)
+        return resultFiles
     }
 
-    private void refreshTakes() {
+    private fun refreshTakes() {
         //if the soft reference still has the takes, cool, if not, repopulate them
-        List<File> takes = getTakeList();
-        refreshTakeCountText(takes);
-        refreshTakeText(takes);
-        if (takes.size() > 0) {
-            File take = takes.get(mTakeIndex);
-            refreshTakeRating(take);
-            refreshSelectedTake(take);
+        val takes: List<File> = takeList
+        refreshTakeCountText(takes)
+        refreshTakeText(takes)
+        if (takes.isNotEmpty()) {
+            val take: File = takes[takeIndex]
+            refreshTakeRating(take)
+            refreshSelectedTake(take)
         }
     }
 
-    private void refreshSelectedTake(File take) {
-        if (mViewHolder != null) {
-            ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-            ppm.match(take);
-            TakeInfo takeInfo = ppm.getTakeInfo();
-            int chosen = databaseAccessor.selectedTakeNumber(takeInfo);
-            mViewHolder.takeSelectBtn.setActivated(chosen == takeInfo.getTake());
-        }
+    private fun refreshSelectedTake(take: File) {
+        val ppm: ProjectPatternMatcher = project.patternMatcher
+        ppm.match(take)
+        val takeInfo: TakeInfo = ppm.takeInfo
+        val chosen = databaseAccessor.selectedTakeNumber(takeInfo)
+        viewHolder.binding.selectTakeBtn.isActivated = chosen == takeInfo.take
     }
 
-    private void refreshTakeRating(File take) {
-        ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-        ppm.match(take);
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        Logger.w(this.toString(), "Refreshing take rating for " + take.getName());
-        mCurrentTakeRating = databaseAccessor.takeRating(takeInfo);
-        if (mViewHolder != null) {
-            mViewHolder.takeRatingBtn.setStep(mCurrentTakeRating);
-            mViewHolder.takeRatingBtn.invalidate();
-        }
+    private fun refreshTakeRating(take: File) {
+        val ppm: ProjectPatternMatcher = project.patternMatcher
+        ppm.match(take)
+        val takeInfo: TakeInfo = ppm.takeInfo
+        Logger.w(this.toString(), "Refreshing take rating for " + take.name)
+        currentTakeRating = databaseAccessor.takeRating(takeInfo)
+        viewHolder.binding.rateTakeBtn.setStep(currentTakeRating)
+        viewHolder.binding.rateTakeBtn.invalidate()
     }
 
-    private void refreshTakeText(List<File> takes) {
-        if (mViewHolder == null) {
-            return;
+    private fun refreshTakeText(takes: List<File>) {
+        if (!this::viewHolder.isInitialized) {
+            return
         }
 
-        final String text;
+        val text: String
 
-        if (takes.size() > 0) {
-            text = TranslationRecorderApp.getContext().getResources().getString(
-                    R.string.label_take_detailed,
-                    String.valueOf((mTakeIndex + 1)),
-                    String.valueOf(takes.size())
-            );
-            long created = takes.get(mTakeIndex).lastModified();
-            mViewHolder.currentTakeTimeStamp.setText(convertTime(created));
+        if (takes.isNotEmpty()) {
+            text = TranslationRecorderApp.getContext().resources.getString(
+                R.string.label_take_detailed,
+                (takeIndex + 1).toString(),
+                takes.size.toString()
+            )
+            val created: Long = takes[takeIndex].lastModified()
+            viewHolder.binding.currentTakeTimeStamp.text = convertTime(created)
         } else {
-            text = TranslationRecorderApp.getContext().getResources().getString(
-                    R.string.label_take_detailed,
-                    "0",
-                    String.valueOf(takes.size())
-            );
-            mViewHolder.currentTakeTimeStamp.setText("");
+            text = TranslationRecorderApp.getContext().resources.getString(
+                R.string.label_take_detailed,
+                "0",
+                takes.size.toString()
+            )
+            viewHolder.binding.currentTakeTimeStamp.text = ""
         }
-        mViewHolder.currentTake.setText(text);
-        mViewHolder.currentTake.invalidate();
+        viewHolder.binding.currentTakeView.text = text
+        viewHolder.binding.currentTakeView.invalidate()
     }
 
-    private void refreshTakeCountText(List<File> takes) {
-        if (mViewHolder == null) {
-            return;
+    @SuppressLint("SetTextI18n")
+    private fun refreshTakeCountText(takes: List<File>) {
+        if (!this::viewHolder.isInitialized) {
+            return
         }
 
-        mViewHolder.unitCard.refreshTakeCount();
-        mViewHolder.takeCount.setText(String.valueOf(takes.size()));
+        viewHolder.unitCard?.refreshTakeCount()
+        viewHolder.binding.takeCount.text = takes.size.toString()
     }
 
-    private String convertTime(long time) {
-        Date date = new Date(time);
-        Format format = new SimpleDateFormat("MMMM d, yyyy  HH:mm ");
-        return format.format(date);
+    @SuppressLint("SimpleDateFormat")
+    private fun convertTime(time: Long): String {
+        val date = Date(time)
+        val format: Format = SimpleDateFormat("MMMM d, yyyy  HH:mm ")
+        return format.format(date)
     }
 
 
     // Public API
-    public void refreshUnitStarted(Project project, int chapter, int startVerse) {
-        File dir = ProjectFileUtils.getProjectDirectory(project);
-        String chapterString = ProjectFileUtils.chapterIntToString(project, chapter);
-        File chapterDir = new File(dir, chapterString);
+    fun refreshUnitStarted(project: Project, chapter: Int, startVerse: Int) {
+        val dir: File = ProjectFileUtils.getProjectDirectory(project, directoryProvider)
+        val chapterString: String = ProjectFileUtils.chapterIntToString(project, chapter)
+        val chapterDir = File(dir, chapterString)
         if (chapterDir.exists()) {
-            File[] files = chapterDir.listFiles();
+            val files: Array<File>? = chapterDir.listFiles()
             if (files != null) {
-                for (File f : files) {
-                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                    ppm.match(f);
+                for (f: File in files) {
+                    val ppm: ProjectPatternMatcher = this.project.patternMatcher
+                    ppm.match(f)
                     if (ppm.matched()) {
-                        TakeInfo takeInfo = ppm.getTakeInfo();
-                        if (takeInfo != null && takeInfo.getStartVerse() == startVerse) {
-                            mIsEmpty = false;
-                            return;
+                        val takeInfo: TakeInfo = ppm.takeInfo
+                        if (takeInfo.startVerse == startVerse) {
+                            isEmpty = false
+                            return
                         }
                     }
                 }
             }
         }
-        mIsEmpty = true;
+        isEmpty = true
     }
 
-    public void refreshTakeCount() {
-        mTakeCount = databaseAccessor.takeCount(mProject, mChapter, mFirstVerse);
+    fun refreshTakeCount() {
+        takeCount = databaseAccessor.takeCount(project, chapter, startVerse)
     }
 
-    public void expand() {
-        refreshTakes();
-        refreshAudioPlayer();
-        mIsExpanded = true;
-        if (mViewHolder != null) {
-            mViewHolder.takeCountContainer.setVisibility(View.GONE);
-            mViewHolder.cardBody.setVisibility(View.VISIBLE);
-            mViewHolder.cardFooter.setVisibility(View.VISIBLE);
-            mViewHolder.unitActions.setActivated(true);
+    fun expand() {
+        refreshTakes()
+        refreshAudioPlayer()
+        isExpanded = true
+        viewHolder.binding.takeCountContainer.visibility = View.GONE
+        viewHolder.binding.cardBody.visibility = View.VISIBLE
+        viewHolder.binding.cardFooter.visibility = View.VISIBLE
+        viewHolder.binding.unitActions.isActivated = true
+    }
+
+    fun collapse() {
+        isExpanded = false
+        val visible = if (takeCount >= MIN_TAKE_THRESHOLD) View.VISIBLE else View.GONE
+        viewHolder.binding.takeCountContainer.visibility = visible
+        viewHolder.binding.cardBody.visibility = View.GONE
+        viewHolder.binding.cardFooter.visibility = View.GONE
+        viewHolder.binding.unitActions.isActivated = false
+    }
+
+    fun raise(context: Context) {
+        if (!this::viewHolder.isInitialized) {
+            return
+        }
+        viewHolder.binding.unitCard.cardElevation = 8f
+        viewHolder.binding.unitCardContainer.setBackgroundColor(context.resources.getColor(R.color.accent))
+        viewHolder.binding.unitTitle.setTextColor(context.resources.getColor(R.color.text_light))
+        viewHolder.binding.unitActions.setEnabled(false)
+    }
+
+    fun drop(context: Context) {
+        if (!this::viewHolder.isInitialized) {
+            return
+        }
+        viewHolder.binding.unitCard.cardElevation = 2f
+        val color = context.resources.getColor(R.color.card_bg)
+        viewHolder.binding.unitCardContainer.setBackgroundColor(color)
+        val resource = if (isEmpty) {
+            R.color.primary_text_disabled_material_light
+        } else R.color.primary_text_default_material_light
+        viewHolder.binding.unitTitle.setTextColor(
+            context.resources.getColor(resource)
+        )
+        viewHolder.binding.unitActions.setEnabled(true)
+    }
+
+    fun playAudio() {
+        audioPlayer.play()
+    }
+
+    fun pauseAudio() {
+        audioPlayer.pause()
+    }
+
+    fun destroyAudioPlayer() {
+        _audioPlayer?.get()?.cleanup()
+        _audioPlayer = null
+    }
+
+    fun getUnitRecordOnClick(
+        context: Context,
+        db: IProjectDatabaseHelper,
+        prefs: IPreferenceRepository
+    ): View.OnClickListener {
+        return View.OnClickListener { view: View ->
+            pauseAudio()
+            project.loadProjectIntoPreferences(db, prefs)
+            view.context.startActivity(
+                RecordingActivity.getNewRecordingIntent(context, project, chapter, startVerse)
+            )
         }
     }
 
-    public void collapse() {
-        mIsExpanded = false;
-        if (mViewHolder != null) {
-            mViewHolder.takeCountContainer.setVisibility(mTakeCount >= MIN_TAKE_THRESHOLD ? View.VISIBLE : View.GONE);
-            mViewHolder.cardBody.setVisibility(View.GONE);
-            mViewHolder.cardFooter.setVisibility(View.GONE);
-            mViewHolder.unitActions.setActivated(false);
-        }
-    }
-
-    public void raise(Context context) {
-        if (mViewHolder == null) {
-            return;
-        }
-        mViewHolder.cardView.setCardElevation(8f);
-        mViewHolder.cardContainer.setBackgroundColor(context.getResources().getColor(R.color.accent));
-        mViewHolder.unitTitle.setTextColor(context.getResources().getColor(R.color.text_light));
-        mViewHolder.unitActions.setEnabled(false);
-    }
-
-    public void drop(Context context) {
-        if (mViewHolder == null) {
-            return;
-        }
-        mViewHolder.cardView.setCardElevation(2f);
-        mViewHolder.cardContainer.setBackgroundColor(context.getResources().getColor(R.color.card_bg));
-        mViewHolder.unitTitle.setTextColor(
-                context.getResources().getColor((isEmpty()) ? R.color.primary_text_disabled_material_light : R.color.primary_text_default_material_light)
-        );
-        mViewHolder.unitActions.setEnabled(true);
-    }
-
-    public void playAudio() {
-        getAudioPlayer().play();
-    }
-
-    public void pauseAudio() {
-        getAudioPlayer().pause();
-    }
-
-    public void destroyAudioPlayer() {
-        if (mAudioPlayer != null) {
-            AudioPlayer ap = mAudioPlayer.get();
-            if (ap != null) {
-                ap.cleanup();
+    fun getUnitExpandOnClick(
+        position: Int,
+        expandedCards: MutableList<Int>,
+        listener: OnCardExpandedListener
+    ): View.OnClickListener {
+        return View.OnClickListener {
+            if (!isExpanded) {
+                expand()
+                if (!expandedCards.contains(position)) {
+                    expandedCards.add(position)
+                }
+                listener.onCardExpanded(position)
+            } else {
+                pauseAudio()
+                collapse()
+                if (expandedCards.contains(position)) {
+                    expandedCards.removeAt(expandedCards.indexOf(position))
+                }
             }
-            mAudioPlayer = null;
         }
     }
 
-    public View.OnClickListener getUnitRecordOnClick(final Context context, final ProjectDatabaseHelper db) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pauseAudio();
-                mProject.loadProjectIntoPreferences(context, db);
-                view.getContext().startActivity(
-                        RecordingActivity.getNewRecordingIntent(context, mProject, mChapter, mFirstVerse)
-                );
+    val takeIncrementOnClick: View.OnClickListener
+        get() = View.OnClickListener {
+            val takes: List<File> = this.takeList
+            if (takes.isNotEmpty()) {
+                takeIndex++
+                if (takeIndex >= takes.size) {
+                    takeIndex = 0
+                }
+                destroyAudioPlayer()
+                refreshTakes()
+                refreshAudioPlayer()
             }
-        };
-    }
+        }
 
-    public View.OnClickListener getUnitExpandOnClick(
-            final int position,
-            final List<Integer> expandedCards,
-            final OnCardExpandedListener listener
-    ) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!isExpanded()) {
-                    expand();
-                    if (!expandedCards.contains(position)) {
-                        expandedCards.add(position);
+    val takeDecrementOnClick: View.OnClickListener
+        get() {
+            return View.OnClickListener {
+                val takes: List<File> = this.takeList
+                if (takes.isNotEmpty()) {
+                    takeIndex--
+                    if (takeIndex < 0) {
+                        takeIndex = takes.size - 1
                     }
-                    listener.onCardExpanded(position);
+                    destroyAudioPlayer()
+                    refreshTakes()
+                    refreshAudioPlayer()
+                }
+            }
+        }
+
+    fun getTakeDeleteOnClick(
+        ctx: Context,
+        db: DatabaseAccessor,
+        position: Int,
+        adapter: UnitCardAdapter
+    ): View.OnClickListener {
+        return View.OnClickListener {
+            pauseAudio()
+            val takes: MutableList<File> = this.takeList
+            if (takes.size > 0) {
+                val dialog: AlertDialog = AlertDialog.Builder(ctx)
+                    .setTitle(ctx.getString(R.string.delete_take))
+                    .setIcon(R.drawable.ic_delete_black_36dp)
+                    .setPositiveButton(ctx.getString(R.string.yes)) { _, _ ->
+                        val selectedFile: File = takes[takeIndex]
+                        val ppm: ProjectPatternMatcher = project.patternMatcher
+                        ppm.match(selectedFile)
+                        val takeInfo: TakeInfo = ppm.takeInfo
+                        db.deleteTake(takeInfo)
+                        takes[takeIndex].delete()
+                        takes.removeAt(takeIndex)
+                        //keep the same index in the list, unless the one removed was the last take.
+                        if (takeIndex > takes.size - 1) {
+                            takeIndex--
+                            //make sure the index is not negative
+                            takeIndex = max(takeIndex.toDouble(), 0.0).toInt()
+                        }
+                        refreshTakes()
+                        if (takes.size > 0) {
+                            val ap: AudioPlayer = audioPlayer
+                            ap.reset()
+                            ap.loadFile(takes[takeIndex])
+                        } else {
+                            isEmpty = true
+                            collapse()
+                            destroyAudioPlayer()
+                            adapter.notifyItemChanged(position)
+                        }
+                        onTakeActionListener.onTakeDeleted()
+                    }
+                    .setNegativeButton(ctx.getString(R.string.no)) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .create()
+                dialog.show()
+            }
+        }
+    }
+
+    val takeEditOnClickListener: View.OnClickListener
+        get() {
+            return View.OnClickListener { v ->
+                val takes: List<File> = this.takeList
+                if (takes.isNotEmpty()) {
+                    pauseAudio()
+                    val wavFile = WavFile(takes[takeIndex])
+                    val intent: Intent = PlaybackActivity.getPlaybackIntent(
+                        v.context,
+                        wavFile,
+                        project,
+                        chapter,
+                        this.startVerse
+                    )
+                    v.context.startActivity(intent)
+                }
+            }
+        }
+
+    val takePlayPauseOnClick: View.OnClickListener
+        get() {
+            return View.OnClickListener {
+                if (viewHolder.binding.playTakeBtn.isActivated) {
+                    pauseAudio()
                 } else {
-                    pauseAudio();
-                    collapse();
-                    if (expandedCards.contains(position)) {
-                        expandedCards.remove(expandedCards.indexOf(position));
-                    }
+                    viewHolder.pausePlayers()
+                    playAudio()
                 }
             }
-        };
-    }
+        }
 
-    public View.OnClickListener getTakeIncrementOnClick() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    mTakeIndex++;
-                    if (mTakeIndex >= takes.size()) {
-                        mTakeIndex = 0;
-                    }
-                    destroyAudioPlayer();
-                    refreshTakes();
-                    refreshAudioPlayer();
-                }
+    fun getTakeRatingOnClick(): View.OnClickListener {
+        return View.OnClickListener {
+            val takes: List<File> = takeList
+            if (takes.isNotEmpty()) {
+                pauseAudio()
+                val name: String = takes[takeIndex].name
+                onTakeActionListener.onRated(name, currentTakeRating)
             }
-        };
+        }
     }
 
-    public View.OnClickListener getTakeDecrementOnClick() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    mTakeIndex--;
-                    if (mTakeIndex < 0) {
-                        mTakeIndex = takes.size() - 1;
-                    }
-                    destroyAudioPlayer();
-                    refreshTakes();
-                    refreshAudioPlayer();
-                }
-            }
-        };
-    }
-
-    public View.OnClickListener getTakeDeleteOnClick(
-            final Context ctx,
-            final DatabaseAccessor db,
-            final int position,
-            final UnitCardAdapter adapter
-    ) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pauseAudio();
-                final List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    AlertDialog dialog = new AlertDialog.Builder(ctx)
-                            .setTitle(ctx.getString(R.string.delete_take))
-                            .setIcon(R.drawable.ic_delete_black_36dp)
-                            .setPositiveButton(ctx.getString(R.string.yes), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    File selectedFile = takes.get(mTakeIndex);
-                                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                                    ppm.match(selectedFile);
-                                    TakeInfo takeInfo = ppm.getTakeInfo();
-                                    db.deleteTake(takeInfo);
-                                    takes.get(mTakeIndex).delete();
-                                    takes.remove(mTakeIndex);
-                                    //keep the same index in the list, unless the one removed was the last take.
-                                    if (mTakeIndex > takes.size() - 1) {
-                                        mTakeIndex--;
-                                        //make sure the index is not negative
-                                        mTakeIndex = Math.max(mTakeIndex, 0);
-                                    }
-                                    refreshTakes();
-                                    if (takes.size() > 0) {
-                                        AudioPlayer ap = getAudioPlayer();
-                                        ap.reset();
-                                        ap.loadFile(takes.get(mTakeIndex));
-                                    } else {
-                                        mIsEmpty = true;
-                                        collapse();
-                                        destroyAudioPlayer();
-                                        adapter.notifyItemChanged(position);
-                                    }
-                                    onTakeDeleteListener.onTakeDeleted();
-                                }
-                            })
-                            .setNegativeButton(ctx.getString(R.string.no), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .create();
-                    dialog.show();
-                }
-            }
-        };
-    }
-
-    public View.OnClickListener getTakeEditOnClickListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    pauseAudio();
-                    WavFile wavFile = new WavFile(takes.get(mTakeIndex));
-                    Intent intent = PlaybackActivity.getPlaybackIntent(
-                            v.getContext(),
-                            wavFile,
-                            mProject,
-                            mChapter,
-                            mFirstVerse
-                    );
-                    v.getContext().startActivity(intent);
-                }
-            }
-        };
-    }
-
-    public View.OnClickListener getTakePlayPauseOnClick() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mViewHolder.takePlayPauseBtn.isActivated()) {
-                    pauseAudio();
+    fun getTakeSelectOnClick(db: DatabaseAccessor): View.OnClickListener {
+        return View.OnClickListener { view ->
+            val takes: List<File> = takeList
+            if (takes.isNotEmpty()) {
+                val ppm: ProjectPatternMatcher = project.patternMatcher
+                ppm.match(takes[takeIndex])
+                val takeInfo: TakeInfo = ppm.takeInfo
+                if (view.isActivated) {
+                    view.isActivated = false
+                    db.removeSelectedTake(takeInfo)
                 } else {
-                    mViewHolder.pausePlayers();
-                    playAudio();
+                    view.isActivated = true
+                    db.selectTake(takeInfo)
                 }
             }
-        };
+        }
     }
 
-    public View.OnClickListener getTakeRatingOnClick(final Activity context) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    pauseAudio();
-                    String name = takes.get(mTakeIndex).getName();
-                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                    ppm.match(name);
-                    TakeInfo takeInfo = ppm.getTakeInfo();
-                    RatingDialog dialog = RatingDialog.newInstance(takeInfo, mCurrentTakeRating);
-                    dialog.show(context.getFragmentManager(), "single_take_rating");
-                }
-            }
-        };
+    companion object {
+        var NO_TAKES: Int = -1
+        var MIN_TAKE_THRESHOLD: Int = 2
     }
-
-    public View.OnClickListener getTakeSelectOnClick(final DatabaseAccessor db) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<File> takes = getTakeList();
-                if (takes.size() > 0) {
-                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
-                    ppm.match(takes.get(mTakeIndex));
-                    TakeInfo takeInfo = ppm.getTakeInfo();
-                    if (view.isActivated()) {
-                        view.setActivated(false);
-                        db.removeSelectedTake(takeInfo);
-                    } else {
-                        view.setActivated(true);
-                        db.selectTake(takeInfo);
-                    }
-                }
-            }
-        };
-    }
-
 }

@@ -1,468 +1,362 @@
-package org.wycliffeassociates.translationrecorder.widgets;
+package org.wycliffeassociates.translationrecorder.widgets
 
-import android.app.AlertDialog;
-import android.app.FragmentManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.view.View;
-
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog;
-import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-
-import java.io.File;
-import java.lang.ref.SoftReference;
-import java.util.List;
+import android.app.AlertDialog
+import android.content.Context
+import android.view.View
+import androidx.fragment.app.FragmentManager
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog
+import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.chapterIntToString
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getProjectDirectory
+import java.io.File
+import java.lang.ref.SoftReference
 
 /**
  * Created by leongv on 8/15/2016.
  */
-public class ChapterCard {
-
-    public interface OnClickListener extends View.OnClickListener {
-        void onClick(
-                View v,
-                ChapterCardAdapter.ViewHolder vh,
-                List<Integer> expandedCards,
-                int position
-        );
+class ChapterCard(
+    val title: String,
+    val chapterNumber: Int,
+    private val mProject: Project,
+    private val mUnitCount: Int,
+    private val db: IProjectDatabaseHelper,
+    private val directoryProvider: IDirectoryProvider
+) {
+    interface OnClickListener : View.OnClickListener {
+        fun onClick(
+            v: View,
+            vh: ChapterCardAdapter.ViewHolder,
+            expandedCards: List<Int>,
+            position: Int
+        )
     }
 
-    public interface ChapterDB {
-        int checkingLevel(Project project, int chapter);
+    interface ChapterDB {
+        fun checkingLevel(project: Project, chapter: Int): Int
     }
 
-    public interface ChapterProgress {
-        void updateChapterProgress(int chapter);
-        int chapterProgress(int chapter);
+    interface ChapterProgress {
+        fun updateChapterProgress(chapter: Int)
+        fun chapterProgress(chapter: Int): Int
     }
 
-    // Constants
-    public int MIN_CHECKING_LEVEL = 0;
-    public int MAX_CHECKING_LEVEL = 3;
-    public int MIN_PROGRESS = 0;
-    public int MAX_PROGRESS = 100;
-
-    // Attributes
-    private Project mProject;
-    private ChapterCardAdapter.ViewHolder mViewHolder;
-    private SoftReference<AudioPlayer> mAudioPlayer;
-    private File mChapterWav;
-    private String mTitle;
-    private final int mChapter;
-    private int mCheckingLevel = 0;
-    private int mProgress = 0;
-    private int mUnitCount;
-    private int mUnitStarted = 0;
+    lateinit var viewHolder: ChapterCardAdapter.ViewHolder
+    private var mChapterWav: File? = null
+    private var mUnitStarted = 0
 
     // State
-    private boolean mIsEmpty = true;
-    private boolean mCanCompile = false;
-    private boolean mIsCompiled = false;
-    private boolean mIsExpanded = false;
-    private boolean mIconsClickable = true;
+    var isEmpty: Boolean = true
+        private set
+    private var mCanCompile = false
+    var isCompiled: Boolean = false
+        private set
+    var isExpanded: Boolean = false
+        private set
+    private var mIconsClickable = true
 
-    private ProjectDatabaseHelper db;
-
-    // Constructor
-    public ChapterCard(Project proj, String title, int chapter, int unitCount, ProjectDatabaseHelper db) {
-        mProject = proj;
-        mTitle = title;
-        mChapter = chapter;
-        mUnitCount = unitCount;
-        this.db = db;
-    }
-
-    public void refreshIsEmpty() {
-        mIsEmpty = mProgress == 0;
-    }
-
-    public void refreshChapterCompiled(int chapter) {
-        if (!mCanCompile) {
-            return;
-        }
-        File dir = ProjectFileUtils.getProjectDirectory(mProject);
-        String chapterString = ProjectFileUtils.chapterIntToString(mProject, chapter);
-        File chapterDir = new File(dir, chapterString);
-        if (chapterDir.exists()) {
-            mChapterWav = new File(chapterDir, mProject.getChapterFileName(chapter));
-            if (mChapterWav.exists()) {
-                mIsCompiled = true;
-                return;
+    val playPauseOnClick: View.OnClickListener
+        get() = View.OnClickListener {
+            if (viewHolder.binding.playPauseChapterBtn.isActivated) {
+                pauseAudio()
+            } else {
+                playAudio()
             }
         }
-        mIsCompiled = false;
+
+    private var _checkingLevel = 0
+    var checkingLevel: Int
+        get() = _checkingLevel
+        set(level) {
+            _checkingLevel = if (level < MIN_CHECKING_LEVEL) {
+                MIN_CHECKING_LEVEL
+            } else if (level > MAX_CHECKING_LEVEL) {
+                MAX_CHECKING_LEVEL
+            } else {
+                level
+            }
+        }
+
+    private var _progress = 0
+    var progress: Int
+        get() = _progress
+        set(progress) {
+            _progress = if (progress < MIN_PROGRESS) {
+                MIN_PROGRESS
+            } else if (progress > MAX_PROGRESS) {
+                MAX_PROGRESS
+            } else {
+                progress
+            }
+        }
+
+    private var _audioPlayer: SoftReference<AudioPlayer>? = null
+    private val audioPlayer: AudioPlayer
+        // Private Methods
+        get() {
+            var ap: AudioPlayer? = _audioPlayer?.get()
+            if (ap == null) {
+                ap = initializeAudioPlayer()
+            }
+            return ap
+        }
+
+    fun refreshIsEmpty() {
+        isEmpty = _progress == 0
     }
 
-    public void refreshCheckingLevel(ChapterDB chapterDb, Project project, int chapter) {
-        if (mIsCompiled) {
-            mCheckingLevel = chapterDb.checkingLevel(project, chapter);
+    fun refreshChapterCompiled(chapter: Int) {
+        if (!mCanCompile) {
+            return
+        }
+        val dir = getProjectDirectory(mProject, directoryProvider)
+        val chapterString = chapterIntToString(mProject, chapter)
+        val chapterDir = File(dir, chapterString)
+        if (chapterDir.exists()) {
+            mChapterWav = File(chapterDir, mProject.getChapterFileName(chapter))
+            if (mChapterWav!!.exists()) {
+                isCompiled = true
+                return
+            }
+        }
+        isCompiled = false
+    }
+
+    fun refreshCheckingLevel(chapterDb: ChapterDB, project: Project, chapter: Int) {
+        if (isCompiled) {
+            _checkingLevel = chapterDb.checkingLevel(project, chapter)
         }
     }
 
-    public void refreshProgress() {
-        int progress = calculateProgress();
-        if (progress != mProgress) {
-            setProgress(progress);
-            saveProgressToDB(progress);
+    fun refreshProgress() {
+        val progress = calculateProgress()
+        if (progress != _progress) {
+            this.progress = progress
+            saveProgressToDB(progress)
         }
     }
 
-
-    // Setters
-    public void setViewHolder(ChapterCardAdapter.ViewHolder vh) {
-        mViewHolder = vh;
+    fun setIconsEnabled(enabled: Boolean) {
+        viewHolder.binding.checkLevelBtn.isEnabled = enabled
+        viewHolder.binding.compileBtn.isEnabled = enabled
+        viewHolder.binding.recordBtn.isEnabled = enabled
+        viewHolder.binding.expandBtn.isEnabled = enabled
     }
 
-    public void setTitle(String title) {
-        mTitle = title;
+    fun setIconsClickable(clickable: Boolean) {
+        mIconsClickable = clickable
     }
 
-    public void setCheckingLevel(int level) {
-        if (level < MIN_CHECKING_LEVEL) {
-            mCheckingLevel = MIN_CHECKING_LEVEL;
-        } else if (level > MAX_CHECKING_LEVEL) {
-            mCheckingLevel = MAX_CHECKING_LEVEL;
-        } else {
-            mCheckingLevel = level;
-        }
+    fun setNumOfUnitStarted(count: Int) {
+        mUnitStarted = count
     }
 
-    public void setProgress(int progress) {
-        if (progress < MIN_PROGRESS) {
-            mProgress = MIN_PROGRESS;
-        } else if (progress > MAX_PROGRESS) {
-            mProgress = MAX_PROGRESS;
-        } else {
-            mProgress = progress;
-        }
+    fun canCompile(): Boolean {
+        return mCanCompile
     }
 
-    public void setIconsEnabled(boolean enabled) {
-        if (mViewHolder == null) {
-            return;
-        }
-        mViewHolder.checkLevelBtn.setEnabled(enabled);
-        mViewHolder.compileBtn.setEnabled(enabled);
-        mViewHolder.recordBtn.setEnabled(enabled);
-        mViewHolder.expandBtn.setEnabled(enabled);
+    fun areIconsClickable(): Boolean {
+        return mIconsClickable
     }
 
-    public void setIconsClickable(boolean clickable) {
-        mIconsClickable = clickable;
+    private fun initializeAudioPlayer(): AudioPlayer {
+        val ap = AudioPlayer()
+        ap.refreshView(
+            viewHolder.binding.timeElapsed,
+            viewHolder.binding.timeDuration,
+            viewHolder.binding.playPauseChapterBtn,
+            viewHolder.binding.seekBar
+        )
+        _audioPlayer = SoftReference(ap)
+        return ap
     }
 
-    public void setNumOfUnitStarted(int count) {
-        mUnitStarted = count;
-    }
-
-
-    // Getters
-    public ChapterCardAdapter.ViewHolder getViewHolder() {
-        return mViewHolder;
-    }
-
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public int getCheckingLevel() {
-        return mCheckingLevel;
-    }
-
-    public int getProgress() {
-        return mProgress;
-    }
-
-    public boolean canCompile() {
-        return mCanCompile;
-    }
-
-    public boolean isEmpty() {
-        return mIsEmpty;
-    }
-
-    public boolean isCompiled() {
-        return mIsCompiled;
-    }
-
-    public boolean isExpanded() {
-        return mIsExpanded;
-    }
-
-    public boolean areIconsClickable() {
-        return mIconsClickable;
-    }
-
-
-    // Private Methods
-    private AudioPlayer getAudioPlayer() {
-        AudioPlayer ap = null;
-        if (mAudioPlayer != null) {
-            ap = mAudioPlayer.get();
-        }
-        if (ap == null) {
-            ap = initializeAudioPlayer();
-        }
-        return ap;
-    }
-
-    private AudioPlayer initializeAudioPlayer() {
-        AudioPlayer ap = new AudioPlayer();
-        if (mViewHolder != null) {
-            ap.refreshView(
-                    mViewHolder.elapsed,
-                    mViewHolder.duration,
-                    mViewHolder.playPauseBtn,
-                    mViewHolder.seekBar
-            );
-        }
-        mAudioPlayer = new SoftReference<AudioPlayer>(ap);
-        return ap;
-    }
-
-    private void refreshAudioPlayer() {
-        AudioPlayer ap = getAudioPlayer();
-        if (!ap.isLoaded()) {
-            ap.reset();
-            ap.loadFile(mChapterWav);
+    private fun refreshAudioPlayer() {
+        val ap = audioPlayer
+        if (!ap.isLoaded) {
+            ap.reset()
+            ap.loadFile(mChapterWav)
         }
         ap.refreshView(
-                mViewHolder.elapsed,
-                mViewHolder.duration,
-                mViewHolder.playPauseBtn,
-                mViewHolder.seekBar
-        );
+            viewHolder.binding.timeElapsed,
+            viewHolder.binding.timeDuration,
+            viewHolder.binding.playPauseChapterBtn,
+            viewHolder.binding.seekBar
+        )
     }
 
-    private int calculateProgress() {
-        return Math.round(((float) mUnitStarted / mUnitCount) * 100);
+    private fun calculateProgress(): Int {
+        return Math.round((mUnitStarted.toFloat() / mUnitCount) * 100)
     }
 
-    private void saveProgressToDB(int progress) {
-        if (db.chapterExists(mProject, mChapter)) {
-            int chapterId = db.getChapterId(mProject, mChapter);
-            db.setChapterProgress(chapterId, progress);
+    private fun saveProgressToDB(progress: Int) {
+        if (db.chapterExists(mProject, chapterNumber)) {
+            val chapterId = db.getChapterId(mProject, chapterNumber)
+            db.setChapterProgress(chapterId, progress)
         }
     }
-
 
     // Public API
-    public void expand() {
-        refreshAudioPlayer();
-        if (mViewHolder != null) {
-            mViewHolder.cardBody.setVisibility(View.VISIBLE);
-            mViewHolder.expandBtn.setActivated(true);
-        }
-        mIsExpanded = true;
+    fun expand() {
+        refreshAudioPlayer()
+        viewHolder.binding.cardBody.visibility = View.VISIBLE
+        viewHolder.binding.expandBtn.isActivated = true
+        isExpanded = true
     }
 
-    public void collapse() {
-        if (mViewHolder != null) {
-            mViewHolder.cardBody.setVisibility(View.GONE);
-            mViewHolder.expandBtn.setActivated(false);
-        }
-        mIsExpanded = false;
+    fun collapse() {
+        viewHolder.binding.cardBody.visibility = View.GONE
+        viewHolder.binding.expandBtn.isActivated = false
+        isExpanded = false
     }
 
-    public void raise(int backgroundColor, int textColor) {
-        if (mViewHolder != null) {
-            mViewHolder.cardView.setCardElevation(8f);
-            mViewHolder.cardContainer.setBackgroundColor(
-                    //mCtx.getResources().getColor(R.color.accent)
-                    backgroundColor
-            );
-            mViewHolder.title.setTextColor(
-                    //mCtx.getResources().getColor(R.color.text_light)
-                    textColor
-            );
-            // Compile button activated status gets reset by multiSelector.
-            // This is a way to correct it.
-            mViewHolder.compileBtn.setActivated(canCompile());
-        }
-        setIconsEnabled(false);
+    fun raise(backgroundColor: Int, textColor: Int) {
+        viewHolder.binding.chapterCard.cardElevation = 8f
+        viewHolder.binding.chapterCardContainer.setBackgroundColor( //mCtx.getResources().getColor(R.color.accent)
+            backgroundColor
+        )
+        viewHolder.binding.title.setTextColor(textColor)
+        // Compile button activated status gets reset by multiSelector.
+        // This is a way to correct it.
+        viewHolder.binding.compileBtn.isActivated = canCompile()
+        setIconsEnabled(false)
     }
 
-    public void drop(int backgroundColor, int textColor, int emptyTextColor) {
-        if (mViewHolder != null) {
-            mViewHolder.cardView.setCardElevation(2f);
-            mViewHolder.cardContainer.setBackgroundColor(backgroundColor);
-            mViewHolder.title.setTextColor(
-                (isEmpty())
-                        ? emptyTextColor
-                        : textColor
-            );
-            // Compile button activated status gets reset by multiSelector.
-            // This is a way to correct it.
-            mViewHolder.compileBtn.setActivated(canCompile());
-        }
-        setIconsEnabled(true);
+    fun drop(backgroundColor: Int, textColor: Int, emptyTextColor: Int) {
+        viewHolder.binding.chapterCard.cardElevation = 2f
+        viewHolder.binding.chapterCardContainer.setBackgroundColor(backgroundColor)
+        viewHolder.binding.title.setTextColor(
+            if ((isEmpty))
+                emptyTextColor
+            else
+                textColor
+        )
+        // Compile button activated status gets reset by multiSelector.
+        // This is a way to correct it.
+        viewHolder.binding.compileBtn.isActivated = canCompile()
+        setIconsEnabled(true)
     }
 
-    public void playAudio() {
-        AudioPlayer ap = getAudioPlayer();
-        if (ap != null) {
-            ap.play();
-        }
+    fun playAudio() {
+        audioPlayer.play()
     }
 
-    public void pauseAudio() {
-        AudioPlayer ap = getAudioPlayer();
-        if (ap != null) {
-            ap.pause();
-        }
+    fun pauseAudio() {
+        audioPlayer.pause()
     }
 
-    public void destroyAudioPlayer() {
-        if (mAudioPlayer != null) {
-            AudioPlayer ap = mAudioPlayer.get();
-            if (ap != null) {
-                ap.cleanup();
+    fun destroyAudioPlayer() {
+        _audioPlayer?.get()?.cleanup()
+        _audioPlayer = null
+    }
+
+    fun refreshCanCompile() {
+        mCanCompile = _progress == 100
+    }
+
+    fun compile() {
+        isCompiled = true
+        checkingLevel = 0
+    }
+
+    fun getCheckLevelOnClick(fm: FragmentManager): View.OnClickListener {
+        return View.OnClickListener {
+            if (!areIconsClickable()) {
+                return@OnClickListener
             }
-            mAudioPlayer = null;
+            pauseAudio()
+            val dialog = CheckingDialog.newInstance(
+                mProject,
+                viewHolder.adapterPosition,
+                _checkingLevel
+            )
+            dialog.show(fm, "single_chapter_checking_level")
         }
     }
 
-//    public void setCanCompile(boolean canCompile){
-//        mCanCompile = canCompile;
-//    }
-
-    public void refreshCanCompile() {
-        mCanCompile = mProgress == 100;
-    }
-
-    public void compile() {
-        mIsCompiled = true;
-        setCheckingLevel(0);
-    }
-
-    public View.OnClickListener getCheckLevelOnClick(final FragmentManager fm) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+    fun getCompileOnClick(fm: FragmentManager): View.OnClickListener {
+        return View.OnClickListener {
+            if (canCompile()) {
                 if (!areIconsClickable()) {
-                    return;
+                    return@OnClickListener
                 }
-                pauseAudio();
-                CheckingDialog dialog = CheckingDialog.newInstance(
-                        mProject,
-                        mViewHolder.getAdapterPosition(),
-                        mCheckingLevel);
-                dialog.show(fm, "single_chapter_checking_level");
+                pauseAudio()
+                //pass in chapter index, not chapter number
+                val dialog = CompileDialog.newInstance(
+                    mProject,
+                    viewHolder.adapterPosition,
+                    isCompiled
+                )
+                dialog.show(fm, "single_compile_chapter")
             }
-        };
+        }
     }
 
-    public View.OnClickListener getCompileOnClick(final FragmentManager fm) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (canCompile()) {
-                    if (!areIconsClickable()) {
-                        return;
-                    }
-                    pauseAudio();
-                    //pass in chapter index, not chapter number
-                    CompileDialog dialog = CompileDialog.newInstance(
-                            mProject,
-                            mViewHolder.getAdapterPosition(),
-                            isCompiled());
-                    dialog.show(fm, "single_compile_chapter");
-                }
+    fun getRecordOnClick(context: Context): View.OnClickListener {
+        return View.OnClickListener {
+            if (!areIconsClickable()) {
+                return@OnClickListener
             }
-        };
+            pauseAudio()
+            destroyAudioPlayer()
+            val chapter: Int = chapterNumber
+            val intent = RecordingActivity.getNewRecordingIntent(
+                context,
+                mProject,
+                chapter,
+                ChunkPlugin.DEFAULT_UNIT
+            )
+            context.startActivity(intent)
+        }
     }
 
-    public View.OnClickListener getRecordOnClick(final Context context) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!areIconsClickable()) {
-                    return;
-                }
-                pauseAudio();
-                destroyAudioPlayer();
-                int chapter = mChapter;
-                Intent intent = RecordingActivity.getNewRecordingIntent(
-                        context,
-                        mProject,
-                        chapter,
-                        ChunkPlugin.DEFAULT_UNIT);
-                context.startActivity(intent);
+    fun getExpandOnClick(listener: OnCardExpandedListener, position: Int): View.OnClickListener {
+        return View.OnClickListener {
+            if (!areIconsClickable()) {
+                return@OnClickListener
             }
-        };
+            if (this.isExpanded) {
+                pauseAudio()
+                collapse()
+            } else {
+                expand()
+                listener.onCardExpanded(position)
+            }
+        }
     }
 
-    public View.OnClickListener getExpandOnClick(final OnCardExpandedListener listener, final int position) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!areIconsClickable()) {
-                    return;
+    fun getDeleteOnClick(adapter: ChapterCardAdapter, context: Context?): View.OnClickListener {
+        return View.OnClickListener {
+            pauseAudio()
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(R.string.delete_chapter_recording)
+                .setIcon(R.drawable.ic_delete_black_36dp)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    destroyAudioPlayer()
+                    mChapterWav!!.delete()
+                    isCompiled = false
+                    collapse()
+                    db.setCheckingLevel(mProject, chapterNumber, 0)
+                    adapter.notifyItemChanged(viewHolder.adapterPosition)
                 }
-                if (mIsExpanded) {
-                    pauseAudio();
-                    collapse();
-                } else {
-                    expand();
-                    listener.onCardExpanded(position);
-                }
-            }
-        };
+                .setNegativeButton(
+                    R.string.no
+                ) { dialog, _ -> dialog.dismiss() }
+                .create()
+            dialog.show()
+        }
     }
 
-    public View.OnClickListener getDeleteOnClick(final ChapterCardAdapter adapter, final Context context) {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pauseAudio();
-                AlertDialog dialog = new AlertDialog.Builder(context)
-                        .setTitle(R.string.delete_chapter_recording)
-                        .setIcon(R.drawable.ic_delete_black_36dp)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                destroyAudioPlayer();
-                                mChapterWav.delete();
-                                mIsCompiled = false;
-                                collapse();
-                                db.setCheckingLevel(mProject, mChapter, 0);
-                                adapter.notifyItemChanged(mViewHolder.getAdapterPosition());
-                            }
-                        })
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create();
-                dialog.show();
-            }
-        };
-    }
-
-    public View.OnClickListener getPlayPauseOnClick() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mViewHolder.playPauseBtn.isActivated()) {
-                    pauseAudio();
-                } else {
-                    playAudio();
-                }
-            }
-        };
-    }
-
-    public int getChapterNumber() {
-        return mChapter;
+    companion object {
+        const val MIN_CHECKING_LEVEL: Int = 0
+        const val MAX_CHECKING_LEVEL: Int = 3
+        const val MIN_PROGRESS: Int = 0
+        const val MAX_PROGRESS: Int = 100
     }
 }

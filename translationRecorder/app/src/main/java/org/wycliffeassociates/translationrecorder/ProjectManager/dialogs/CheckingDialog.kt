@@ -1,166 +1,119 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs;
+package org.wycliffeassociates.translationrecorder.ProjectManager.dialogs
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-
-import org.wycliffeassociates.translationrecorder.project.Project;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.widgets.FourStepImageView;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Context
+import android.content.DialogInterface
+import android.os.Bundle
+import android.widget.Button
+import androidx.fragment.app.DialogFragment
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.DialogCheckingBinding
+import org.wycliffeassociates.translationrecorder.project.Project
 
 /**
  * Created by leongv on 8/9/2016.
  */
-public class CheckingDialog extends DialogFragment {
-
-    public static String CHAPTERS_KEY = "key_chapters";
-    public static String PROJECT_KEY = "key_project";
-    public static String CURRENT_LEVEL_KEY = "key_current_checking_level";
-    public static int NO_LEVEL_SELECTED = -1;
-
-    public interface DialogListener {
-        void onPositiveClick(CheckingDialog dialog);
-        void onNegativeClick(CheckingDialog dialog);
+class CheckingDialog : DialogFragment() {
+    interface DialogListener {
+        fun onPositiveClick(dialog: CheckingDialog)
+        fun onNegativeClick(dialog: CheckingDialog)
     }
 
-    private int mCheckingLevel;
-    DialogListener mListener;
-    private int[] mChapterIndicies;
-    private Project mProject;
-    private ImageButton mLevelZero;
-    private FourStepImageView mLevelOne, mLevelTwo, mLevelThree;
-    private Button mPositiveBtn;
+    private var mCheckingLevel = 0
+    var mListener: DialogListener? = null
+    var chapterIndicies: IntArray? = null
+        private set
+    var project: Project? = null
+        private set
+    private var mPositiveBtn: Button? = null
 
-    public static CheckingDialog newInstance(Project project, int[] chapterIndicies, int checkingLevel){
-        Bundle args = new Bundle();
-        args.putIntArray(CHAPTERS_KEY, chapterIndicies);
-        args.putParcelable(PROJECT_KEY, project);
-        args.putInt(CURRENT_LEVEL_KEY, checkingLevel);
-        CheckingDialog check = new CheckingDialog();
-        check.setArguments(args);
-        return check;
+    private var _binding: DialogCheckingBinding? = null
+    private val binding get() = _binding!!
+
+    var checkingLevel: Int
+        get() = mCheckingLevel
+        private set(checkingLevel) {
+            mCheckingLevel = checkingLevel
+            mPositiveBtn!!.isEnabled = true
+            binding.checkLevelZero.isActivated = checkingLevel == 0
+            binding.checkLevelOne.isActivated = checkingLevel == 1
+            binding.checkLevelTwo.isActivated = checkingLevel == 2
+            binding.checkLevelThree.isActivated = checkingLevel == 3
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val args = arguments
+        chapterIndicies = args?.getIntArray(CHAPTERS_KEY)
+        project = args?.getParcelable(PROJECT_KEY)
+        mCheckingLevel = args?.getInt(CURRENT_LEVEL_KEY) ?: 0
     }
 
-    public static CheckingDialog newInstance(Project project, int chapterIndex, int checkingLevel){
-        int[] chapterIndicies = {chapterIndex};
-        return newInstance(project, chapterIndicies, checkingLevel);
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = DialogCheckingBinding.inflate(layoutInflater)
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-        mChapterIndicies = args.getIntArray(CHAPTERS_KEY);
-        mProject = args.getParcelable(PROJECT_KEY);
-        mCheckingLevel = args.getInt(CURRENT_LEVEL_KEY);
-    }
+        val alertDialog = AlertDialog.Builder(activity)
+            .setTitle(getString(R.string.set_checking_level))
+            .setView(binding.root)
+            .setPositiveButton(
+                getString(R.string.label_ok)
+            ) { _, _ -> mListener!!.onPositiveClick(this@CheckingDialog) }
+            .setNegativeButton(
+                getString(R.string.title_cancel)
+            ) { _, _ -> mListener!!.onNegativeClick(this@CheckingDialog) }
+            .create()
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        alertDialog.setOnShowListener {
+            mPositiveBtn = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
 
-        AlertDialog alertDialog = new AlertDialog.Builder(getActivity())
-                .setTitle(getString(R.string.set_checking_level))
-                .setView(inflater.inflate(R.layout.dialog_checking, null))
-                .setPositiveButton(getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mListener.onPositiveClick(CheckingDialog.this);
-                    }
-                })
-                .setNegativeButton(getString(R.string.title_cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mListener.onNegativeClick(CheckingDialog.this);
-                    }
-                })
-                .create();
+            binding.checkLevelZero.setOnClickListener { checkingLevel = 0 }
+            binding.checkLevelOne.setOnClickListener { checkingLevel = 1 }
+            binding.checkLevelTwo.setOnClickListener { checkingLevel = 2 }
+            binding.checkLevelThree.setOnClickListener { checkingLevel = 3 }
 
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                AlertDialog alertDialog= (AlertDialog) dialog;
+            checkingLevel = mCheckingLevel
 
-                mLevelZero = (ImageButton) alertDialog.findViewById(R.id.check_level_zero);
-                mLevelOne = (FourStepImageView) alertDialog.findViewById(R.id.check_level_one);
-                mLevelTwo = (FourStepImageView) alertDialog.findViewById(R.id.check_level_two);
-                mLevelThree = (FourStepImageView) alertDialog.findViewById(R.id.check_level_three);
-                mPositiveBtn = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-
-                mLevelZero.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setCheckingLevel(0);
-                    }
-                });
-
-                mLevelOne.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setCheckingLevel(1);
-                    }
-                });
-
-                mLevelTwo.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setCheckingLevel(2);
-                    }
-                });
-
-                mLevelThree.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setCheckingLevel(3);
-                    }
-                });
-
-                setCheckingLevel(mCheckingLevel);
-
-                if (mCheckingLevel == NO_LEVEL_SELECTED) {
-                    mPositiveBtn.setEnabled(false);
-                }
+            if (mCheckingLevel == NO_LEVEL_SELECTED) {
+                mPositiveBtn?.setEnabled(false)
             }
-        });
+        }
 
-        return alertDialog;
+        return alertDialog
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            mListener = (DialogListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement CheckingDialogListener");
+            mListener = context as DialogListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement CheckingDialogListener")
         }
     }
 
-    private void setCheckingLevel(int checkingLevel) {
-        mCheckingLevel = checkingLevel;
-        mPositiveBtn.setEnabled(true);
-        mLevelZero.setActivated(checkingLevel == 0);
-        mLevelOne.setActivated(checkingLevel == 1);
-        mLevelTwo.setActivated(checkingLevel == 2);
-        mLevelThree.setActivated(checkingLevel == 3);
-    }
+    companion object {
+        var CHAPTERS_KEY: String = "key_chapters"
+        var PROJECT_KEY: String = "key_project"
+        var CURRENT_LEVEL_KEY: String = "key_current_checking_level"
+        var NO_LEVEL_SELECTED: Int = -1
 
-    public int getCheckingLevel() {
-        return mCheckingLevel;
-    }
+        fun newInstance(
+            project: Project?,
+            chapterIndices: IntArray?,
+            checkingLevel: Int
+        ): CheckingDialog {
+            val args = Bundle()
+            args.putIntArray(CHAPTERS_KEY, chapterIndices)
+            args.putParcelable(PROJECT_KEY, project)
+            args.putInt(CURRENT_LEVEL_KEY, checkingLevel)
+            val check = CheckingDialog()
+            check.arguments = args
+            return check
+        }
 
-    public int[] getChapterIndicies(){
-        return mChapterIndicies;
+        fun newInstance(project: Project?, chapterIndex: Int, checkingLevel: Int): CheckingDialog {
+            val chapterIndices = intArrayOf(chapterIndex)
+            return newInstance(project, chapterIndices, checkingLevel)
+        }
     }
-
-    public Project getProject(){
-        return mProject;
-    }
-
 }

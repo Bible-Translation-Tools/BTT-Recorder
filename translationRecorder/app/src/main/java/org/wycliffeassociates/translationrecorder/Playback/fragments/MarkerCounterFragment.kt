@@ -1,82 +1,77 @@
-package org.wycliffeassociates.translationrecorder.Playback.fragments;
+package org.wycliffeassociates.translationrecorder.Playback.fragments
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator;
-import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler;
-
-import org.wycliffeassociates.translationrecorder.R;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.MarkerMediator
+import org.wycliffeassociates.translationrecorder.Playback.interfaces.VerseMarkerModeToggler
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.FragmentMarkerTopBarBinding
 
 /**
  * Created by sarabiaj on 11/15/2016.
  */
+class MarkerCounterFragment : Fragment() {
+    private var mModeToggleCallback: VerseMarkerModeToggler? = null
+    private var mMarkerMediator: MarkerMediator? = null
 
-public class MarkerCounterFragment extends Fragment {
+    private var _binding: FragmentMarkerTopBarBinding? = null
+    private val binding get() = _binding!!
 
-    private static String KEY_MARKERS_REMAINING = "markers_remaining";
-
-    private VerseMarkerModeToggler mModeToggleCallback;
-    private MarkerMediator mMarkerMediator;
-    private TextView mVersesRemainingView;
-    private ImageView mEscape;
-    private TextView mLeftView;
-
-    public static MarkerCounterFragment newInstance(MarkerMediator mediator){
-        MarkerCounterFragment f = new MarkerCounterFragment();
-        f.setMarkerMediator(mediator);
-        return f;
+    private fun setMarkerMediator(mediator: MarkerMediator?) {
+        mMarkerMediator = mediator
     }
 
-    private void setMarkerMediator(MarkerMediator mediator){
-        mMarkerMediator = mediator;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mModeToggleCallback = context as VerseMarkerModeToggler
     }
 
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mModeToggleCallback = (VerseMarkerModeToggler) activity;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentMarkerTopBarBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_marker_top_bar, container, false);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initViews()
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        findViews();
-        initViews();
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    private void findViews(){
-        View view = getView();
-        mVersesRemainingView = (TextView) view.findViewById(R.id.verse_marker_count);
-        mLeftView = (TextView) view.findViewById(R.id.verse_marker_label);
-        mEscape = (ImageView) view.findViewById(R.id.btn_exit_verse_marker_mode);
+    @SuppressLint("SetTextI18n")
+    private fun initViews() {
+        binding.verseMarkerLabel.text = getString(R.string.left_title)
+        binding.verseMarkerCount.text = mMarkerMediator?.numVersesRemaining().toString()
+        binding.btnExitVerseMarkerMode.setOnClickListener {
+            mModeToggleCallback?.onDisableVerseMarkerMode()
+        }
     }
 
-    private void initViews(){
-        mLeftView.setText(getString(R.string.left_title));
-        mVersesRemainingView.setText(String.valueOf(mMarkerMediator.numVersesRemaining()));
-        mEscape.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mModeToggleCallback.onDisableVerseMarkerMode();
-            }
-        });
+    @SuppressLint("SetTextI18n")
+    fun decrementVersesRemaining() {
+        binding.verseMarkerCount.text = mMarkerMediator?.numVersesRemaining().toString()
     }
 
-    public void decrementVersesRemaining(){
-        mVersesRemainingView.setText(String.valueOf(mMarkerMediator.numVersesRemaining()));
+    companion object {
+        private const val KEY_MARKERS_REMAINING = "markers_remaining"
+
+        fun newInstance(mediator: MarkerMediator?): MarkerCounterFragment {
+            val f = MarkerCounterFragment()
+            f.setMarkerMediator(mediator)
+            return f
+        }
     }
 }

@@ -1,81 +1,65 @@
-package org.wycliffeassociates.translationrecorder.ProjectManager.tasks;
+package org.wycliffeassociates.translationrecorder.ProjectManager.tasks
 
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
-import org.wycliffeassociates.translationrecorder.project.TakeInfo;
-import org.wycliffeassociates.translationrecorder.utilities.Task;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getParentDirectory
+import org.wycliffeassociates.translationrecorder.utilities.Task
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import org.wycliffeassociates.translationrecorder.widgets.ChapterCard
+import java.io.File
 
 /**
  * Created by sarabiaj on 9/27/2016.
  */
-public class CompileChapterTask extends Task {
+class CompileChapterTask(
+    taskTag: Int,
+    private val mCardsToCompile: Map<ChapterCard, List<String>>,
+    private val mProject: Project,
+    private val directoryProvider: IDirectoryProvider
+) : Task(taskTag) {
 
-    Map<ChapterCard, List<String>> mCardsToCompile;
-    final Project mProject;
-
-    public CompileChapterTask(
-            int taskTag,
-            Map<ChapterCard, List<String>> cardsToCompile,
-            final Project project
-    ) {
-        super(taskTag);
-        mCardsToCompile = cardsToCompile;
-        mProject = project;
-    }
-
-    @Override
-    public void run() {
-        int currentCard = 0;
-        int totalCards = mCardsToCompile.size();
-        for (Map.Entry<ChapterCard, List<String>> entry : mCardsToCompile.entrySet()) {
-            List<String> files = entry.getValue();
-            ChapterCard chapterCard = entry.getKey();
-            sortFilesInChapter(files);
-            List<WavFile> wavFiles = getWavFilesFromName(files, chapterCard.getChapterNumber());
-            WavFile.compileChapter(mProject, chapterCard.getChapterNumber(), wavFiles);
-            onTaskProgressUpdateDelegator((int) ((currentCard / (float) totalCards) * 100));
-            currentCard++;
+    override fun run() {
+        var currentCard = 0
+        val totalCards = mCardsToCompile.size
+        for ((chapterCard, files) in mCardsToCompile) {
+            val sortedFiles = sortFilesInChapter(files)
+            val wavFiles = getWavFilesFromName(sortedFiles, chapterCard.chapterNumber)
+            WavFile.compileChapter(
+                mProject,
+                chapterCard.chapterNumber,
+                wavFiles,
+                directoryProvider
+            )
+            onTaskProgressUpdateDelegator(((currentCard / totalCards.toFloat()) * 100).toInt())
+            currentCard++
         }
 
-        onTaskCompleteDelegator();
+        onTaskCompleteDelegator()
     }
 
-    public void sortFilesInChapter(List<String> files) {
-        Collections.sort(files, new Comparator<String>() {
-            @Override
-            public int compare(String lhs, String rhs) {
-                ProjectPatternMatcher ppmLeft = mProject.getPatternMatcher();
-                ppmLeft.match(lhs);
-                TakeInfo takeInfoLeft = ppmLeft.getTakeInfo();
+    fun sortFilesInChapter(files: List<String>): List<String> {
+        return files.sortedWith { lhs, rhs ->
+            val ppmLeft = mProject.patternMatcher
+            ppmLeft.match(lhs)
+            val takeInfoLeft = ppmLeft.takeInfo
 
-                ProjectPatternMatcher ppmRight = mProject.getPatternMatcher();
-                ppmRight.match(rhs);
-                TakeInfo takeInfoRight = ppmRight.getTakeInfo();
+            val ppmRight = mProject.patternMatcher
+            ppmRight.match(rhs)
+            val takeInfoRight = ppmRight.takeInfo
 
-                int startLeft = takeInfoLeft.getStartVerse();
-                int startRight = takeInfoRight.getStartVerse();
-                return Integer.compare(startLeft, startRight);
-            }
-        });
-    }
-
-    public List<WavFile> getWavFilesFromName(List<String> files, int chapterNumber) {
-        List<WavFile> wavFiles = new ArrayList<>();
-        File base = ProjectFileUtils.getParentDirectory(mProject, chapterNumber);
-        for (String s : files) {
-            File f = new File(base, s);
-            wavFiles.add(new WavFile(f));
+            val startLeft = takeInfoLeft.startVerse
+            val startRight = takeInfoRight.startVerse
+            startLeft.compareTo(startRight)
         }
-        return wavFiles;
+    }
+
+    private fun getWavFilesFromName(files: List<String>, chapterNumber: Int): List<WavFile> {
+        val wavFiles: MutableList<WavFile> = ArrayList()
+        val base = getParentDirectory(mProject, chapterNumber, directoryProvider)
+        for (s in files) {
+            val f = File(base, s)
+            wavFiles.add(WavFile(f))
+        }
+        return wavFiles
     }
 }

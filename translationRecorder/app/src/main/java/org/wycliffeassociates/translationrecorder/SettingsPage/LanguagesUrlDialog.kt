@@ -1,69 +1,60 @@
-package org.wycliffeassociates.translationrecorder.SettingsPage;
+package org.wycliffeassociates.translationrecorder.SettingsPage
 
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-
-import androidx.appcompat.app.AlertDialog;
-
-import org.wycliffeassociates.translationrecorder.R;
+import android.app.Dialog
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
+import javax.inject.Inject
 
 /**
  * Created by mxaln on 08/16/2023.
  */
+@AndroidEntryPoint
+class LanguagesUrlDialog : DialogFragment() {
+    @Inject lateinit var pref: IPreferenceRepository
 
-public class LanguagesUrlDialog extends DialogFragment {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val builder = AlertDialog.Builder(requireActivity())
+        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_languages_url, null)
 
-    SharedPreferences pref;
+        val currentServerName = pref.getDefaultPref(
+            Settings.KEY_PREF_LANGUAGES_URL,
+            getString(R.string.pref_languages_url)
+        )
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_languages_url, null);
+        val url = view.findViewById<EditText>(R.id.url)
+        val saveButton = view.findViewById<Button>(R.id.save_button)
+        val restoreButton = view.findViewById<Button>(R.id.restore_default)
+        val cancelButton = view.findViewById<Button>(R.id.close_button)
 
-        pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String currentServerName = pref.getString(Settings.KEY_PREF_LANGUAGES_URL, getString(R.string.pref_languages_url));
+        url.setText(currentServerName)
 
-        final EditText url = view.findViewById(R.id.url);
-        final Button saveButton = view.findViewById(R.id.save_button);
-        final Button restoreButton = view.findViewById(R.id.restore_default);
-        final Button cancelButton = view.findViewById(R.id.close_button);
-
-        url.setText(currentServerName);
-
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String name = url.getText().toString();
-
-                if(name.length() > 0) {
-                    pref.edit().putString(Settings.KEY_PREF_LANGUAGES_URL, name).commit();
-                    dismiss();
-                }
+        saveButton.setOnClickListener {
+            val name = url.text.toString()
+            if (name.isNotEmpty()) {
+                pref.setDefaultPref(Settings.KEY_PREF_LANGUAGES_URL, name)
+                dismiss()
             }
-        });
+        }
 
-        restoreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pref.edit().putString(Settings.KEY_PREF_LANGUAGES_URL, getString(R.string.pref_languages_url)).commit();
-                dismiss();
-            }
-        });
+        restoreButton.setOnClickListener {
+            pref.setDefaultPref(
+                Settings.KEY_PREF_LANGUAGES_URL,
+                getString(R.string.pref_languages_url)
+            )
+            dismiss()
+        }
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dismiss();
-            }
-        });
+        cancelButton.setOnClickListener { dismiss() }
 
-        builder.setView(view);
-        return builder.create();
+        builder.setView(view)
+        return builder.create()
     }
 }

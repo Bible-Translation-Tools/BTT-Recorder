@@ -1,217 +1,212 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.os.Environment;
-
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
-import org.wycliffeassociates.translationrecorder.Utils;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.wav.WavFile;
-
-import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import android.annotation.SuppressLint
+import org.wycliffeassociates.translationrecorder.Utils
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.wav.WavFile
+import java.io.File
+import kotlin.math.max
 
 /**
  * Created by Joe on 3/31/2017.
  */
-
-public class ProjectFileUtils {
-
-    private ProjectFileUtils(){}
-
-    public static File createFile(Project project, int chapter, int startVerse, int endVerse) {
-        File dir = getParentDirectory(project, chapter);
-        String nameWithoutTake = project.getFileName(chapter, startVerse, endVerse);
-        int take = getLargestTake(project, dir, nameWithoutTake) + 1;
-        return new File(dir, nameWithoutTake + "_t" +  String.format("%02d", take) + ".wav");
+object ProjectFileUtils {
+    @SuppressLint("DefaultLocale")
+    fun createFile(
+        project: Project,
+        chapter: Int,
+        startVerse: Int,
+        endVerse: Int,
+        directoryProvider: IDirectoryProvider
+    ): File {
+        val dir = getParentDirectory(project, chapter, directoryProvider)
+        val nameWithoutTake = project.getFileName(chapter, startVerse, endVerse)
+        val take = getLargestTake(project, dir, nameWithoutTake) + 1
+        return File(dir, nameWithoutTake + "_t" + String.format("%02d", take) + ".wav")
     }
 
-    private static int getLargestTake(Project project, File directory, String nameWithoutTake) {
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return 0;
-        }
-        ProjectPatternMatcher ppm = project.getPatternMatcher();
-        ppm.match(nameWithoutTake);
-        TakeInfo baseTakeInfo = ppm.getTakeInfo();
-        int maxTake = Math.max(baseTakeInfo.getTake(), 0);
-        for (File f : files) {
-            ppm.match(f);
-            TakeInfo ti = ppm.getTakeInfo();
-            if (baseTakeInfo.equalBaseInfo(ti)) {
-                maxTake = (maxTake < ti.getTake()) ? ti.getTake() : maxTake;
+    private fun getLargestTake(project: Project, directory: File, nameWithoutTake: String): Int {
+        val files = directory.listFiles() ?: return 0
+        val ppm = project.patternMatcher
+        ppm.match(nameWithoutTake)
+        val baseTakeInfo = ppm.takeInfo
+        var maxTake = max(baseTakeInfo.take.toDouble(), 0.0).toInt()
+        for (f in files) {
+            ppm.match(f)
+            val ti = ppm.takeInfo
+            if (baseTakeInfo == ti) {
+                maxTake = if ((maxTake < ti.take)) ti.take else maxTake
             }
         }
-        return maxTake;
+        return maxTake
     }
 
-    public static int getLargestTake(Project project, File directory, File filename) {
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return 0;
-        }
-        ProjectPatternMatcher ppm = project.getPatternMatcher();
-        ppm.match(filename);
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        int maxTake = takeInfo.getTake();
-        for (File f : files) {
-            ppm.match(f);
-            TakeInfo ti = ppm.getTakeInfo();
-            if (takeInfo.equalBaseInfo(ti)) {
-                maxTake = (maxTake < ti.getTake()) ? ti.getTake() : maxTake;
+    fun getLargestTake(project: Project, directory: File, filename: File): Int {
+        val files = directory.listFiles() ?: return 0
+        val ppm = project.patternMatcher
+        ppm.match(filename)
+        val takeInfo = ppm.takeInfo
+        var maxTake = takeInfo.take
+        for (f in files) {
+            ppm.match(f)
+            val ti = ppm.takeInfo
+            if (takeInfo == ti) {
+                maxTake = if ((maxTake < ti.take)) ti.take else maxTake
             }
         }
-        return maxTake;
+        return maxTake
     }
 
-    public static File getParentDirectory(TakeInfo takeInfo){
-        ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        String path = String.format(
-                "%s/%s/%s/%s",
-                slugs.getLanguage(),
-                slugs.getVersion(),
-                slugs.getBook(),
-                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
-        );
-        File out = new File(root, path);
-        return out;
+    fun getParentDirectory(takeInfo: TakeInfo, directoryProvider: IDirectoryProvider): File {
+        val slugs = takeInfo.projectSlugs
+        val path = String.format(
+            "%s/%s/%s/%s",
+            slugs.language,
+            slugs.version,
+            slugs.book,
+            chapterIntToString(slugs.book, takeInfo.chapter)
+        )
+        val out = File(directoryProvider.translationsDir, path)
+        return out
     }
 
-    public static File getParentDirectory(Project project, File file) {
-        ProjectPatternMatcher ppm = project.getPatternMatcher();
-        ppm.match(file);
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        String path = String.format(
-                "%s/%s/%s/%s",
-                slugs.getLanguage(),
-                slugs.getVersion(),
-                slugs.getBook(),
-                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
-        );
-        File out = new File(root, path);
-        return out;
+    fun getParentDirectory(
+        project: Project,
+        file: File,
+        directoryProvider: IDirectoryProvider
+    ): File {
+        val ppm = project.patternMatcher
+        ppm.match(file)
+        val takeInfo = ppm.takeInfo
+        val slugs = takeInfo.projectSlugs
+        val path = String.format(
+            "%s/%s/%s/%s",
+            slugs.language,
+            slugs.version,
+            slugs.book,
+            chapterIntToString(slugs.book, takeInfo.chapter)
+        )
+        val out = File(directoryProvider.translationsDir, path)
+        return out
     }
 
-    public static File getParentDirectory(Project project, String file) {
-        ProjectPatternMatcher ppm = project.getPatternMatcher();
-        ppm.match(file);
-        TakeInfo takeInfo = ppm.getTakeInfo();
-        ProjectSlugs slugs = takeInfo.getProjectSlugs();
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        String path = String.format(
-                "%s/%s/%s/%s",
-                slugs.getLanguage(),
-                slugs.getVersion(),
-                slugs.getBook(),
-                chapterIntToString(slugs.getBook(), takeInfo.getChapter())
-        );
-        File out = new File(root, path);
-        return out;
+    fun getParentDirectory(
+        project: Project,
+        file: String,
+        directoryProvider: IDirectoryProvider
+    ): File {
+        val ppm = project.patternMatcher
+        ppm.match(file)
+        val takeInfo = ppm.takeInfo
+        val slugs = takeInfo.projectSlugs
+        val path = String.format(
+            "%s/%s/%s/%s",
+            slugs.language,
+            slugs.version,
+            slugs.book,
+            chapterIntToString(slugs.book, takeInfo.chapter)
+        )
+        val out = File(directoryProvider.translationsDir, path)
+        return out
     }
 
-    public static File getParentDirectory(Project project, int chapter) {
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        String path = String.format(
-                "%s/%s/%s/%s",
-                project.getTargetLanguageSlug(),
-                project.getVersionSlug(),
-                project.getBookSlug(),
-                chapterIntToString(project, chapter)
-        );
-        return new File(root, path);
+    @JvmStatic
+    fun getParentDirectory(
+        project: Project,
+        chapter: Int,
+        directoryProvider: IDirectoryProvider
+    ): File {
+        val path = String.format(
+            "%s/%s/%s/%s",
+            project.targetLanguageSlug,
+            project.versionSlug,
+            project.bookSlug,
+            chapterIntToString(project, chapter)
+        )
+        return File(directoryProvider.translationsDir, path)
     }
 
-    public static File getProjectDirectory(Project project) {
-        File projectDir = new File(getLanguageDirectory(project), project.getVersionSlug() +
-                "/" + project.getBookSlug());
-        return projectDir;
+    @JvmStatic
+    fun getProjectDirectory(project: Project, directoryProvider: IDirectoryProvider): File {
+        val projectDir = File(
+            getLanguageDirectory(project, directoryProvider),
+            "${project.versionSlug}/${project.bookSlug}"
+        )
+        return projectDir
     }
 
-    public static File getLanguageDirectory(Project project) {
-        File root = new File(
-                Environment.getExternalStorageDirectory(),
-                TranslationRecorderApp.getContext().getResources().getString(R.string.folder_name)
-        );
-        File projectDir = new File(root, project.getTargetLanguageSlug());
-        return projectDir;
+    private fun getLanguageDirectory(project: Project, directoryProvider: IDirectoryProvider): File {
+        val projectDir = File(directoryProvider.translationsDir, project.targetLanguageSlug)
+        return projectDir
     }
 
-    public static void deleteProject(Project project, ProjectDatabaseHelper db) {
-        File dir = getProjectDirectory(project);
-        Utils.deleteRecursive(dir);
-        File langDir = getLanguageDirectory(project);
-        File sourceDir;
-        if (project.isOBS()) {
-            sourceDir = new File(langDir, "obs");
+    fun deleteProject(project: Project, directoryProvider: IDirectoryProvider, db: IProjectDatabaseHelper) {
+        val dir = getProjectDirectory(project, directoryProvider)
+        Utils.deleteRecursive(dir)
+        val langDir = getLanguageDirectory(project, directoryProvider)
+        val sourceDir = if (project.isOBS) {
+            File(langDir, "obs")
         } else {
-            sourceDir = new File(langDir, project.getVersionSlug());
+            File(langDir, project.versionSlug)
         }
-        if (sourceDir.exists() && sourceDir.listFiles().length == 0) {
-            sourceDir.delete();
-            if (langDir.listFiles().length == 0) {
-                langDir.delete();
+        val sourceFiles = sourceDir.listFiles()
+        if (sourceDir.exists() && sourceFiles != null && sourceFiles.isEmpty()) {
+            sourceDir.delete()
+            val langFiles = langDir.listFiles()
+            if (langFiles != null && langFiles.isEmpty()) {
+                langDir.delete()
             }
         }
-        db.deleteProject(project);
+        db.deleteProject(project)
     }
 
-    public static String chapterIntToString(String bookSlug, int chapter) {
-        String result;
-        if (bookSlug.compareTo("psa") == 0) {
-            result = String.format("%03d", chapter);
+    @SuppressLint("DefaultLocale")
+    fun chapterIntToString(bookSlug: String, chapter: Int): String {
+        val result = if (bookSlug.compareTo("psa") == 0) {
+            String.format("%03d", chapter)
         } else {
-            result = String.format("%02d", chapter);
+            String.format("%02d", chapter)
         }
-        return result;
+        return result
     }
 
-    public static String chapterIntToString(Project project, int chapter) {
-        String result;
-        if (project.getBookSlug().compareTo("psa") == 0) {
-            result = String.format("%03d", chapter);
+    @SuppressLint("DefaultLocale")
+    @JvmStatic
+    fun chapterIntToString(project: Project, chapter: Int): String {
+        val result = if (project.bookSlug.compareTo("psa") == 0) {
+            String.format("%03d", chapter)
         } else {
-            result = String.format("%02d", chapter);
+            String.format("%02d", chapter)
         }
-        return result;
+        return result
     }
 
-    public static String unitIntToString(int unit) {
-        return String.format("%02d", unit);
+    @SuppressLint("DefaultLocale")
+    fun unitIntToString(unit: Int): String {
+        return String.format("%02d", unit)
     }
 
-    public static String getMode(WavFile file) {
-        return file.getMetadata().getModeSlug();
+    fun getMode(file: WavFile): String {
+        return file.metadata.modeSlug
     }
 
-    public static String getNameWithoutExtention(File file) {
-        String name = file.getName();
+    @JvmStatic
+    fun getNameWithoutExtension(file: File): String {
+        var name = file.name
         if (name.contains(".wav")) {
-            name = name.replace(".wav", "");
+            name = name.replace(".wav", "")
         }
-        return name;
+        return name
     }
 
-    public static String getNameWithoutTake(File file){
-        return getNameWithoutTake(file.getName());
+    @JvmStatic
+    fun getNameWithoutTake(file: File): String {
+        return getNameWithoutTake(file.name)
     }
 
-    public static String getNameWithoutTake(String file){
-        return file.split("(_t([\\d]{2}))?(.wav)?$")[0];
+    @JvmStatic
+    fun getNameWithoutTake(file: String): String {
+        return file.split("(_t(\\d{2}))?(.wav)?$".toRegex())[0]
     }
 }

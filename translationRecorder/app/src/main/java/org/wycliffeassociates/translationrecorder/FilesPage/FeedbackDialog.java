@@ -1,16 +1,21 @@
 package org.wycliffeassociates.translationrecorder.FilesPage;
 
 
-import android.app.*;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.door43.tools.reporting.Logger;
 import org.wycliffeassociates.translationrecorder.R;
 
 public class FeedbackDialog extends DialogFragment implements View.OnClickListener {
-
     public static final String DIALOG_TITLE = "dialogTitle";
     public static final String DIALOG_MESSAGE = "dialogMessage";
 
@@ -30,7 +35,7 @@ public class FeedbackDialog extends DialogFragment implements View.OnClickListen
         String mTitle = getArguments().getString(DIALOG_TITLE);
         String mMessage = getArguments().getString(DIALOG_MESSAGE);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_feedback, null);
 
         final Button btnOk = (Button) view.findViewById(R.id.ok_button);

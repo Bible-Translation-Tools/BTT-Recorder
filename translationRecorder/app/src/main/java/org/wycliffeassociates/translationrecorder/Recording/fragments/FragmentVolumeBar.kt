@@ -1,48 +1,44 @@
-package org.wycliffeassociates.translationrecorder.Recording.fragments;
+package org.wycliffeassociates.translationrecorder.Recording.fragments
 
-import android.app.Fragment;
-import android.os.Bundle;
-import androidx.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.wycliffeassociates.translationrecorder.AudioVisualization.VolumeBar;
-import org.wycliffeassociates.translationrecorder.R;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.databinding.FragmentVolumeBarBinding
 
 /**
  * Created by sarabiaj on 2/20/2017.
  */
+class FragmentVolumeBar : Fragment() {
 
-public class FragmentVolumeBar extends Fragment {
+    private var _binding: FragmentVolumeBarBinding? = null
+    private val binding get() = _binding!!
 
-    VolumeBar mVolume;
-
-    public static FragmentVolumeBar newInstance() {
-        FragmentVolumeBar f = new FragmentVolumeBar();
-        return f;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentVolumeBarBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_volume_bar, container, false);
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        findViews();
+    fun updateDb(db: Int) {
+        binding.volumeBar1.setDb(db)
+        binding.volumeBar1.postInvalidate()
     }
 
-    private void findViews() {
-        View view = getView();
-        mVolume = (VolumeBar) view.findViewById(R.id.volumeBar1);
-    }
-
-    public void updateDb(int db){
-        mVolume.setDb(db);
-        mVolume.postInvalidate();
+    companion object {
+        fun newInstance(): FragmentVolumeBar {
+            val f = FragmentVolumeBar()
+            return f
+        }
     }
 }

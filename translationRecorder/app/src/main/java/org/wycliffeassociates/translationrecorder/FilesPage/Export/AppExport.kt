@@ -1,69 +1,63 @@
-package org.wycliffeassociates.translationrecorder.FilesPage.Export;
+package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-
-import androidx.core.content.FileProvider;
-import androidx.multidex.BuildConfig;
-
-import org.wycliffeassociates.translationrecorder.project.Project;
-
-import java.io.File;
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import androidx.core.content.FileProvider
+import androidx.multidex.BuildConfig
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.Project
+import java.io.File
 
 /**
  * Created by sarabiaj on 12/10/2015.
  */
-public class AppExport extends Export {
+class AppExport(
+    exportProject: File,
+    project: Project,
+    directoryProvider: IDirectoryProvider
+) : Export(exportProject, project, directoryProvider) {
 
-    public AppExport(File exportProject, Project project){
-        super(exportProject, project);
-    }
-
-    @Override
-    protected void handleUserInput() {
-            exportZipApplications(mZipFile);
+    override fun handleUserInput() {
+        exportZipApplications(zipFile!!)
     }
 
     /**
-     *  Passes zip file URI to relevant audio applications.
-     *      @param zipFile a list of filenames to be exported
+     * Passes zip file URI to relevant audio applications.
+     * @param zipFile a list of filenames to be exported
      */
-    private void exportZipApplications(File zipFile){
-        Intent shareIntent = new Intent(this.mCtx.getActivity(), AppExport.ShareZipToApps.class);
-        shareIntent.putExtra("zipPath", zipFile.getAbsolutePath());
-        mCtx.startActivity(shareIntent);
+    private fun exportZipApplications(zipFile: File) {
+        val shareIntent = Intent(fragment.activity, ShareZipToApps::class.java)
+        shareIntent.putExtra("zipPath", zipFile.absolutePath)
+        fragment.startActivity(shareIntent)
     }
 
-    public static class ShareZipToApps extends Activity{
-        File mFile;
+    class ShareZipToApps : Activity() {
+        var mFile: File? = null
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            String path = getIntent().getStringExtra("zipPath");
-            Intent sendIntent = new Intent();
-            sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            mFile = new File (path);
-            Uri audioUri = FileProvider.getUriForFile(
-                    ShareZipToApps.this,
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    mFile
-            );
-            sendIntent.setAction(Intent.ACTION_SEND);
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            val path = intent.getStringExtra("zipPath")
+            val sendIntent = Intent()
+            sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            mFile = File(path)
+            val audioUri = FileProvider.getUriForFile(
+                this@ShareZipToApps,
+                BuildConfig.APPLICATION_ID + ".provider",
+                mFile!!
+            )
+            sendIntent.setAction(Intent.ACTION_SEND)
             //send individual URI
-            sendIntent.putExtra(Intent.EXTRA_STREAM, audioUri);
+            sendIntent.putExtra(Intent.EXTRA_STREAM, audioUri)
             //open
-            sendIntent.setType("application/zip");
-            this.startActivityForResult(Intent.createChooser(sendIntent, "Export Zip"), 3);
+            sendIntent.setType("application/zip")
+            this.startActivityForResult(Intent.createChooser(sendIntent, "Export Zip"), 3)
         }
 
-        @Override
-        protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-            super.onActivityResult(requestCode, resultCode, data);
-            if(mFile != null){
-                mFile.delete();
+        override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+            super.onActivityResult(requestCode, resultCode, data)
+            if (mFile != null) {
+                mFile!!.delete()
             }
         }
     }
