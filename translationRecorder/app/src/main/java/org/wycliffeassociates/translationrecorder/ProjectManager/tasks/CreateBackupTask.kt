@@ -27,7 +27,7 @@ class CreateBackupTask(
     override fun run() {
         try {
             val uuid = UUID.randomUUID().toString()
-            val tempZipFile = File(context.cacheDir, "$uuid.zip")
+            val tempZipFile = File(directoryProvider.internalCacheDir, "$uuid.zip")
 
             ZipFile(tempZipFile).use { zipper ->
                 val zp = ZipParameters()
@@ -36,11 +36,14 @@ class CreateBackupTask(
                     file.name == "cache" || file.name == "code_cache"
                 }
 
-                zipper.addFolder(directoryProvider.internalAppDir, zp)
-                zipper.renameFile(directoryProvider.internalAppDir.name + "/", "app_data")
+                val internalDir = directoryProvider.internalAppDir.parentFile!!
+                val externalDir = directoryProvider.externalAppDir.parentFile!!
 
-                zipper.addFolder(directoryProvider.externalAppDir, zp)
-                zipper.renameFile(directoryProvider.externalAppDir.name + "/", "user_data")
+                zipper.addFolder(internalDir, zp)
+                zipper.renameFile(internalDir.name + "/", "app_data")
+
+                zipper.addFolder(externalDir, zp)
+                zipper.renameFile(externalDir.name + "/", "user_data")
             }
 
             context.contentResolver.openOutputStream(backupUri).use { outputStream ->

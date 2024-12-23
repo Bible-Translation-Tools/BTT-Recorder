@@ -1,93 +1,87 @@
-package org.wycliffeassociates.translationrecorder.project;
+package org.wycliffeassociates.translationrecorder.project
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ListView;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.databinding.FragmentScrollListBinding
 
-import androidx.fragment.app.Fragment;
+class ScrollableListFragment : Fragment(), Searchable {
 
-import org.wycliffeassociates.translationrecorder.R;
+    private var mSearchHint = ""
 
+    private var mListener: OnItemClickListener? = null
+    private var mAdapter: ArrayAdapter<*>? = null
 
-public class ScrollableListFragment extends Fragment implements Searchable {
-    private OnItemClickListener mListener;
-    private ArrayAdapter mAdapter;
-    private String mSearchHint = "";
-
-    public interface OnItemClickListener {
-        void onItemClick(Object result);
+    interface OnItemClickListener {
+        fun onItemClick(result: Any?)
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_scroll_list, container, false);
-        ImageButton searchBackButton = rootView.findViewById(R.id.search_back_button);
-        searchBackButton.setVisibility(View.GONE);
-        ImageView searchIcon = rootView.findViewById(R.id.search_mag_icon);
-        searchIcon.setVisibility(View.GONE);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentScrollListBinding.inflate(inflater, container, false)
 
-        ListView list = rootView.findViewById(R.id.list);
-        list.setAdapter(mAdapter);
-        list.setOnItemClickListener((parent, view, position, id) -> mListener.onItemClick(mAdapter.getItem(position)));
+        binding.searchBar.searchBackButton.visibility = View.GONE
+        binding.searchBar.searchMagIcon.visibility = View.GONE
 
-        //if only one item is in the adapter, just choose it and continue on in the project wizard
-        if(mAdapter != null && mAdapter.getCount() == 1) {
-            mListener.onItemClick(mAdapter.getItem(0));
+        binding.list.adapter = mAdapter
+        binding.list.onItemClickListener =
+            AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
+                mListener?.onItemClick(mAdapter?.getItem(position))
+            }
+
+        // if only one item is in the adapter, just choose it and continue on in the project wizard
+        if (mAdapter?.count == 1) {
+            mListener?.onItemClick(mAdapter?.getItem(0))
         }
-        EditText searchView = rootView.findViewById(R.id.search_text);
-        searchView.setHint(mSearchHint);
-        searchView.setEnabled(false);
+        binding.searchBar.searchText.hint = mSearchHint
+        binding.searchBar.searchText.isEnabled = false
 
-        return rootView;
+        return binding.root
     }
 
-    public void setAdapter(ArrayAdapter adapter){
-        mAdapter = adapter;
+    fun setAdapter(adapter: ArrayAdapter<*>?) {
+        mAdapter = adapter
     }
 
-    public void setSearchHint(String hint){
-        mSearchHint = hint;
+    fun setSearchHint(hint: String) {
+        mSearchHint = hint
     }
 
-    public void onAttach(Context context) {
-        super.onAttach(context);
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            this.mListener = (OnItemClickListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context + " must implement OnItemClickListener");
+            this.mListener = context as OnItemClickListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement OnItemClickListener")
         }
     }
 
-    @Override
-    public void onSearchQuery(String query) {
-        if(mAdapter != null) {
-            mAdapter.getFilter().filter(query);
-        }
+    override fun onSearchQuery(query: String) {
+        mAdapter?.filter?.filter(query)
     }
 
-    public static class Builder{
-        private ScrollableListFragment mFragment;
+    class Builder(adapter: ArrayAdapter<*>?) {
+        private val mFragment = ScrollableListFragment()
 
-        public Builder(ArrayAdapter adapter){
-            mFragment = new ScrollableListFragment();
-            mFragment.setAdapter(adapter);
-        }
-        public Builder setSearchHint(String hint){
-            mFragment.setSearchHint(hint);
-            return this;
+        init {
+            mFragment.setAdapter(adapter)
         }
 
-        public ScrollableListFragment build(){
-            return mFragment;
+        fun setSearchHint(hint: String): Builder {
+            mFragment.setSearchHint(hint)
+            return this
         }
 
+        fun build(): ScrollableListFragment {
+            return mFragment
+        }
     }
 }

@@ -50,9 +50,6 @@ class MainMenu : AppCompatActivity() {
         windowManager.defaultDisplay.getMetrics(metrics)
         AudioInfo.SCREEN_WIDTH = metrics.widthPixels
 
-        println("Internal files dir is " + directoryProvider.internalAppDir)
-        println("External files dir is " + directoryProvider.externalAppDir)
-
         initApp()
     }
 
@@ -228,8 +225,9 @@ class MainMenu : AppCompatActivity() {
         //set up Visualization folder
         Utils.VISUALIZATION_DIR = File(
             directoryProvider.externalCacheDir, "Visualization"
-        )
-        Utils.VISUALIZATION_DIR.mkdirs()
+        ).apply {
+            mkdirs()
+        }
 
         //configure logger
         val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
@@ -257,7 +255,7 @@ class MainMenu : AppCompatActivity() {
     @SuppressLint("DefaultLocale")
     private fun removeUnusedVisualizationFiles() {
         val visFilesLocation = Utils.VISUALIZATION_DIR
-        val visFiles = visFilesLocation.listFiles() ?: return
+        val visFiles = visFilesLocation?.listFiles() ?: return
         val rootPath = directoryProvider.translationsDir.absolutePath
         val patterns = db.projectPatternMatchers
         for (v in visFiles) {

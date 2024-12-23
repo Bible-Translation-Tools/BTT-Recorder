@@ -29,15 +29,14 @@ class BackupRestoreDialog : DialogFragment() {
         const val RESTORE_BACKUP_FILE = 2
     }
 
-    var pref: SharedPreferences? = null
-
-    lateinit var binding: DialogBackupRestoreBinding
+    private var _binding: DialogBackupRestoreBinding? = null
+    private val binding get() = _binding!!
 
     private var listener: BackupRestoreDialogListener? = null
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = DialogBackupRestoreBinding.inflate(requireActivity().layoutInflater)
+        _binding = DialogBackupRestoreBinding.inflate(layoutInflater)
 
         val builder = AlertDialog.Builder(requireActivity())
 

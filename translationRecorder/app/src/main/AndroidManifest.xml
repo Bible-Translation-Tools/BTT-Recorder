@@ -59,7 +59,7 @@
 
         <activity
             android:name="org.wycliffeassociates.translationrecorder.project.SelectSourceDirectory"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="org.wycliffeassociates.translationrecorder.SettingsPage.SELECT_SRC_INTENT" />
                 <category android:name="android.intent.category.DEFAULT" />

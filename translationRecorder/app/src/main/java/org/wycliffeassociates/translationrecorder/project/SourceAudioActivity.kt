@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
@@ -231,9 +232,12 @@ class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemCl
         if (requestCode == REQUEST_SOURCE_LOCATION) {
             if (data?.hasExtra(SelectSourceDirectory.SOURCE_LOCATION) == true) {
                 sourceLocation = data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION)
+                val sourceUriDisplayName = sourceLocation?.let {
+                    Utils.getUriDisplayName(this, it.toUri())
+                } ?: ""
                 binding.locationBtn.text = resources.getString(
                     R.string.source_location_selected,
-                    sourceLocation
+                    sourceUriDisplayName
                 )
                 mSetLocation = true
                 continueIfBothSet()
@@ -241,7 +245,7 @@ class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemCl
         }
     }
 
-    override fun onItemClick(result: Any) {
+    override fun onItemClick(result: Any?) {
         Utils.closeKeyboard(this)
         hideSearchMenu()
         sourceLanguage = result as Language

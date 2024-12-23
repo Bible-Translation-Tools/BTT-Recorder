@@ -165,10 +165,16 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     }
 
     private fun showPauseButton() {
-        Utils.swapViews(arrayOf(binding.btnPause), arrayOf(binding.btnPlay))
+        Utils.swapViews(
+            arrayOf(binding.btnPause),
+            arrayOf(binding.btnPlay)
+        )
     }
 
     private fun showPlayButton() {
-        Utils.swapViews(arrayOf(binding.btnPlay), arrayOf(binding.btnPause))
+        Utils.swapViews(
+            arrayOf(binding.btnPlay),
+            arrayOf(binding.btnPause)
+        )
     }
 }

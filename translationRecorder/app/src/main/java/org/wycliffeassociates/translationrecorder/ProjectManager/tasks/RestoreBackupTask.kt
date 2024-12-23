@@ -37,9 +37,13 @@ class RestoreBackupTask(
                     }
                 }
             }
+
+            val internalDir = directoryProvider.internalAppDir.parentFile!!
+            val externalDir = directoryProvider.externalAppDir.parentFile!!
+
             ZipFile(tempZipFile).use { zipFile ->
-                extractDirectory(zipFile, "user_data/", directoryProvider.externalAppDir)
-                extractDirectory(zipFile, "app_data/", directoryProvider.internalAppDir)
+                extractDirectory(zipFile, "app_data/", internalDir)
+                extractDirectory(zipFile, "user_data/", externalDir)
             }
             tempZipFile.delete()
         } catch (e: IOException) {

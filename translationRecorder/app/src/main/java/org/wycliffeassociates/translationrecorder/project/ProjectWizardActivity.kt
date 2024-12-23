@@ -147,7 +147,7 @@ class ProjectWizardActivity : AppCompatActivity(), ScrollableListFragment.OnItem
         mSearchViewAction.onActionViewCollapsed()
     }
 
-    override fun onItemClick(result: Any) {
+    override fun onItemClick(result: Any?) {
         clearSearchState()
         Utils.closeKeyboard(this)
         if (mCurrentFragment == TARGET_LANGUAGE && result is Language) {

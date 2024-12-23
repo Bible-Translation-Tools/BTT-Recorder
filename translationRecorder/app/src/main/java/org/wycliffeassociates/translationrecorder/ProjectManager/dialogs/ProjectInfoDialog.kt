@@ -8,12 +8,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
+import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ProjectLayoutDialogBinding
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
@@ -69,7 +71,9 @@ class ProjectInfoDialog : DialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = ProjectLayoutDialogBinding.inflate(layoutInflater)
+
         val builder = AlertDialog.Builder(requireActivity())
+        builder.setView(binding.root)
 
         project = arguments?.getParcelable(Project.PROJECT_EXTRA)!!
 
@@ -155,7 +159,6 @@ class ProjectInfoDialog : DialogFragment() {
             startActivityForResult(intent, SOURCE_AUDIO_REQUEST)
         }
 
-        builder.setView(view)
         return builder.create()
     }
 
@@ -165,7 +168,9 @@ class ProjectInfoDialog : DialogFragment() {
             db.getLanguageName(sourceLanguageCode)
         } else ""
         binding.sourceAudioLanguage.text = String.format("%s - (%s)", sourceLanguageName, sourceLanguageCode)
-        binding.sourceAudioLocation.text = project.sourceAudioPath
+        binding.sourceAudioLocation.text = project.sourceAudioPath?.let {
+            Utils.getUriDisplayName(requireContext(), it.toUri())
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -66,16 +66,16 @@ class MarkerToolbarFragment : Fragment() {
     fun showPlayButton() {
         if (_binding == null) return
         Utils.swapViews(
-            arrayOf<View?>(binding.btnPlay),
-            arrayOf<View?>(binding.btnPause)
+            arrayOf(binding.btnPlay),
+            arrayOf(binding.btnPause)
         )
     }
 
     fun showPauseButton() {
         if (_binding == null) return
         Utils.swapViews(
-            arrayOf<View?>(binding.btnPause),
-            arrayOf<View?>(binding.btnPlay)
+            arrayOf(binding.btnPause),
+            arrayOf(binding.btnPlay)
         )
     }
 

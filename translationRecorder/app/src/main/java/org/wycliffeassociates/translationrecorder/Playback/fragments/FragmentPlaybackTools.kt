@@ -35,8 +35,8 @@ class FragmentPlaybackTools : Fragment() {
             mMediaController?.setOnCompleteListner {
                 requireActivity().runOnUiThread {
                     Utils.swapViews(
-                        arrayOf<View>(binding.btnPlay),
-                        arrayOf<View>(binding.btnPause)
+                        arrayOf(binding.btnPlay),
+                        arrayOf(binding.btnPause)
                     )
                 }
             }
@@ -70,9 +70,8 @@ class FragmentPlaybackTools : Fragment() {
         attachListeners()
         initTimer(binding.playbackElapsed, binding.playbackDuration)
         Utils.swapViews(
-            arrayOf<View>(
-                binding.btnPlay
-            ), arrayOf<View>(binding.btnPause)
+            arrayOf(binding.btnPlay),
+            arrayOf(binding.btnPause)
         )
         if (mMediaController!!.isPlaying) {
             showPauseButton()
@@ -110,48 +109,48 @@ class FragmentPlaybackTools : Fragment() {
 
     fun showPauseButton() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnPause),
-            arrayOf<View>(binding.btnPlay)
+            arrayOf(binding.btnPause),
+            arrayOf(binding.btnPlay)
         )
     }
 
     fun showPlayButton() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnPlay),
-            arrayOf<View>(binding.btnPause)
+            arrayOf(binding.btnPlay),
+            arrayOf(binding.btnPause)
         )
     }
 
     fun viewOnSetStartMarker() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnEndMark, binding.btnClear),
-            arrayOf<View>(binding.btnStartMark)
+            arrayOf(binding.btnEndMark, binding.btnClear),
+            arrayOf(binding.btnStartMark)
         )
     }
 
     fun viewOnSetEndMarker() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnCut),
-            arrayOf<View>(binding.btnEndMark, binding.btnStartMark)
+            arrayOf(binding.btnCut),
+            arrayOf(binding.btnEndMark, binding.btnStartMark)
         )
     }
 
     fun viewOnSetBothMarkers() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnCut),
-            arrayOf<View>(binding.btnEndMark, binding.btnStartMark)
+            arrayOf(binding.btnCut),
+            arrayOf(binding.btnEndMark, binding.btnStartMark)
         )
     }
 
     fun viewOnCut() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnStartMark, binding.btnUndo),
-            arrayOf<View>(binding.btnCut, binding.btnClear)
+            arrayOf(binding.btnStartMark, binding.btnUndo),
+            arrayOf(binding.btnCut, binding.btnClear)
         )
     }
 
     fun viewOnUndo() {
-        var toHide = arrayOf<View?>()
+        var toHide = arrayOf<View>()
         if (!(mAudioEditDelegator as EditStateInformer).hasEdits()) {
             toHide = arrayOf(binding.btnUndo)
         }
@@ -160,8 +159,8 @@ class FragmentPlaybackTools : Fragment() {
 
     fun viewOnClearMarkers() {
         Utils.swapViews(
-            arrayOf<View>(binding.btnStartMark),
-            arrayOf<View>(binding.btnClear, binding.btnCut, binding.btnEndMark)
+            arrayOf(binding.btnStartMark),
+            arrayOf(binding.btnClear, binding.btnCut, binding.btnEndMark)
         )
     }
 
@@ -215,8 +214,8 @@ class FragmentPlaybackTools : Fragment() {
     fun onPlayerPaused() {
         if (_binding == null) return
         Utils.swapViews(
-            arrayOf<View>(binding.btnPlay),
-            arrayOf<View>(binding.btnPause)
+            arrayOf(binding.btnPlay),
+            arrayOf(binding.btnPause)
         )
     }
 

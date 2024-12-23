@@ -15,6 +15,7 @@ import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsFragment.
 import org.wycliffeassociates.translationrecorder.SplashScreen
 import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.SettingsBinding
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.project.ScrollableListFragment
@@ -42,6 +43,8 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
     private var showSearch = false
     private var displayingList: Boolean = false
 
+    private lateinit var binding: SettingsBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         displayingList = false
@@ -51,13 +54,18 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        setContentView(R.layout.settings)
-        PreferenceManager.setDefaultValues(this, R.xml.preference, false)
+        binding = SettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(binding.fragmentScrollList.id, SettingsFragment())
+            .commit()
     }
 
     override fun onBackPressed() {
         if (displayingList) {
-            val fragment = supportFragmentManager.findFragmentById(R.id.fragment_scroll_list)
+            val fragment = supportFragmentManager.findFragmentById(binding.fragmentScrollList.id)
             if (fragment != null) {
                 supportFragmentManager.beginTransaction().remove(fragment).commit()
             }
@@ -101,7 +109,7 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
                 }
                 override fun onQueryTextChange(s: String): Boolean {
                     searchText = s
-                    val fragment = supportFragmentManager.findFragmentById(R.id.fragment_scroll_list)
+                    val fragment = supportFragmentManager.findFragmentById(binding.fragmentScrollList.id)
                     //Seems to sometimes pull SettingsFragment instead and thus cannot cast?
                     if (fragment is ScrollableListFragment) {
                         fragment.onSearchQuery(s)
@@ -121,10 +129,10 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
         return true
     }
 
-    override fun onItemClick(result: Any) {
+    override fun onItemClick(result: Any?) {
         Utils.closeKeyboard(this)
         prefs.setDefaultPref(KEY_PREF_GLOBAL_LANG_SRC, (result as Language).slug)
-        val fragment = supportFragmentManager.findFragmentById(R.id.fragment_scroll_list)
+        val fragment = supportFragmentManager.findFragmentById(binding.fragmentScrollList.id)
         if (fragment != null) {
             supportFragmentManager.beginTransaction().remove(fragment).commit()
         }
@@ -151,7 +159,7 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
             .setSearchHint(getString(R.string.choose_source_language) + ":")
             .build()
         supportFragmentManager.beginTransaction()
-            .add(R.id.fragment_scroll_list, fragment!!).commit()
+            .add(binding.fragmentScrollList.id, fragment!!).commit()
     }
 
     override fun onTaskComplete(taskTag: Int, resultCode: Int) {
@@ -172,11 +180,6 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
 
         const val KEY_PREF_CHAPTER: String = "pref_chapter"
         const val KEY_PREF_CHUNK: String = "pref_chunk"
-        const val KEY_PREF_TAKE: String = "pref_take"
-        const val KEY_PREF_CHUNK_VERSE: String = "pref_chunk_verse"
-        const val KEY_PREF_START_VERSE: String = "pref_start_verse"
-        const val KEY_PREF_END_VERSE: String = "pref_end_verse"
-        const val KEY_PREF_SRC_LOC: String = "pref_src_loc"
         const val KEY_SDK_LEVEL: String = "pref_sdk_level"
         const val KEY_PROFILE: String = "pref_profile"
         const val KEY_USER: String = "pref_profile"

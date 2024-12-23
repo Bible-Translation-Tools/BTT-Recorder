@@ -1,85 +1,112 @@
-package org.wycliffeassociates.translationrecorder;
+package org.wycliffeassociates.translationrecorder
 
-import android.app.Activity;
-import android.content.Context;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-
-import com.door43.tools.reporting.Logger;
-
-import java.io.File;
+import android.app.Activity
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import com.door43.tools.reporting.Logger
+import java.io.File
+import java.util.Locale
 
 /**
  * Created by sarabiaj on 7/1/2016.
  */
-public class Utils {
-    private Utils() {
-    }
+object Utils {
+    var VISUALIZATION_DIR: File? = null
 
-    public static File VISUALIZATION_DIR;
-
-    public static void swapViews(final View[] toShow, final View[] toHide) {
-        for (View v : toShow) {
-            if (v != null) {
-                v.setVisibility(View.VISIBLE);
-            }
+    fun swapViews(toShow: Array<View>, toHide: Array<View>) {
+        for (v in toShow) {
+            v.visibility = View.VISIBLE
         }
-        for (View v : toHide) {
-            if (v != null) {
-                v.setVisibility(View.INVISIBLE);
-            }
+        for (v in toHide) {
+            v.visibility = View.INVISIBLE
         }
     }
 
-    public static void closeKeyboard(Activity ctx) {
-        InputMethodManager inputManager = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (ctx.getCurrentFocus() != null) {
-            inputManager.hideSoftInputFromWindow(ctx.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+    fun closeKeyboard(ctx: Activity) {
+        val inputManager = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (ctx.currentFocus != null) {
+            inputManager.hideSoftInputFromWindow(
+                ctx.currentFocus!!.windowToken,
+                InputMethodManager.HIDE_NOT_ALWAYS
+            )
         }
     }
 
     //http://stackoverflow.com/questions/13410949/how-to-delete-folder-from-internal-storage-in-android
-    public static void deleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory()) {
-            if(fileOrDirectory.listFiles() != null) {
-                for (File child : fileOrDirectory.listFiles()) {
-                    deleteRecursive(child);
+    @JvmStatic
+    fun deleteRecursive(fileOrDirectory: File) {
+        if (fileOrDirectory.isDirectory) {
+            val files = fileOrDirectory.listFiles()
+            if (files != null) {
+                for (child in files) {
+                    deleteRecursive(child)
                 }
             }
         }
-        fileOrDirectory.delete();
+        fileOrDirectory.delete()
     }
 
     // http://stackoverflow.com/questions/5725892/how-to-capitalize-the-first-letter-of-word-in-a-string-using-java
-    public static String capitalizeFirstLetter(String string) {
-        return string.substring(0, 1).toUpperCase() + string.substring(1).toLowerCase();
+    @JvmStatic
+    fun capitalizeFirstLetter(string: String): String {
+        return string.replaceFirstChar {
+            if (it.isLowerCase()) {
+                it.titlecase(Locale.getDefault())
+            } else it.toString()
+        }
     }
 
-    public static void showView(View view) {
+    fun showView(view: View?) {
         if (view == null) {
-            Logger.i("Utils.showView()", "A null view is trying to be shown");
-            return;
+            Logger.i("Utils.showView()", "A null view is trying to be shown")
+            return
         }
-        view.setVisibility(View.VISIBLE);
+        view.visibility = View.VISIBLE
     }
 
-    public static void showView(View[] views) {
-        for (View v : views) {
-            showView(v);
+    fun showView(views: Array<View?>) {
+        for (v in views) {
+            showView(v)
         }
     }
 
-    public static void hideView(View view) {
+    fun hideView(view: View?) {
         if (view == null) {
-            Logger.i("Utils.hideView()", "A null view is trying to be hid");
-            return;
+            Logger.i("Utils.hideView()", "A null view is trying to be hid")
+            return
         }
-        view.setVisibility(View.GONE);
+        view.visibility = View.GONE
     }
 
-    public static void hideView(View[] views) {
-        for (View v : views) {
-            hideView(v);
+    fun hideView(views: Array<View?>) {
+        for (v in views) {
+            hideView(v)
+        }
+    }
+
+    fun getUriDisplayName(context: Context, uri: Uri): String {
+        val defaultName = "unnamed.file"
+
+        return when (uri.scheme) {
+            "content" -> {
+                context.contentResolver.query(
+                    uri,
+                    null,
+                    null,
+                    null,
+                    null
+                ).use { returnCursor ->
+                    return returnCursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)?.let { nameIndex ->
+                        returnCursor.moveToFirst()
+                        returnCursor.getString(nameIndex)
+                    } ?: defaultName
+                }
+            }
+            "file" -> uri.lastPathSegment ?: defaultName
+            else -> defaultName
         }
     }
 }
