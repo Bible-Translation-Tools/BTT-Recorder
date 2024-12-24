@@ -25,6 +25,7 @@ import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity
 import org.wycliffeassociates.translationrecorder.project.components.Language
+import java.io.File
 import java.util.Locale
 import javax.inject.Inject
 
@@ -168,9 +169,7 @@ class ProjectInfoDialog : DialogFragment() {
             db.getLanguageName(sourceLanguageCode)
         } else ""
         binding.sourceAudioLanguage.text = String.format("%s - (%s)", sourceLanguageName, sourceLanguageCode)
-        binding.sourceAudioLocation.text = project.sourceAudioPath?.let {
-            Utils.getUriDisplayName(requireContext(), it.toUri())
-        }
+        binding.sourceAudioLocation.text = project.sourceAudioPath?.let { File(it).name }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

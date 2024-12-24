@@ -2,7 +2,6 @@ package org.wycliffeassociates.translationrecorder.Playback
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
@@ -73,13 +72,13 @@ class SourceAudio @JvmOverloads constructor (
         }
     }
 
-    private fun getUriFromString(sourceLanguage: String?, sourceLocation: String?): Uri? {
+    private fun getFileFromString(sourceLanguage: String?, sourceLocation: String?): File? {
         if (sourceLocation.isNullOrEmpty() || sourceLanguage.isNullOrEmpty()) {
             return null
         }
-        val uri = Uri.parse(sourceLocation)
-        if (uri != null) {
-            return uri
+        val file = File(sourceLocation)
+        if (file.exists()) {
+            return file
         }
         return null
     }
@@ -96,51 +95,56 @@ class SourceAudio @JvmOverloads constructor (
     }
 
     @Throws(IOException::class, FileNotFoundException::class)
-    private fun getAudioFromUri(
+    private fun getAudioFromFile(
         sourceLanguage: String?,
-        uri: Uri,
+        file: File,
         directoryProvider: IDirectoryProvider
     ): Boolean {
-        context.contentResolver.openInputStream(uri).use { inputStream ->
-            val ll = LanguageLevel()
-            val aoh = ArchiveOfHolding(inputStream, ll)
-            //The archive of holding entry requires the path to look for the file, so that part of the name can be ignored
-            //chapter and verse information is all that is necessary to be identifiable at this point.
-            val chapterVerseSection = ChapterVerseSection(mFileName)
+        try {
+            file.inputStream().use { inputStream ->
+                val ll = LanguageLevel()
+                val aoh = ArchiveOfHolding(inputStream, ll)
+                //The archive of holding entry requires the path to look for the file, so that part of the name can be ignored
+                //chapter and verse information is all that is necessary to be identifiable at this point.
+                val chapterVerseSection = ChapterVerseSection(mFileName)
 
-            val entry = aoh.getEntry(
-                chapterVerseSection,
-                sourceLanguage,
-                ll.getVersionSlug(sourceLanguage),
-                mProject.bookSlug,
-                chapterIntToString(
-                    mProject, mChapter
+                val entry = aoh.getEntry(
+                    chapterVerseSection,
+                    sourceLanguage,
+                    ll.getVersionSlug(sourceLanguage),
+                    mProject.bookSlug,
+                    chapterIntToString(
+                        mProject, mChapter
+                    )
                 )
-            )
-            if (entry == null) {
-                return false
-            }
-            val extension = getExtensionIfValid(entry.name)
-            entry.inputStream.use { file ->
-                BufferedInputStream(file).use { bis ->
-                    mTemp = File(directoryProvider.externalCacheDir, "temp.$extension").apply {
-                        delete()
-                        createNewFile()
-                        FileOutputStream(this).use { fos ->
-                            BufferedOutputStream(fos).use { bos ->
-                                val buffer = ByteArray(1024)
-                                var len: Int
-                                while ((bis.read(buffer).also { len = it }) != -1) {
-                                    bos.write(buffer, 0, len)
+                if (entry == null) {
+                    return false
+                }
+                val extension = getExtensionIfValid(entry.name)
+                entry.inputStream.use { file ->
+                    BufferedInputStream(file).use { bis ->
+                        mTemp = File(directoryProvider.externalCacheDir, "temp.$extension").apply {
+                            delete()
+                            createNewFile()
+                            FileOutputStream(this).use { fos ->
+                                BufferedOutputStream(fos).use { bos ->
+                                    val buffer = ByteArray(1024)
+                                    var len: Int
+                                    while ((bis.read(buffer).also { len = it }) != -1) {
+                                        bos.write(buffer, 0, len)
+                                    }
+                                    bos.flush()
                                 }
-                                bos.flush()
                             }
                         }
                     }
                 }
             }
+            return true
+        } catch (e: Exception) {
+            Logger.e("SourceAudio", "Error loading source audio from file", e)
         }
-        return true
+        return false
     }
 
     @Throws(IOException::class)
@@ -150,15 +154,15 @@ class SourceAudio @JvmOverloads constructor (
         val globalSourceLocation = prefs.getDefaultPref(Settings.KEY_PREF_GLOBAL_SOURCE_LOC, "")
         val globalSourceLanguage = prefs.getDefaultPref(Settings.KEY_PREF_GLOBAL_LANG_SRC, "")
 
-        val projectUri = getUriFromString(projectSourceLanguage, projectSourceLocation)
-        val globalUri = getUriFromString(globalSourceLanguage, globalSourceLocation)
+        val projectFile = getFileFromString(projectSourceLanguage, projectSourceLocation)
+        val globalFile = getFileFromString(globalSourceLanguage, globalSourceLocation)
 
         var gotFile = false
-        if (projectUri != null) {
-            gotFile = getAudioFromUri(projectSourceLanguage, projectUri, directoryProvider)
+        if (projectFile != null) {
+            gotFile = getAudioFromFile(projectSourceLanguage, projectFile, directoryProvider)
         }
-        if (!gotFile && globalUri != null) {
-            getAudioFromUri(globalSourceLanguage, globalUri, directoryProvider)
+        if (!gotFile && globalFile != null) {
+            getAudioFromFile(globalSourceLanguage, globalFile, directoryProvider)
         }
     }
 

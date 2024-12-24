@@ -25,19 +25,45 @@ class DirectoryProvider (private val context: Context) : IDirectoryProvider {
     override val codeCacheDir: File
         get() = context.codeCacheDir
 
+    override val sourceAudioDir: File
+        get() {
+            val path = File(externalAppDir, "source_audio")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
+
     override val translationsDir: File
-        get() = File(externalAppDir, "translations")
+        get() {
+            val path = File(externalAppDir, "translations")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
 
     override val profilesDir: File
-        get() = File(externalAppDir, "profiles")
+        get() {
+            val path = File(externalAppDir, "profiles")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
 
     override val uploadDir: File
-        get() = File(externalAppDir, "upload")
+        get() {
+            val path = File(externalAppDir, "upload")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
 
     override val pluginsDir: File
-        get() = File(codeCacheDir, "plugins")
+        get() {
+            val path = File(codeCacheDir, "plugins")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
 
     override val anthologiesDir: File
-        get() = File(pluginsDir, "anthologies")
-
+        get() {
+            val path = File(pluginsDir, "anthologies")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
 }

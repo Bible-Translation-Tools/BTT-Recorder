@@ -9,15 +9,16 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.databinding.ActivitySourceAudioBinding
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter
 import org.wycliffeassociates.translationrecorder.project.components.Language
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemClickListener {
 
     @Inject lateinit var assetsProvider: AssetsProvider
+    @Inject lateinit var directoryProvider: IDirectoryProvider
 
     private var sourceLanguage: Language? = null
     private var sourceLocation: String? = null
@@ -231,15 +233,15 @@ class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemCl
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_SOURCE_LOCATION) {
             if (data?.hasExtra(SelectSourceDirectory.SOURCE_LOCATION) == true) {
-                sourceLocation = data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION)
-                val sourceUriDisplayName = sourceLocation?.let {
-                    Utils.getUriDisplayName(this, it.toUri())
-                } ?: ""
-                binding.locationBtn.text = resources.getString(
-                    R.string.source_location_selected,
-                    sourceUriDisplayName
-                )
-                mSetLocation = true
+                data.getStringExtra(SelectSourceDirectory.SOURCE_LOCATION)?.let { location ->
+                    val target = File(location)
+                    sourceLocation = location
+                    binding.locationBtn.text = resources.getString(
+                        R.string.source_location_selected,
+                        target.name
+                    )
+                    mSetLocation = true
+                }
                 continueIfBothSet()
             }
         }

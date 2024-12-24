@@ -29,13 +29,13 @@ import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companio
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.KEY_PREF_UPLOAD_SERVER
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.RESTORE_TASK_TAG
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings.Companion.RESYNC_LANGUAGE_NAMES_TASK_TAG
-import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -212,16 +212,15 @@ class SettingsFragment : PreferenceFragmentCompat(),
     }
 
     private fun updateSummariesSetViaActivities() {
-        var uriString = prefs.getDefaultPref(
+        var fileString = prefs.getDefaultPref(
             KEY_PREF_GLOBAL_SOURCE_LOC,
             ""
         )
         val pref = findPreference(KEY_PREF_GLOBAL_SOURCE_LOC) as? Preference
-        val uri = Uri.parse(uriString)
-        val dir = uri.lastPathSegment
-        if (dir != null) {
-            uriString = Utils.getUriDisplayName(requireContext(), uri)
-            pref?.summary = uriString
+        val file = File(fileString)
+        if (file.exists()) {
+            fileString = file.name
+            pref?.summary = fileString
         } else {
             pref?.summary = prefs.getDefaultPref(
                 KEY_PREF_GLOBAL_SOURCE_LOC,

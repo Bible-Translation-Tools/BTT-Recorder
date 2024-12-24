@@ -36,6 +36,11 @@ interface IDirectoryProvider {
     val codeCacheDir: File
 
     /**
+     * Returns the path to the source audio directory.
+     */
+    val sourceAudioDir: File
+
+    /**
      * Returns the path to the translations directory.
      */
     val translationsDir: File

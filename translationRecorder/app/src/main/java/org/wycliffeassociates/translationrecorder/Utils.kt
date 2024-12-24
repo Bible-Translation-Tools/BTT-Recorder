@@ -7,7 +7,10 @@ import android.provider.OpenableColumns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import java.io.BufferedInputStream
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 /**
@@ -108,5 +111,42 @@ object Utils {
             "file" -> uri.lastPathSegment ?: defaultName
             else -> defaultName
         }
+    }
+
+    fun copySourceAudio(
+        context: Context,
+        directoryProvider: IDirectoryProvider,
+        uri: Uri
+    ): File? {
+        val filename = getUriDisplayName(context, uri)
+        try {
+            context.contentResolver.openInputStream(uri).use { inputStream ->
+                inputStream?.let {
+                    BufferedInputStream(inputStream).use { bufferedStream ->
+                        bufferedStream.mark(bufferedStream.available())
+
+                        val magicNumber = ByteArray(4)
+                        bufferedStream.read(magicNumber)
+                        val header = String(magicNumber, StandardCharsets.US_ASCII)
+                        bufferedStream.reset()
+
+                        //aoc was an accident in a previous version
+                        if (header == "aoh!" || header == "aoc!") {
+                            val target = File(directoryProvider.sourceAudioDir, filename)
+                            target.outputStream().use { targetStream ->
+                                bufferedStream.copyTo(targetStream)
+                            }
+                            if (target.exists() && target.length() > 0) {
+                                return target
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Logger.e("Utils.copySourceAudio()", "Error copying source audio", e)
+        }
+
+        return null
     }
 }
