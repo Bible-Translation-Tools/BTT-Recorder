@@ -332,8 +332,8 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         when (requestCode) {
             PROJECT_WIZARD_REQUEST -> {
                 if (resultCode == RESULT_OK) {
-                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)
-                    if (addProjectToDatabase(project!!)) {
+                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)!!
+                    if (addProjectToDatabase(project)) {
                         loadProject(project)
                         finish()
                         //TODO: should find place left off at?

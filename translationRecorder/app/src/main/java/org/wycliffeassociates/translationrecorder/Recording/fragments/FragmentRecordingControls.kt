@@ -23,12 +23,14 @@ class FragmentRecordingControls : Fragment() {
         INSERT_MODE
     }
 
-    var timer: RecordingTimer? = null
     lateinit var mHandler: Handler
-    var mRecordingControlCallback: RecordingControlCallback? = null
+    private lateinit var timer: RecordingTimer
+
+    private var mRecordingControlCallback: RecordingControlCallback? = null
+    private var mMode: Mode? = null
+
     private var isRecording = false
     private var isPausedRecording = false
-    private var mMode: Mode? = null
 
     interface RecordingControlCallback {
         fun onStartRecording()
@@ -55,11 +57,6 @@ class FragmentRecordingControls : Fragment() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mRecordingControlCallback = null
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -80,6 +77,11 @@ class FragmentRecordingControls : Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mRecordingControlCallback = null
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -91,29 +93,30 @@ class FragmentRecordingControls : Fragment() {
         binding.btnPauseRecording.setOnClickListener(btnClick)
     }
 
-    fun startTimer() {
-        timer?.startTimer()
+    private fun startTimer() {
+        timer.startTimer()
     }
 
-    fun pauseTimer() {
-        timer?.pause()
+    private fun pauseTimer() {
+        timer.pause()
     }
 
-    fun resumeTimer() {
-        timer?.resume()
+    private fun resumeTimer() {
+        timer.resume()
     }
 
     @SuppressLint("DefaultLocale")
     fun updateTime() {
-        val t = timer!!.timeElapsed
+        val t = timer.timeElapsed
         val time = String.format("%02d:%02d:%02d", t / 3600000, (t / 60000) % 60, (t / 1000) % 60)
         mHandler.post {
+            if (_binding == null) return@post
             binding.timerView.text = time
             binding.timerView.invalidate()
         }
     }
 
-    fun startRecording() {
+    private fun startRecording() {
         isRecording = true
         if (!isPausedRecording) {
             startTimer()
@@ -127,7 +130,7 @@ class FragmentRecordingControls : Fragment() {
         mRecordingControlCallback?.onStartRecording()
     }
 
-    fun stopRecording() {
+    private fun stopRecording() {
         if (isPausedRecording || isRecording) {
             mRecordingControlCallback?.onStopRecording()
             isRecording = false
@@ -145,7 +148,7 @@ class FragmentRecordingControls : Fragment() {
         mRecordingControlCallback?.onPauseRecording()
     }
 
-    fun swapViews(toShow: IntArray, toHide: IntArray) {
+    private fun swapViews(toShow: IntArray, toHide: IntArray) {
         for (v in toShow) {
             val view = binding.root.findViewById<View>(v)
             if (view != null) {

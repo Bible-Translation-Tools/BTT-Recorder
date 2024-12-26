@@ -40,26 +40,25 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var prefs: IPreferenceRepository
 
+    private lateinit var mProject: Project
+    private var mFilename: String = ""
+    private var mChapter: Int = 0
     private lateinit var mLocationPaint: Paint
     private lateinit var mSectionPaint: Paint
     private lateinit var mVersePaint: Paint
 
-    private var mViewCreatedCallback: ViewCreatedCallback? = null
-    private var mMediaController: MediaController? = null
-    private var mAudioListener: OnAudioListener? = null
+    private lateinit var mMediaController: MediaController
+    private lateinit var mAudioListener: OnAudioListener
+    private lateinit var mMinimapDrawDelegator: MinimapDrawDelegator
+    private lateinit var mMinimapLineDrawDelegator: DelegateMinimapMarkerDraw
 
-    private var mFilename: String = ""
-    private lateinit var mProject: Project
-    private var mChapter: Int = 0
-
-    private var mTimecodeLayer: TimecodeLayer? = null
-    private var mMinimapDrawDelegator: MinimapDrawDelegator? = null
+    private var mTimeCodeLayer: TimecodeLayer? = null
     private var mMinimapLayer: MinimapLayer? = null
     private var mMarkerLineLayer: MarkerLineLayer? = null
     private var mGestureLayer: ScrollGestureLayer? = null
-    private var mMinimapLineDrawDelegator: DelegateMinimapMarkerDraw? = null
     private var mHighlightLayer: RectangularHighlightLayer? = null
     private var mMarkerMediator: MarkerMediator? = null
+    private var mViewCreatedCallback: ViewCreatedCallback? = null
 
     private var _binding: FragmentTabbedWidgetBinding? = null
     private val binding get() = _binding!!
@@ -106,13 +105,13 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
         }
         attachListeners()
         binding.switchMinimap.isSelected = true
-        mTimecodeLayer = TimecodeLayer.newInstance(activity)
+        mTimeCodeLayer = TimecodeLayer.newInstance(activity)
         mMinimapLayer = MinimapLayer.newInstance(activity, this)
         mMarkerLineLayer = MarkerLineLayer.newInstance(activity, this)
         mGestureLayer = ScrollGestureLayer.newInstance(activity, this, this)
         mHighlightLayer = RectangularHighlightLayer.newInstance(activity, this)
         binding.minimap.addView(mMinimapLayer)
-        binding.minimap.addView(mTimecodeLayer)
+        binding.minimap.addView(mTimeCodeLayer)
         binding.minimap.addView(mGestureLayer)
         binding.minimap.addView(mMarkerLineLayer)
         binding.minimap.addView(mHighlightLayer)
@@ -145,7 +144,8 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     }
 
     private fun attachListeners() {
-        binding.switchMinimap.setOnClickListener { v -> // TODO: Refactor? Maybe use radio button to select one and exclude the other?
+        binding.switchMinimap.setOnClickListener { v ->
+            // TODO: Refactor? Maybe use radio button to select one and exclude the other?
             v.isSelected = true
             v.setBackgroundColor(Color.parseColor("#00000000"))
             binding.minimap.visibility = View.VISIBLE
@@ -183,12 +183,12 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
         mViewCreatedCallback = null
     }
 
-    fun initializeTimecode(durationMs: Int) {
-        mTimecodeLayer!!.setAudioLength(durationMs)
+    fun initializeTimeCode(durationMs: Int) {
+        mTimeCodeLayer?.setAudioLength(durationMs)
     }
 
     override fun onDelegateMinimapDraw(canvas: Canvas, paint: Paint): Boolean {
-        val success = mMinimapDrawDelegator!!.onDelegateMinimapDraw(canvas, paint)
+        val success = mMinimapDrawDelegator.onDelegateMinimapDraw(canvas, paint)
         if (!success) {
             invalidateMinimap()
             return false
@@ -197,15 +197,15 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     }
 
     fun invalidateMinimap() {
-        mMinimapLayer!!.invalidateMinimap()
+        mMinimapLayer?.invalidateMinimap()
     }
 
     fun onLocationChanged() {
-        mMinimapLayer!!.postInvalidate()
-        initializeTimecode(mMediaController!!.durationMs)
-        mTimecodeLayer!!.postInvalidate()
-        mMarkerLineLayer!!.postInvalidate()
-        mHighlightLayer!!.postInvalidate()
+        mMinimapLayer?.postInvalidate()
+        initializeTimeCode(mMediaController.durationMs)
+        mTimeCodeLayer?.postInvalidate()
+        mMarkerLineLayer?.postInvalidate()
+        mHighlightLayer?.postInvalidate()
     }
 
     fun pauseSource() {
@@ -213,7 +213,7 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     }
 
     override fun onDrawMarkers(canvas: Canvas) {
-        mMinimapLineDrawDelegator?.onDelegateMinimapMarkerDraw(
+        mMinimapLineDrawDelegator.onDelegateMinimapMarkerDraw(
             canvas,
             mLocationPaint,
             mSectionPaint,
@@ -222,11 +222,11 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     }
 
     override fun onDrawHighlight(canvas: Canvas, paint: Paint) {
-        if (mMediaController!!.hasSetMarkers()) {
+        if (mMediaController.hasSetMarkers()) {
             val left =
-                (mMediaController!!.startMarkerFrame / mMediaController!!.durationInFrames.toFloat()) * canvas.width
+                (mMediaController.startMarkerFrame / mMediaController.durationInFrames.toFloat()) * canvas.width
             val right =
-                (mMediaController!!.endMarkerFrame / mMediaController!!.durationInFrames.toFloat()) * canvas.width
+                (mMediaController.endMarkerFrame / mMediaController.durationInFrames.toFloat()) * canvas.width
             canvas.drawRect(left, 0f, right, canvas.height.toFloat(), paint)
         }
     }
@@ -234,16 +234,16 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     override fun onScroll(rawX1: Float, rawX2: Float, distX: Float) {
         var x1 = rawX1
         var x2 = rawX2
-        if (mMediaController!!.isInEditMode) {
+        if (mMediaController.isInEditMode) {
             if (x1 > x2) {
                 val temp = x2
                 x2 = x1
                 x1 = temp
             }
-            mMediaController!!.setStartMarkerAt((x1 / widgetWidth.toFloat() * mMediaController!!.durationInFrames).toInt())
-            mMediaController!!.setEndMarkerAt((x2 / widgetWidth.toFloat() * mMediaController!!.durationInFrames).toInt())
-            mMarkerMediator!!.updateStartMarkerFrame(mMediaController!!.startMarkerFrame)
-            mMarkerMediator!!.updateEndMarkerFrame(mMediaController!!.endMarkerFrame)
+            mMediaController.setStartMarkerAt((x1 / widgetWidth.toFloat() * mMediaController.durationInFrames).toInt())
+            mMediaController.setEndMarkerAt((x2 / widgetWidth.toFloat() * mMediaController.durationInFrames).toInt())
+            mMarkerMediator?.updateStartMarkerFrame(mMediaController.startMarkerFrame)
+            mMarkerMediator?.updateEndMarkerFrame(mMediaController.endMarkerFrame)
             onLocationChanged()
         }
     }
@@ -251,7 +251,7 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
     override fun onScrollComplete() {}
 
     override fun onTap(x: Float) {
-        mMediaController!!.onSeekTo((x / widgetWidth.toFloat()))
+        mMediaController.onSeekTo((x / widgetWidth.toFloat()))
     }
 
     companion object {
@@ -260,9 +260,9 @@ class FragmentTabbedWidget : Fragment(), MinimapDrawDelegator, MarkerLineDrawDel
         private const val KEY_CHAPTER = "key_chapter"
 
         fun newInstance(
-            mediator: MarkerMediator?,
-            project: Project?,
-            filename: String?,
+            mediator: MarkerMediator,
+            project: Project,
+            filename: String,
             chapter: Int
         ): FragmentTabbedWidget {
             val f = FragmentTabbedWidget()

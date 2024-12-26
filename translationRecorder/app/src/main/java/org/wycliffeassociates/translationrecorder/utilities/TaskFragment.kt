@@ -29,11 +29,6 @@ class TaskFragment : Fragment(), OnTaskProgressListener {
     private var taskCompleteDelegator: OnTaskComplete? = null
     private val taskHolder: HashMap<Long, TaskHolder> = hashMapOf()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        retainInstance = true
-    }
-
     @Synchronized
     @Throws(IllegalArgumentException::class)
     override fun onAttach(context: Context) {

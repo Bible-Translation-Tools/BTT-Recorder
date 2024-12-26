@@ -37,20 +37,11 @@ class FragmentRecordingWaveform : Fragment() {
         binding.mainCanvas.setDrawingFromBuffer(drawFromBuffer)
     }
 
-    val width: Int
-        get() {
-            val view = view
-            return view?.width ?: 0
-        }
+    val width: Int get() = view?.width ?: 0
 
-    val height: Int
-        get() {
-            val view = view
-            return view?.height ?: 0
-        }
+    val height: Int get() = view?.height ?: 0
 
     companion object {
-        @JvmStatic
         fun newInstance(): FragmentRecordingWaveform {
             return FragmentRecordingWaveform()
         }

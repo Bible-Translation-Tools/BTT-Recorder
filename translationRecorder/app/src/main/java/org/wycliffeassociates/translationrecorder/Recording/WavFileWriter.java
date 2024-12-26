@@ -72,7 +72,7 @@ public class WavFileWriter extends Service {
                     e.printStackTrace();
                 } finally {
                     try {
-                        RecordingQueues.doneWriting.put(new Boolean(true));
+                        RecordingQueues.doneWriting.put(Boolean.TRUE);
                     } catch (InterruptedException e) {
                         Logger.e(this.toString(), "InterruptedException in finally of writing queue", e);
                         e.printStackTrace();

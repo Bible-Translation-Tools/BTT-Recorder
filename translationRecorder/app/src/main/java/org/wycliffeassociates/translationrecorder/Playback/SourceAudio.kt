@@ -192,7 +192,7 @@ class SourceAudio @JvmOverloads constructor (
             return
         }
         showNoSource(false)
-        mSrcPlayer?.loadFile(mTemp)
+        mTemp?.let { mSrcPlayer?.loadFile(it) }
     }
 
     fun playSource() {

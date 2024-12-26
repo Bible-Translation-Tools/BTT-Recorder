@@ -41,7 +41,6 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
 
     private fun initializeFragments() {
         fragmentCreateProfile = FragmentCreateProfile.newInstance(profilesDirectory, this)
-        fragmentCreateProfile.retainInstance = true
     }
 
     private fun addFragments() {

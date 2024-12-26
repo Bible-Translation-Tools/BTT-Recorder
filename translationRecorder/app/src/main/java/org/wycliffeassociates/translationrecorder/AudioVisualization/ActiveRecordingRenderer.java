@@ -16,9 +16,9 @@ import org.wycliffeassociates.translationrecorder.utilities.RingBuffer;
 
 public class ActiveRecordingRenderer {
 
-    private FragmentRecordingControls mFragmentRecordingControls;
-    private FragmentVolumeBar mFragmentVolumeBar;
-    private FragmentRecordingWaveform mFragmentRecordingWaveform;
+    private final FragmentRecordingControls mFragmentRecordingControls;
+    private final FragmentVolumeBar mFragmentVolumeBar;
+    private final FragmentRecordingWaveform mFragmentRecordingWaveform;
     private int mCanvasHeight;
 
     public static int NUM_SECONDS_ON_SCREEN = 10;
@@ -45,13 +45,13 @@ public class ActiveRecordingRenderer {
                     ringBuffer = new RingBuffer(mFragmentRecordingWaveform.getWidth());
                 }
                 VisualizerCompressor visualizerCompressor = new VisualizerCompressor(NUM_SECONDS_ON_SCREEN, ringBuffer);
-                boolean isStopped = false;
-                boolean isPaused = false;
+                boolean isStopped;
+                boolean isPaused;
                 double maxDB = 0;
                 long volumeBarDelay = System.currentTimeMillis();
                 long waveformDelay = System.currentTimeMillis();
                 try {
-                    while (!isStopped) {
+                    while (true) {
                         RecordingMessage message = RecordingQueues.UIQueue.take();
                         isStopped = message.isStopped();
                         isPaused = message.isPaused();
@@ -105,7 +105,7 @@ public class ActiveRecordingRenderer {
                     e.printStackTrace();
                 } finally {
                     try {
-                        RecordingQueues.doneUI.put(new Boolean(true));
+                        RecordingQueues.doneUI.put(Boolean.TRUE);
                     } catch (InterruptedException e) {
                         Logger.e(this.toString(), "Interruption exception in finally of UI thread for recording", e);
                         e.printStackTrace();
@@ -168,8 +168,8 @@ public class ActiveRecordingRenderer {
             float min = Float.MAX_VALUE;
             float max = Float.MIN_VALUE;
             for(float sample : accumulator) {
-                max = (max < sample)? sample : max;
-                min = (min > sample)? sample : min;
+                max = Math.max(max, sample);
+                min = Math.min(min, sample);
             }
             mRingBuffer.add(U.getValueForScreen(min, mCanvasHeight));
             mRingBuffer.add(U.getValueForScreen(max, mCanvasHeight));

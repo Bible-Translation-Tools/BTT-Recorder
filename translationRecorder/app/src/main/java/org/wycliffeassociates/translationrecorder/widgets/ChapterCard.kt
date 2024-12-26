@@ -166,8 +166,7 @@ class ChapterCard(
     }
 
     private fun initializeAudioPlayer(): AudioPlayer {
-        val ap = AudioPlayer()
-        ap.refreshView(
+        val ap = AudioPlayer(
             viewHolder.binding.timeElapsed,
             viewHolder.binding.timeDuration,
             viewHolder.binding.playPauseChapterBtn,
@@ -181,7 +180,7 @@ class ChapterCard(
         val ap = audioPlayer
         if (!ap.isLoaded) {
             ap.reset()
-            ap.loadFile(mChapterWav)
+            mChapterWav?.let { ap.loadFile(it) }
         }
         ap.refreshView(
             viewHolder.binding.timeElapsed,
@@ -339,7 +338,7 @@ class ChapterCard(
                 .setIcon(R.drawable.ic_delete_black_36dp)
                 .setPositiveButton(R.string.yes) { _, _ ->
                     destroyAudioPlayer()
-                    mChapterWav!!.delete()
+                    mChapterWav?.delete()
                     isCompiled = false
                     collapse()
                     db.setCheckingLevel(mProject, chapterNumber, 0)

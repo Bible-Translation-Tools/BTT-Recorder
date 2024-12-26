@@ -764,8 +764,8 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
     override fun onViewCreated(ref: Fragment) {
         if (ref is WaveformFragment) {
             val view = mWaveformFragment.view
-            val vto = view!!.viewTreeObserver
-            vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            val vto = view?.viewTreeObserver
+            vto?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     mWaveformInflated = true
                     if (mMinimapInflated) {
@@ -780,8 +780,8 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
             })
         } else if (ref is FragmentTabbedWidget) {
             val view = mFragmentTabbedWidget.view
-            val vto = view!!.viewTreeObserver
-            vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            val vto = view?.viewTreeObserver
+            vto?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     mMinimapInflated = true
                     if (mWaveformInflated) {
@@ -812,7 +812,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
                 mAudioController.cutOp
             )
             mWaveformFragment.setWavRenderer(wavVis)
-            mFragmentTabbedWidget.initializeTimecode(mAudioController.relativeDurationMs)
+            mFragmentTabbedWidget.initializeTimeCode(mAudioController.relativeDurationMs)
         } catch (e: IOException) {
         }
     }
@@ -1015,9 +1015,9 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         const val KEY_UNIT: String = "key_unit"
 
         fun getPlaybackIntent(
-            ctx: Context?,
-            file: WavFile?,
-            project: Project?,
+            ctx: Context,
+            file: WavFile,
+            project: Project,
             chapter: Int,
             unit: Int
         ): Intent {

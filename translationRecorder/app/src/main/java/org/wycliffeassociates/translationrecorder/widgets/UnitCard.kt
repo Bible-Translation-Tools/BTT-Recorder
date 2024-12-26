@@ -90,8 +90,7 @@ class UnitCard(
 
     // Private Methods
     private fun initializeAudioPlayer(): AudioPlayer {
-        val ap = AudioPlayer()
-        ap.refreshView(
+        val ap = AudioPlayer(
             viewHolder.binding.timeElapsed,
             viewHolder.binding.timeDuration,
             viewHolder.binding.playTakeBtn,
@@ -468,7 +467,7 @@ class UnitCard(
                         wavFile,
                         project,
                         chapter,
-                        this.startVerse
+                        startVerse
                     )
                     v.context.startActivity(intent)
                 }

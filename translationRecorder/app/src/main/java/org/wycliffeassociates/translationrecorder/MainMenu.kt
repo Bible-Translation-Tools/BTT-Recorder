@@ -84,8 +84,8 @@ class MainMenu : AppCompatActivity() {
         when (requestCode) {
             PROJECT_WIZARD_REQUEST -> {
                 if (resultCode == RESULT_OK) {
-                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)
-                    if (addProjectToDatabase(project!!)) {
+                    val project = data?.getParcelableExtra<Project>(Project.PROJECT_EXTRA)!!
+                    if (addProjectToDatabase(project)) {
                         loadProject(project)
                         val intent = RecordingActivity.getNewRecordingIntent(
                             this,
@@ -114,7 +114,7 @@ class MainMenu : AppCompatActivity() {
     }
 
     private fun startRecordingScreen() {
-        val project = Project.getProjectFromPreferences(db, prefs)
+        val project = Project.getProjectFromPreferences(db, prefs)!!
         val chapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
         val unit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
         val intent = RecordingActivity.getNewRecordingIntent(

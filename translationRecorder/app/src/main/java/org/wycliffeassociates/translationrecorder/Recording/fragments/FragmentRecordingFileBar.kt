@@ -33,10 +33,10 @@ class FragmentRecordingFileBar : Fragment() {
     @Inject lateinit var assetProvider: AssetsProvider
 
     private lateinit var mProject: Project
-    private var mChunks: ChunkPlugin? = null
     private var mChapter = ChunkPlugin.DEFAULT_CHAPTER
     private var mUnit = ChunkPlugin.DEFAULT_UNIT
-    private var mHandler: Handler? = null
+    private lateinit var mHandler: Handler
+    private lateinit var mChunks: ChunkPlugin
 
     private var mOnUnitChangedListener: OnUnitChangedListener? = null
     private var mMode: FragmentRecordingControls.Mode? = null
@@ -50,22 +50,6 @@ class FragmentRecordingFileBar : Fragment() {
 
     private fun setMode(mode: FragmentRecordingControls.Mode) {
         mMode = mode
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnUnitChangedListener) {
-            mOnUnitChangedListener = context
-        } else {
-            throw RuntimeException(
-                "Attempted to attach activity which does not implement OnUnitChangedListener"
-            )
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mOnUnitChangedListener = null
     }
 
     override fun onCreateView(
@@ -92,6 +76,27 @@ class FragmentRecordingFileBar : Fragment() {
             e.printStackTrace()
             Logger.e(this.toString(), "onViewCreate", e)
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnUnitChangedListener) {
+            mOnUnitChangedListener = context
+        } else {
+            throw RuntimeException(
+                "Attempted to attach activity which does not implement OnUnitChangedListener"
+            )
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mOnUnitChangedListener = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun loadArgs(args: Bundle?) {
@@ -123,35 +128,36 @@ class FragmentRecordingFileBar : Fragment() {
 
     @Throws(IOException::class)
     private fun initializePickers() {
-        mChunks = mProject.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetProvider))
-        mChunks?.initialize(mChapter, mUnit)
-        val chapterLabel = if (mChunks?.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
-        binding.fileChapterLabel.text = chapterLabel
+        mChunks = mProject.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetProvider)).apply {
+            initialize(mChapter, mUnit)
+            val chapterLabel = if (chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+            binding.fileChapterLabel.text = chapterLabel
+        }
         initializeUnitPicker()
         initializeChapterPicker()
     }
 
     private fun initializeChapterPicker() {
-        val values = mChunks?.chapterDisplayLabels
+        val values = mChunks.chapterDisplayLabels
         if (!values.isNullOrEmpty()) {
             binding.chapterPicker.displayedValues = values
-            binding.chapterPicker.setCurrent(mChunks!!.chapterLabelIndex)
-            binding.chapterPicker.setOnValueChangedListener { picker, oldVal, newVal, direction ->
+            binding.chapterPicker.setCurrent(mChunks.chapterLabelIndex)
+            binding.chapterPicker.setOnValueChangedListener { _, _, _, direction ->
                 if (direction == DIRECTION.INCREMENT) {
-                    mChunks!!.nextChapter()
+                    mChunks.nextChapter()
                 } else {
-                    mChunks!!.previousChapter()
+                    mChunks.previousChapter()
                 }
                 binding.unitPicker.setCurrent(0)
                 initializeUnitPicker()
-                mOnUnitChangedListener!!.onUnitChanged(
+                mOnUnitChangedListener?.onUnitChanged(
                     mProject,
                     mProject.getFileName(
-                        mChunks!!.chapter,
-                        mChunks!!.startVerse,
-                        mChunks!!.endVerse
+                        mChunks.chapter,
+                        mChunks.startVerse,
+                        mChunks.endVerse
                     ),
-                    mChunks!!.chapter
+                    mChunks.chapter
                 )
             }
         } else {
@@ -160,35 +166,35 @@ class FragmentRecordingFileBar : Fragment() {
     }
 
     private fun initializeUnitPicker() {
-        val values = mChunks?.chunkDisplayLabels
+        val values = mChunks.chunkDisplayLabels
         binding.unitPicker.displayedValues = values
-        mHandler!!.post {
+        mHandler.post {
             if (!values.isNullOrEmpty()) {
-                binding.unitPicker.setCurrent(mChunks!!.startVerseLabelIndex)
-                mOnUnitChangedListener!!.onUnitChanged(
+                binding.unitPicker.setCurrent(mChunks.startVerseLabelIndex)
+                mOnUnitChangedListener?.onUnitChanged(
                     mProject,
                     mProject.getFileName(
-                        mChunks!!.chapter,
-                        mChunks!!.startVerse,
-                        mChunks!!.endVerse
+                        mChunks.chapter,
+                        mChunks.startVerse,
+                        mChunks.endVerse
                     ),
-                    mChunks!!.chapter
+                    mChunks.chapter
                 )
                 //reinitialize all of the filenames
-                binding.unitPicker.setOnValueChangedListener { picker, oldVal, newVal, direction ->
+                binding.unitPicker.setOnValueChangedListener { _, _, _, direction ->
                     if (direction == DIRECTION.INCREMENT) {
-                        mChunks!!.nextChunk()
+                        mChunks.nextChunk()
                     } else {
-                        mChunks!!.previousChunk()
+                        mChunks.previousChunk()
                     }
-                    mOnUnitChangedListener!!.onUnitChanged(
+                    mOnUnitChangedListener?.onUnitChanged(
                         mProject,
                         mProject.getFileName(
-                            mChunks!!.chapter,
-                            mChunks!!.startVerse,
-                            mChunks!!.endVerse
+                            mChunks.chapter,
+                            mChunks.startVerse,
+                            mChunks.endVerse
                         ),
-                        mChunks!!.chapter
+                        mChunks.chapter
                     )
                 }
             } else {
@@ -198,16 +204,16 @@ class FragmentRecordingFileBar : Fragment() {
     }
 
     val startVerse: String
-        get() = mChunks!!.startVerse.toString()
+        get() = mChunks.startVerse.toString()
 
     val endVerse: String
-        get() = mChunks!!.endVerse.toString()
+        get() = mChunks.endVerse.toString()
 
     val unit: Int
-        get() = mChunks!!.startVerse
+        get() = mChunks.startVerse
 
     val chapter: Int
-        get() = mChunks!!.chapter
+        get() = mChunks.chapter
 
     fun disablePickers() {
         binding.unitPicker.displayIncrementDecrement(false)
@@ -221,7 +227,7 @@ class FragmentRecordingFileBar : Fragment() {
 
         @JvmStatic
         fun newInstance(
-            project: Project?,
+            project: Project,
             chapter: Int,
             unit: Int,
             mode: FragmentRecordingControls.Mode

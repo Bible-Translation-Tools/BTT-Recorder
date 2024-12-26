@@ -1,80 +1,61 @@
-package org.wycliffeassociates.translationrecorder.FilesPage.Export;
+package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.content.Context
+import androidx.fragment.app.Fragment
+import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export.ProgressUpdateCallback
 
 /**
  * Created by sarabiaj on 2/19/2016.
  */
-public class ExportTaskFragment extends Fragment implements Export.ProgressUpdateCallback {
+class ExportTaskFragment : Fragment(), ProgressUpdateCallback {
+    private var mProgressUpdateCallback: ProgressUpdateCallback? = null
+    private var mExp: Export? = null
 
-    Export.ProgressUpdateCallback mProgressUpdateCallback;
-    private Export mExp;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mProgressUpdateCallback = (Export.ProgressUpdateCallback) context;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        mProgressUpdateCallback = context as ProgressUpdateCallback
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+    override fun onDetach() {
+        super.onDetach()
+        mProgressUpdateCallback = null
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mProgressUpdateCallback = null;
+    fun delegateExport(exp: Export?) {
+        mExp = exp?.apply {
+            export()
+        }
     }
 
-    public void delegateExport(Export exp) {
-        mExp = exp;
-        mExp.export();
+    override fun showProgress(mode: Boolean) {
+        mProgressUpdateCallback?.showProgress(mode)
     }
 
-    @Override
-    public void showProgress(boolean mode) {
-        mProgressUpdateCallback.showProgress(mode);
+    override fun setProgressTitle(title: String?) {
+        mProgressUpdateCallback?.setProgressTitle(title)
     }
 
-    @Override
-    public void setProgressTitle(String title) {
-        mProgressUpdateCallback.setProgressTitle(title);
+    override fun incrementProgress(progress: Int) {
+        mProgressUpdateCallback?.incrementProgress(progress)
     }
 
-    @Override
-    public void incrementProgress(int progress) {
-        mProgressUpdateCallback.incrementProgress(progress);
+    override fun setUploadProgress(progress: Int) {
+        mProgressUpdateCallback?.setUploadProgress(progress)
     }
 
-    @Override
-    public void setUploadProgress(int progress) {
-        mProgressUpdateCallback.setUploadProgress(progress);
+    override fun dismissProgress() {
+        mProgressUpdateCallback?.dismissProgress()
     }
 
-    @Override
-    public void dismissProgress() {
-        mProgressUpdateCallback.dismissProgress();
+    override fun setZipping(zipping: Boolean) {
+        mProgressUpdateCallback?.setZipping(zipping)
     }
 
-    @Override
-    public void setZipping(boolean zipping) {
-        mProgressUpdateCallback.setZipping(zipping);
+    override fun setExporting(exporting: Boolean) {
+        mProgressUpdateCallback?.setExporting(exporting)
     }
 
-    @Override
-    public void setExporting(boolean exporting) {
-        mProgressUpdateCallback.setExporting(exporting);
-    }
-
-    @Override
-    public void setCurrentFile(String currentFile) {
-        mProgressUpdateCallback.setCurrentFile(currentFile);
+    override fun setCurrentFile(currentFile: String?) {
+        mProgressUpdateCallback?.setCurrentFile(currentFile)
     }
 }

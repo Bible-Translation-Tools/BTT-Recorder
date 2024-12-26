@@ -54,7 +54,6 @@ class FragmentSourceAudio : Fragment() {
     override fun onPause() {
         super.onPause()
         binding.sourceAudioPlayer.pauseSource()
-        binding.sourceAudioPlayer.cleanup()
     }
 
     override fun onDestroyView() {

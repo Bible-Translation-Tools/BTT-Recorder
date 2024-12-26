@@ -1,11 +1,15 @@
 package org.wycliffeassociates.translationrecorder.Recording;
 
 
+import android.Manifest;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.IBinder;
+
+import androidx.core.app.ActivityCompat;
 
 import com.door43.tools.reporting.Logger;
 
@@ -58,23 +62,28 @@ public class WavRecorder extends Service {
     }
 
     private void record() {
-        bufferSize = AudioRecord.getMinBufferSize(AudioInfo.SAMPLERATE, AudioInfo.CHANNEL_TYPE, AudioInfo.ENCODING);
         try {
-            recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    AudioInfo.SAMPLERATE, AudioInfo.CHANNEL_TYPE, AudioInfo.ENCODING, bufferSize);
-            int i = recorder.getState();
-            if (i == 1)
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                permissionsError = true;
+                startActivity(new Intent(this, PermissionsDeniedActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return;
+            }
+
+            bufferSize = AudioRecord.getMinBufferSize(AudioInfo.SAMPLERATE, AudioInfo.CHANNEL_TYPE, AudioInfo.ENCODING);
+            recorder = new AudioRecord(
+                    MediaRecorder.AudioSource.MIC,
+                    AudioInfo.SAMPLERATE,
+                    AudioInfo.CHANNEL_TYPE,
+                    AudioInfo.ENCODING,
+                    bufferSize
+            );
+            if (recorder.getState() == AudioRecord.STATE_INITIALIZED) {
                 recorder.startRecording();
+            }
 
             isRecording = true;
 
-            recordingThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    feedToQueues();
-                }
-            }, "AudioRecorder Thread");
+            recordingThread = new Thread(this::feedToQueues, "AudioRecorder Thread");
             recordingThread.start();
         } catch (IllegalArgumentException e) {
             //The lenovo tab 2 can deny app permissions in a weird way and will cause setting up the
@@ -88,7 +97,7 @@ public class WavRecorder extends Service {
 
     private void feedToQueues() {
         data = new byte[bufferSize];
-        int read = 0;
+        int read;
         while (isRecording) {
             read = recorder.read(data, 0, bufferSize);
 
@@ -107,6 +116,4 @@ public class WavRecorder extends Service {
             }
         }
     }
-
-
 }

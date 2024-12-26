@@ -124,7 +124,6 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
                 stopService(Intent(this, WavRecorder::class.java))
                 RecordingQueues.stopVolumeTest()
             }
-            finish()
         }
     }
 
@@ -151,7 +150,7 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         stopService(Intent(this, WavRecorder::class.java))
         RecordingQueues.stopQueues(this)
         RecordingQueues.clearQueues()
-        mNewRecording!!.file.delete()
+        mNewRecording?.file?.delete()
         //originally called from a backpress, so finish by calling super
         super.onBackPressed()
     }
@@ -327,21 +326,32 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         )
         isRecording = false
         isPausedRecording = false
-        addTakeToDb()
-        mNewRecording!!.parseHeader()
-        saveLocationToPreferences()
-        if (mInsertMode) {
-            finalizeInsert(mLoadedWav, mNewRecording, mInsertLocation)
-        } else {
-            val intent = PlaybackActivity.getPlaybackIntent(
-                this,
-                mNewRecording,
-                mProject,
-                mFragmentRecordingFileBar.chapter,
-                mFragmentRecordingFileBar.unit
-            )
-            startActivity(intent)
-            this.finish()
+
+        mNewRecording?.let { newRecording ->
+            addTakeToDb(newRecording)
+            newRecording.parseHeader()
+            saveLocationToPreferences()
+
+            if (mInsertMode) {
+                mLoadedWav?.let { loadedWav ->
+                    // need to reparse the sizes after recording
+                    // updates to the object aren't reflected due to parceling to the writing service
+                    newRecording.parseHeader()
+                    loadedWav.parseHeader()
+
+                    finalizeInsert(loadedWav, newRecording, mInsertLocation)
+                }
+            } else {
+                val intent = PlaybackActivity.getPlaybackIntent(
+                    this,
+                    newRecording,
+                    mProject,
+                    mFragmentRecordingFileBar.chapter,
+                    mFragmentRecordingFileBar.unit
+                )
+                startActivity(intent)
+                this.finish()
+            }
         }
     }
 
@@ -350,38 +360,34 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         prefs.setDefaultPref(Settings.KEY_PREF_CHUNK, mFragmentRecordingFileBar.unit)
     }
 
-    private fun addTakeToDb() {
+    private fun addTakeToDb(newRecording: WavFile) {
         val ppm = mProject.patternMatcher
-        ppm.match(mNewRecording!!.file)
+        ppm.match(newRecording.file)
         db.addTake(
             ppm.takeInfo,
-            mNewRecording!!.file.name,
-            mNewRecording!!.metadata.modeSlug,
-            mNewRecording!!.file.lastModified(),
+            newRecording.file.name,
+            newRecording.metadata.modeSlug,
+            newRecording.file.lastModified(),
             0,
             mUser.id
         )
         projectProgress?.updateProjectProgress()
     }
 
-    private fun finalizeInsert(base: WavFile?, insertClip: WavFile?, insertFrame: Int) {
-        // need to reparse the sizes after recording
-        // updates to the object aren't reflected due to parceling to the writing service
-        mNewRecording!!.parseHeader()
-        mLoadedWav!!.parseHeader()
+    private fun finalizeInsert(base: WavFile, insertClip: WavFile, insertFrame: Int) {
         mInserting = true
         displayProgressDialog()
-        writeInsert(base!!, insertClip!!, insertFrame)
+        writeInsert(base, insertClip, insertFrame)
     }
 
     override fun writeInsert(base: WavFile, insertClip: WavFile, insertLoc: Int) {
         mInsertTaskFragment!!.writeInsert(base, insertClip, insertLoc)
     }
 
-    fun insertCallback(result: WavFile?) {
+    fun insertCallback(result: WavFile) {
         mInserting = false
         try {
-            mProgressDialog!!.dismiss()
+            mProgressDialog?.dismiss()
         } catch (e: IllegalArgumentException) {
             Logger.e(this.toString(), "Tried to dismiss insert progress dialog", e)
         }
@@ -409,11 +415,10 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         private const val TAG_INSERT_TASK_FRAGMENT = "insert_task_fragment"
         private const val STATE_INSERTING = "state_inserting"
 
-        @JvmStatic
         fun getInsertIntent(
-            ctx: Context?,
-            project: Project?,
-            wavFile: WavFile?,
+            ctx: Context,
+            project: Project,
+            wavFile: WavFile,
             chapter: Int,
             unit: Int,
             locationMs: Int
@@ -424,10 +429,9 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
             return intent
         }
 
-        @JvmStatic
         fun getNewRecordingIntent(
-            ctx: Context?,
-            project: Project?,
+            ctx: Context,
+            project: Project,
             chapter: Int,
             unit: Int
         ): Intent {
@@ -439,11 +443,10 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
             return intent
         }
 
-        @JvmStatic
         fun getRerecordIntent(
-            ctx: Context?,
-            project: Project?,
-            wavFile: WavFile?,
+            ctx: Context,
+            project: Project,
+            wavFile: WavFile,
             chapter: Int,
             unit: Int
         ): Intent {

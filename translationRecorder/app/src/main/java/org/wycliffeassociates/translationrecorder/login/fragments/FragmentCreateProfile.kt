@@ -40,7 +40,6 @@ class FragmentCreateProfile : Fragment() {
             uploadDir.mkdirs()
             fragment.userAudio = File(uploadDir, UUID.randomUUID().toString())
             fragment.userAudio.createNewFile()
-            fragment.retainInstance = true
             fragment.profileCreatedCallback = profileCreatedCallback
             return fragment
         }

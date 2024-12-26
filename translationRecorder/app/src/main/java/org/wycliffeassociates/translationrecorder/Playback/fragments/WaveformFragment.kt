@@ -46,17 +46,21 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
     private var mWaveformLayer: WaveformLayer? = null
     private var mHighlightLayer: RectangularHighlightLayer? = null
     private var mScrollGestureLayer: ScrollGestureLayer? = null
-    private lateinit var mMarkerMediator: MarkerMediator
+
     private lateinit var mHandler: Handler
 
     private var mOnScrollDelegator: OnScrollDelegator? = null
     private var mViewCreatedCallback: ViewCreatedCallback? = null
-    private var mPaintPlayback: Paint? = null
-    private var mPaintBaseLine: Paint? = null
+    private var mMediaController: MediaController? = null
+    private var mMarkerMediator: MarkerMediator? = null
+    
+    private lateinit var mPaintPlayback: Paint
+    private lateinit var mPaintBaseLine: Paint
+
     private var mCurrentRelativeFrame = 0
     private var mWavVis: WavVisualizer? = null
     private var mCurrentMs = 0
-    private var mMediaController: MediaController? = null
+
     private var mCurrentAbsoluteFrame = 0
 
     private var _binding: FragmentWaveformBinding? = null
@@ -69,11 +73,11 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
     }
 
     override fun onScroll(x1: Float, x2: Float, distX: Float) {
-        mOnScrollDelegator!!.delegateOnScroll(distX)
+        mOnScrollDelegator?.delegateOnScroll(distX)
     }
 
     override fun onScrollComplete() {
-        mOnScrollDelegator!!.delegateOnScrollComplete()
+        mOnScrollDelegator?.delegateOnScrollComplete()
     }
 
     private fun setMarkerMediator(mediator: MarkerMediator) {
@@ -97,11 +101,13 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mHandler = Handler(Looper.getMainLooper())
+
         mWaveformLayer = WaveformLayer.newInstance(activity, this)
         mMarkerLineLayer = MarkerLineLayer.newInstance(activity, this)
         mHighlightLayer = RectangularHighlightLayer.newInstance(activity, this)
         mScrollGestureLayer = ScrollGestureLayer.newInstance(activity, this)
-        mViewCreatedCallback!!.onViewCreated(this)
+        mViewCreatedCallback?.onViewCreated(this)
+
         binding.waveformFrame.addView(mWaveformLayer)
         binding.waveformFrame.addView(mScrollGestureLayer)
         binding.waveformFrame.addView(mMarkerLineLayer)
@@ -109,17 +115,21 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
 
         val dpSize = 2
 
-        mPaintPlayback = Paint()
-        mPaintPlayback!!.color = resources.getColor(R.color.primary)
-        mPaintPlayback!!.style = Paint.Style.STROKE
-        mPaintPlayback!!.strokeWidth = dpSize.toFloat()
-        mPaintBaseLine = Paint()
-        mPaintBaseLine!!.color = resources.getColor(R.color.secondary)
-        mPaintBaseLine!!.style = Paint.Style.STROKE
-        mPaintBaseLine!!.strokeWidth = dpSize.toFloat()
+        mPaintPlayback = Paint().apply {
+            color = resources.getColor(R.color.primary)
+            style = Paint.Style.STROKE
+            strokeWidth = dpSize.toFloat()
+        }
+        mPaintBaseLine = Paint().apply {
+            color = resources.getColor(R.color.secondary)
+            style = Paint.Style.STROKE
+            strokeWidth = dpSize.toFloat()
+        }
+
         binding.draggableViewFrame.bringToFront()
         binding.draggableViewFrame.setPositionChangeMediator(this)
-        mMarkerMediator.setDraggableViewFrame(binding.draggableViewFrame)
+
+        mMarkerMediator?.setDraggableViewFrame(binding.draggableViewFrame)
     }
 
     override fun onAttach(context: Context) {
@@ -165,7 +175,7 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
                 frame,
                 binding.waveformFrame.width
             ) - div.width).toFloat()
-        mMarkerMediator.onAddStartSectionMarker(SectionMarker(div, frame))
+        mMarkerMediator?.onAddStartSectionMarker(SectionMarker(div, frame))
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs)
     }
 
@@ -186,7 +196,7 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
             strokeWidth
         )
         div.x = DraggableImageView.mapLocationToScreenSpace(frame, binding.waveformFrame.width).toFloat()
-        mMarkerMediator.onAddEndSectionMarker(SectionMarker(div, frame))
+        mMarkerMediator?.onAddEndSectionMarker(SectionMarker(div, frame))
         invalidateFrame(mCurrentAbsoluteFrame, mCurrentRelativeFrame, mCurrentMs)
     }
 
@@ -204,24 +214,26 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
             color,
             strokeWidth
         )
-        mMarkerMediator.onAddVerseMarker(verseNumber, VerseMarker(div, frame))
+        mMarkerMediator?.onAddVerseMarker(verseNumber, VerseMarker(div, frame))
     }
 
     override fun onPositionRequested(id: Int, x: Float): Float {
         var posX = x
-        if (id < 0) {
-            if (id == MarkerHolder.END_MARKER_ID) {
-                posX = max(
-                    mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).markerX.toDouble(),
-                    posX.toDouble()
-                ).toFloat()
-            } else {
-                posX += (mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).width)
-                if (mMarkerMediator.contains(MarkerHolder.END_MARKER_ID)) {
-                    posX = min(
-                        mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).markerX.toDouble(),
+        mMarkerMediator?.let { mediator ->
+            if (id < 0) {
+                if (id == MarkerHolder.END_MARKER_ID) {
+                    posX = max(
+                        mediator.getMarker(MarkerHolder.START_MARKER_ID).markerX.toDouble(),
                         posX.toDouble()
                     ).toFloat()
+                } else {
+                    posX += (mediator.getMarker(MarkerHolder.START_MARKER_ID).width)
+                    if (mediator.contains(MarkerHolder.END_MARKER_ID)) {
+                        posX = min(
+                            mediator.getMarker(MarkerHolder.END_MARKER_ID).markerX.toDouble(),
+                            posX.toDouble()
+                        ).toFloat()
+                    }
                 }
             }
         }
@@ -233,41 +245,42 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
     }
 
     override fun onDrawMarkers(canvas: Canvas) {
-        val markers = mMarkerMediator.markers
+        val markers = mMarkerMediator?.markers ?: listOf()
         for (d in markers) {
-            if (d is VerseMarker && mMediaController!!.isInEditMode) {
+            if (d is VerseMarker && mMediaController?.isInEditMode == true) {
                 continue
             }
             d.drawMarkerLine(canvas)
         }
-        canvas.drawLine(
-            mWaveformLayer!!.width.toFloat() / 8,
-            0f,
-            mWaveformLayer!!.width.toFloat() / 8,
-            mWaveformLayer!!.height.toFloat(),
-            mPaintPlayback!!
-        )
-        canvas.drawLine(
-            0f,
-            mWaveformLayer!!.height.toFloat() / 2,
-            mWaveformLayer!!.width.toFloat(),
-            mWaveformLayer!!.height.toFloat() / 2,
-            mPaintBaseLine!!
-        )
+        mWaveformLayer?.let { waveformLayer ->
+            canvas.drawLine(
+                waveformLayer.width.toFloat() / 8,
+                0f,
+                waveformLayer.width.toFloat() / 8,
+                waveformLayer.height.toFloat(),
+                mPaintPlayback
+            )
+            canvas.drawLine(
+                0f,
+                waveformLayer.height.toFloat() / 2,
+                waveformLayer.width.toFloat(),
+                waveformLayer.height.toFloat() / 2,
+                mPaintBaseLine
+            )
+        }
     }
 
     override fun onDrawHighlight(canvas: Canvas, paint: Paint) {
-        if (mMarkerMediator.contains(MarkerHolder.END_MARKER_ID) && mMarkerMediator.contains(
-                MarkerHolder.START_MARKER_ID
-            )
-        ) {
-            canvas.drawRect(
-                mMarkerMediator.getMarker(MarkerHolder.START_MARKER_ID).markerX,
-                0f,
-                mMarkerMediator.getMarker(MarkerHolder.END_MARKER_ID).markerX,
-                binding.waveformFrame.height.toFloat(),
-                paint
-            )
+        mMarkerMediator?.let { mediator ->
+            if (mediator.contains(MarkerHolder.END_MARKER_ID) && mediator.contains(MarkerHolder.START_MARKER_ID)) {
+                canvas.drawRect(
+                    mediator.getMarker(MarkerHolder.START_MARKER_ID).markerX,
+                    0f,
+                    mediator.getMarker(MarkerHolder.END_MARKER_ID).markerX,
+                    binding.waveformFrame.height.toFloat(),
+                    paint
+                )
+            }
         }
     }
 
@@ -283,11 +296,11 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
         mCurrentMs = ms
 
         mHandler.post {
-            mMarkerMediator.updateCurrentFrame(mCurrentRelativeFrame)
-            mWaveformLayer!!.invalidate()
+            mMarkerMediator?.updateCurrentFrame(mCurrentRelativeFrame)
+            mWaveformLayer?.invalidate()
             binding.draggableViewFrame.invalidate()
-            mMarkerLineLayer!!.invalidate()
-            mHighlightLayer!!.invalidate()
+            mMarkerLineLayer?.invalidate()
+            mHighlightLayer?.invalidate()
         }
     }
 
