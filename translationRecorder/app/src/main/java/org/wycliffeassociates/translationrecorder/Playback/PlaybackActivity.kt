@@ -11,6 +11,7 @@ import android.media.AudioTrack
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Parcelable
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -162,7 +163,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
                 audioTrack,
                 trackBufferSize,
                 mWavFile,
-                this,
+                directoryProvider,
                 this
             )
         } catch (e: IOException) {
@@ -691,7 +692,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
                     )
                     var oldName = from.file.name
                     oldName = oldName.substring(0, oldName.lastIndexOf("."))
-                    val visDir = File(externalCacheDir, "Visualization")
+                    val visDir = directoryProvider.visualizationDir
                     val toVis = File(visDir, "$oldName.vis")
                     toVis.delete()
                 } catch (e: IOException) {
@@ -712,7 +713,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
                 finish()
             } else {
                 val result = WavFile(to)
-                intent.putExtra(RecordingActivity.KEY_WAV_FILE, result)
+                intent.putExtra(RecordingActivity.KEY_WAV_FILE, result as Parcelable)
                 startActivity(intent)
                 finish()
             }
@@ -1023,7 +1024,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         ): Intent {
             val intent = Intent(ctx, PlaybackActivity::class.java)
             intent.putExtra(KEY_PROJECT, project)
-            intent.putExtra(KEY_WAV_FILE, file)
+            intent.putExtra(KEY_WAV_FILE, file as Parcelable)
             intent.putExtra(KEY_CHAPTER, chapter)
             intent.putExtra(KEY_UNIT, unit)
             return intent

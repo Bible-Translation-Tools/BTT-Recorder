@@ -64,4 +64,23 @@ interface IDirectoryProvider {
      * Returns the path to the anthologies directory.
      */
     val anthologiesDir: File
+
+    /**
+     * Returns the path to the visualizations directory.
+     */
+    val visualizationDir: File
+
+    /**
+     * Creates a temporary directory in the cache directory.
+     * @param name The optional name of the directory.
+     */
+    fun createTempDir(name: String?): File
+
+    /**
+     * Creates a temporary file in the cache directory.
+     * @param prefix The optional prefix of the file.
+     * @param suffix The optional suffix of the file.
+     * @param dir The optional directory to create the file in.
+     */
+    fun createTempFile(prefix: String, suffix: String?, dir: File? = null): File
 }

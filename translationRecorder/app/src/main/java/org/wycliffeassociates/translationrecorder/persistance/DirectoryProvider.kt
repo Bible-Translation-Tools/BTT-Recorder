@@ -66,4 +66,22 @@ class DirectoryProvider (private val context: Context) : IDirectoryProvider {
             if (!path.exists()) path.mkdirs()
             return path
         }
+
+    override val visualizationDir: File
+        get() {
+            val path = File(externalCacheDir, "visualization")
+            if (!path.exists()) path.mkdirs()
+            return path
+        }
+
+    override fun createTempDir(name: String?): File {
+        val tempName = name ?: System.currentTimeMillis().toString()
+        val tempDir = File(internalCacheDir, tempName)
+        tempDir.mkdirs()
+        return tempDir
+    }
+
+    override fun createTempFile(prefix: String, suffix: String?, dir: File?): File {
+        return File.createTempFile(prefix, suffix, dir ?: internalCacheDir)
+    }
 }

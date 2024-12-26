@@ -1,172 +1,168 @@
-package org.wycliffeassociates.translationrecorder.Playback.player;
+package org.wycliffeassociates.translationrecorder.Playback.player
 
-import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp;
-import com.door43.tools.reporting.Logger;
-
-import java.nio.ShortBuffer;
+import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
+import org.wycliffeassociates.translationrecorder.Playback.player.BufferPlayer.BufferProvider
+import java.nio.ShortBuffer
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by sarabiaj on 10/27/2016.
  */
+class AudioBufferProvider(
+    private var mAudio: ShortBuffer,
+    private var mCutOp: CutOp
+) : BufferProvider {
 
-class AudioBufferProvider implements BufferPlayer.BufferProvider {
+    private var lastRequestedPosition: Int = 0
 
-    ShortBuffer mAudio;
-    CutOp mCutOp;
-    private int SAMPLERATE = 44100;
-    private int mLocationAtLastRequest;
-    private int mStartPosition = 0;
-    private int mMark = 0;
+    var startPosition: Int = 0
+        private set
+    var mark: Int = 0
+        private set
 
-    AudioBufferProvider(ShortBuffer audio, CutOp cutOp){
+    init {
         //audio is written in little endian, 16 bit PCM. Read as shorts therefore to comply with
         //Android's AudioTrack Spec
-        mCutOp = cutOp;
-        mAudio = audio;
-        mAudio.position(0);
+        mAudio.position(0)
     }
 
-    synchronized void reset(){
-        mAudio.position(mMark);
-        mStartPosition = mMark;
+    @Synchronized
+    fun reset() {
+        mAudio.position(mark)
+        startPosition = mark
     }
 
     //Keep a variable for mark rather than use the Buffer api- a call to position
-    synchronized void mark(int position){
-        mMark = position;
+    @Synchronized
+    fun mark(position: Int) {
+        mark = position
     }
 
     /**
      * Clears the mark by setting it to zero and resuming the position
      */
-    synchronized void clearMark(){
-       mMark = 0;
+    @Synchronized
+    fun clearMark() {
+        mark = 0
     }
 
-    synchronized void clearLimit(){
-        mAudio.limit(mAudio.capacity());
+    @Synchronized
+    fun clearLimit() {
+        mAudio.limit(mAudio.capacity())
     }
 
-    public void onPauseAfterPlayingXSamples(int pausedHeadPosition){
-        int samplesPlayed = pausedHeadPosition;
-        mAudio.position(mStartPosition);
-        short[] skip = new short[samplesPlayed];
-        get(skip);
-        if(mAudio.position() == mAudio.limit()){
-            reset();
-            Logger.e(this.toString(), "Paused right at the limit");
+    override fun onPauseAfterPlayingXSamples(pausedHeadPosition: Int) {
+        mAudio.position(startPosition)
+        val skip = ShortArray(pausedHeadPosition)
+        get(skip)
+        if (mAudio.position() == mAudio.limit()) {
+            reset()
+            Logger.e(this.toString(), "Paused right at the limit")
         }
-        mStartPosition = mAudio.position();
+        startPosition = mAudio.position()
     }
 
-    int getSizeOfNextSession(){
-        int size = mCutOp.absoluteLocToRelative(mAudio.limit(), false) - mCutOp.absoluteLocToRelative(mAudio.position(), false);
-        return size;
+    val sizeOfNextSession: Int
+        get() {
+            val current = mCutOp.absoluteLocToRelative(mAudio.position(), false)
+            val end = mCutOp.absoluteLocToRelative(mAudio.limit(), false)
+            return end - current
+        }
+
+    override fun onBufferRequested(shorts: ShortArray): Int {
+        lastRequestedPosition = mAudio.position()
+        return get(shorts)
     }
 
-    @Override
-    public int onBufferRequested(short[] shorts) {
-        mLocationAtLastRequest = mAudio.position();
-        return get(shorts);
-    }
-
-    private int get(short[] shorts){
-        //System.out.println("Requesting " + shorts.length + " shorts at position " + mAudio.position());
-        int shortsWritten = 0;
-        if(mCutOp.cutExistsInRange(mAudio.position(), shorts.length)){
-            shortsWritten = getWithSkips(shorts);
+    private fun get(shorts: ShortArray): Int {
+        val shortsWritten = if (mCutOp.cutExistsInRange(mAudio.position(), shorts.size)) {
+            getWithSkips(shorts)
         } else {
-            shortsWritten = getWithoutSkips(shorts);
+            getWithoutSkips(shorts)
         }
-        if(shortsWritten < shorts.length){
-            for(int i = shortsWritten; i < shorts.length; i++){
-                shorts[i] = 0;
+        if (shortsWritten < shorts.size) {
+            for (i in shortsWritten until shorts.size) {
+                shorts[i] = 0
             }
         }
-        return shortsWritten;
+        return shortsWritten
     }
 
-    private int getWithoutSkips(short[] shorts){
-        int size = shorts.length;
-        int shortsWritten = 0;
-        boolean brokeEarly = false;
-        for(int i = 0; i < size; i++){
-            if(!mAudio.hasRemaining()){
-                brokeEarly = true;
-                shortsWritten = i;
-                break;
+    private fun getWithoutSkips(shorts: ShortArray): Int {
+        val size = shorts.size
+        var shortsWritten = 0
+        var brokeEarly = false
+        for (i in 0 until size) {
+            if (!mAudio.hasRemaining()) {
+                brokeEarly = true
+                shortsWritten = i
+                break
             }
-            shorts[i] = mAudio.get();
+            shorts[i] = mAudio.get()
         }
-        if(brokeEarly){
-            return shortsWritten;
+        return if (brokeEarly) {
+            shortsWritten
         } else {
-            return size;
+            size
         }
     }
 
-    private int getWithSkips(short[] shorts){
-        int size = shorts.length;
-        int skip = 0;
-        int end = 0;
-        boolean brokeEarly = false;
-        for(int i = 0; i < size; i++){
-            if(!mAudio.hasRemaining()){
-                brokeEarly = true;
-                end = i;
-                break;
+    private fun getWithSkips(shorts: ShortArray): Int {
+        val size = shorts.size
+        var skip: Int
+        var end = 0
+        var brokeEarly = false
+        for (i in 0 until size) {
+            if (!mAudio.hasRemaining()) {
+                brokeEarly = true
+                end = i
+                break
             }
-            skip = mCutOp.skip(mAudio.position());
-            if(skip != -1){
+            skip = mCutOp.skip(mAudio.position())
+            if (skip != -1) {
                 //Logger.i(this.toString(), "Location is " + getLocationMs() + "position is " + mAudio.position());
-                int start = skip;
+                var start = skip
                 //make sure the playback start is within the bounds of the file's capacity
-                start = Math.max(Math.min(mAudio.capacity(), start), 0);
-                mAudio.position(start);
+                start = max(
+                    min(
+                        mAudio.capacity().toDouble(),
+                        start.toDouble()
+                    ), 0.0
+                ).toInt()
+                mAudio.position(start)
                 //Logger.i(this.toString(), "Location is now " + getLocationMs() + "position is " + mAudio.position());
             }
-            //check a second time incase there was a skip
-            if(!mAudio.hasRemaining()){
-                brokeEarly = true;
-                end = i;
-                break;
+            //check a second time in case there was a skip
+            if (!mAudio.hasRemaining()) {
+                brokeEarly = true
+                end = i
+                break
             }
-            shorts[i] = mAudio.get();
+            shorts[i] = mAudio.get()
         }
-        if(brokeEarly){
-            return end;
+        return if (brokeEarly) {
+            end
         } else {
-            return shorts.length;
+            shorts.size
         }
     }
 
-    int getLastRequestedPosition(){
-        return mLocationAtLastRequest;
+    @Synchronized
+    fun setPosition(position: Int) {
+        mAudio.position(position)
+        startPosition = position
     }
 
-    synchronized void setPosition(int position){
-        mAudio.position(position);
-        mStartPosition = position;
-    }
+    val duration: Int
+        get() = mAudio.capacity()
 
-    int getStartPosition(){
-        return mStartPosition;
-    }
-
-    int getDuration(){
-        return mAudio.capacity();
-    }
-
-    synchronized void setLimit(int limit){
-        mAudio.limit(limit);
-        reset();
-    }
-
-    public int getLimit(){
-        return mAudio.limit();
-    }
-
-    public int getMark(){
-        return mMark;
-    }
+    @set:Synchronized
+    var limit: Int
+        get() = mAudio.limit()
+        set(limit) {
+            mAudio.limit(limit)
+            reset()
+        }
 }

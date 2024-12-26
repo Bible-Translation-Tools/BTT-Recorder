@@ -4,9 +4,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Parcelable;
 
 import org.wycliffeassociates.translationrecorder.AudioInfo;
 import com.door43.tools.reporting.Logger;
+
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
 import org.wycliffeassociates.translationrecorder.wav.WavOutputStream;
 
@@ -19,8 +22,15 @@ import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.inject.Inject;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class WavFileWriter extends Service {
+
+    @Inject
+    IDirectoryProvider directoryProvider;
 
     public static final String KEY_WAV_FILE = "wavfile";
     private String nameWithoutExtension = null;
@@ -28,7 +38,7 @@ public class WavFileWriter extends Service {
 
     public static Intent getIntent(Context ctx, WavFile wavFile) {
         Intent intent = new Intent(ctx, WavFileWriter.class);
-        intent.putExtra(KEY_WAV_FILE, wavFile);
+        intent.putExtra(KEY_WAV_FILE, (Parcelable) wavFile);
         return intent;
     }
 
@@ -38,6 +48,7 @@ public class WavFileWriter extends Service {
         final WavFile audioFile = intent.getParcelableExtra(KEY_WAV_FILE);
         String name = audioFile.getFile().getName();
         nameWithoutExtension = name.substring(0, name.lastIndexOf("."));
+
         Thread writingThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -102,7 +113,7 @@ public class WavFileWriter extends Service {
                             if (!message.isPaused()) {
                                 byte[] dataFromQueue = message.getData();
                                 for (byte x : dataFromQueue) {
-                                    byteArrayList.add(new Byte(x));
+                                    byteArrayList.add(x);
                                 }
                                 if (byteArrayList.size() >= increment) {
                                     writeDataReceivedSoFar(byteArrayList, increment, stoppedRecording);
@@ -126,7 +137,7 @@ public class WavFileWriter extends Service {
                     e.printStackTrace();
                 } finally {
                     try {
-                        RecordingQueues.doneCompressing.put(new Boolean(true));
+                        RecordingQueues.doneCompressing.put(Boolean.TRUE);
                     } catch (InterruptedException e) {
                         Logger.e(this.toString(), "InterruptedException in finally of Compression queue", e);
                         e.printStackTrace();
@@ -140,10 +151,7 @@ public class WavFileWriter extends Service {
             public void run() {
                 boolean stopped = false;
 
-                File dir = new File(getExternalCacheDir(), "Visualization");
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
+                File dir = directoryProvider.getVisualizationDir();
                 File file = new File(dir, nameWithoutExtension + ".vis");
                 if (!file.exists()) {
                     file.getParentFile().mkdirs();
@@ -178,7 +186,6 @@ public class WavFileWriter extends Service {
                         raf.write('O');
                         raf.write('N');
                         raf.write('E');
-                        raf.close();
                     }
                     Logger.w(this.toString(), "raw audio thread exited loop");
                     RecordingQueues.compressionWriterQueue.clear();
@@ -194,7 +201,7 @@ public class WavFileWriter extends Service {
                     e.printStackTrace();
                 } finally {
                     try {
-                        RecordingQueues.doneWritingCompressed.put(new Boolean(true));
+                        RecordingQueues.doneWritingCompressed.put(Boolean.TRUE);
                     } catch (InterruptedException e) {
                         Logger.e(this.toString(), "InterruptedException in finally of writing queue", e);
                         e.printStackTrace();

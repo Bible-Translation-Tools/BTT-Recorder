@@ -1,197 +1,215 @@
-package org.wycliffeassociates.translationrecorder.Playback.player;
+package org.wycliffeassociates.translationrecorder.Playback.player
 
-import android.media.AudioTrack;
-import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp;
-import org.wycliffeassociates.translationrecorder.wav.WavCue;
-
-import java.nio.ShortBuffer;
-import java.util.List;
+import android.media.AudioTrack
+import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
+import org.wycliffeassociates.translationrecorder.wav.WavCue
+import java.nio.ShortBuffer
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by sarabiaj on 10/28/2016.
  */
-
 /**
  * Controls interaction between BufferPlayer and AudioBufferProvider. The BufferPlayer simply plays audio
  * that is passed to it, and the BufferProvider manages processing audio to get the proper buffer to onPlay
  * based on performing operations on the audio buffer (such as cut).
  */
-public class WavPlayer {
+class WavPlayer(
+    audioTrack: AudioTrack,
+    trackBufferSize: Int,
+    mAudioBuffer: ShortBuffer,
+    private val mOperationStack: CutOp,
+    cueList: List<WavCue>
+) {
+    private val mCueList: MutableList<WavCue> = ArrayList(cueList)
 
-    private List<WavCue> mCueList;
-    ShortBuffer mAudioBuffer;
-    CutOp mOperationStack;
-    BufferPlayer mPlayer;
-    AudioBufferProvider mBufferProvider;
-    WavPlayer.OnCompleteListener mOnCompleteListener;
-    private int EPSILON = 200;
+    private var mPlayer: BufferPlayer
+    private val mBufferProvider = AudioBufferProvider(mAudioBuffer, mOperationStack)
+    private var mOnCompleteListener: OnCompleteListener? = null
 
-    public interface OnCompleteListener {
-        void onComplete();
+    interface OnCompleteListener {
+        fun onComplete()
     }
 
-    public WavPlayer(final AudioTrack audioTrack, final int trackBufferSize, ShortBuffer audioBuffer, CutOp operations, List<WavCue> cueList) {
-        mOperationStack = operations;
-        mAudioBuffer = audioBuffer;
-        mBufferProvider = new AudioBufferProvider(mAudioBuffer, mOperationStack);
-        mCueList = cueList;
-        mPlayer = new BufferPlayer(
-                audioTrack,
-                trackBufferSize,
-                mBufferProvider,
-                new BufferPlayer.OnCompleteListener() {
-                    @Override
-                    public void onComplete() {
-                        if (mOnCompleteListener != null) {
-                            mBufferProvider.reset();
-                            mOnCompleteListener.onComplete();
-                        }
+    companion object {
+        private const val EPSILON = 200
+    }
+
+    init {
+        mPlayer = BufferPlayer(
+            audioTrack,
+            trackBufferSize,
+            mBufferProvider,
+            object : BufferPlayer.OnCompleteListener {
+                override fun onComplete() {
+                    if (mOnCompleteListener != null) {
+                        mBufferProvider.reset()
+                        mOnCompleteListener?.onComplete()
                     }
                 }
-        );
+            }
+        )
     }
 
-    public synchronized void seekNext() throws IllegalStateException {
-        int seekLocation = getAbsoluteDurationInFrames();
-        int currentLocation = getAbsoluteLocationInFrames();
-        if (mCueList != null) {
-            int location;
-            for (int i = 0; i < mCueList.size(); i++) {
-                location = mCueList.get(i).getLocation();
-                if (currentLocation < location) {
-                    seekLocation = location;
-                    break;
-                }
+    @Synchronized
+    @Throws(IllegalStateException::class)
+    fun seekNext() {
+        var seekLocation = absoluteDurationInFrames
+        val currentLocation = absoluteLocationInFrames
+        var location: Int
+        for (i in mCueList.indices) {
+            location = mCueList[i].location
+            if (currentLocation < location) {
+                seekLocation = location
+                break
             }
         }
-        seekToAbsolute(Math.min(seekLocation, mBufferProvider.getLimit()));
+        seekToAbsolute(
+            min(
+                seekLocation.toDouble(),
+                mBufferProvider.limit.toDouble()
+            ).toInt()
+        )
     }
 
-    public synchronized void seekPrevious() throws IllegalStateException {
-        int seekLocation = 0;
-        int currentLocation = getAbsoluteLocationInFrames();
-        if (mCueList != null) {
-            int location;
-            for (int i = mCueList.size() - 1; i >= 0; i--) {
-                location = mCueList.get(i).getLocation();
-                //if playing, you won't be able to keep pressing back, it will clamp to the last marker
-                if (!isPlaying() && currentLocation > location) {
-                    seekLocation = location;
-                    break;
-                } else if (currentLocation - EPSILON > location) { //epsilon here is to prevent that clamping
-                    seekLocation = location;
-                    break;
-                }
+    @Synchronized
+    @Throws(IllegalStateException::class)
+    fun seekPrevious() {
+        var seekLocation = 0
+        val currentLocation = absoluteLocationInFrames
+        var location: Int
+        for (i in mCueList.indices.reversed()) {
+            location = mCueList[i].location
+            //if playing, you won't be able to keep pressing back, it will clamp to the last marker
+            if (!isPlaying && currentLocation > location) {
+                seekLocation = location
+                break
+            } else if (currentLocation - EPSILON > location) { //epsilon here is to prevent that clamping
+                seekLocation = location
+                break
             }
         }
-        seekToAbsolute(Math.max(seekLocation, mBufferProvider.getMark()));
+        seekToAbsolute(
+            max(
+                seekLocation.toDouble(),
+                mBufferProvider.mark.toDouble()
+            ).toInt()
+        )
     }
 
-    public synchronized void seekToAbsolute(int absoluteFrame) throws IllegalStateException {
-        if (absoluteFrame > getAbsoluteDurationInFrames() || absoluteFrame < 0) {
-            return;
+    @Synchronized
+    @Throws(IllegalStateException::class)
+    fun seekToAbsolute(absoluteFrame: Int) {
+        var frame = absoluteFrame
+        if (frame > absoluteDurationInFrames || frame < 0) {
+            return
         }
-        absoluteFrame = Math.max(absoluteFrame, mBufferProvider.getMark());
-        absoluteFrame = Math.min(absoluteFrame, mBufferProvider.getLimit());
-        boolean wasPlaying = mPlayer.isPlaying();
-        pause();
-        mBufferProvider.setPosition(absoluteFrame);
+        frame = max(frame.toDouble(), mBufferProvider.mark.toDouble()).toInt()
+        frame = min(frame.toDouble(), mBufferProvider.limit.toDouble()).toInt()
+        val wasPlaying = mPlayer.isPlaying
+        pause()
+        mBufferProvider.setPosition(frame)
         if (wasPlaying) {
-            play();
+            play()
         }
     }
 
-    public synchronized void setCueList(List<WavCue> cueList) {
-        mCueList = cueList;
+    @Synchronized
+    fun setCueList(cueList: List<WavCue>) {
+        mCueList.clear()
+        mCueList.addAll(cueList)
     }
 
-    public void play() throws IllegalStateException {
-        if (getAbsoluteLocationInFrames() == getLoopEnd()) {
-            mBufferProvider.reset();
+    @Throws(IllegalStateException::class)
+    fun play() {
+        if (absoluteLocationInFrames == loopEnd) {
+            mBufferProvider.reset()
         }
-        mPlayer.play(mBufferProvider.getSizeOfNextSession());
+        mPlayer.play(mBufferProvider.sizeOfNextSession)
     }
 
-    public void pause() {
-        mPlayer.pause();
+    fun pause() {
+        mPlayer.pause()
     }
 
-    public void setOnCompleteListener(WavPlayer.OnCompleteListener onCompleteListener) {
-        mOnCompleteListener = onCompleteListener;
+    fun setOnCompleteListener(onCompleteListener: OnCompleteListener?) {
+        mOnCompleteListener = onCompleteListener
     }
 
-    public int getAbsoluteLocationMs() throws IllegalStateException {
-        return (int) (getAbsoluteLocationInFrames() / 44.1);
-    }
+    @get:Throws(IllegalStateException::class)
+    val absoluteLocationMs: Int
+        get() = (absoluteLocationInFrames / 44.1).toInt()
 
-    public int getAbsoluteDurationMs() throws IllegalStateException {
-        return (int) (mBufferProvider.getDuration() / 44.1);
-    }
+    @get:Throws(IllegalStateException::class)
+    val absoluteDurationMs: Int
+        get() = (mBufferProvider.duration / 44.1).toInt()
 
-    public int getAbsoluteLocationInFrames() throws IllegalStateException {
-        int relativeLocationOfHead = mOperationStack.absoluteLocToRelative(mBufferProvider.getStartPosition(), false) + mPlayer.getPlaybackHeadPosition();
-        int absoluteLocationOfHead = mOperationStack.relativeLocToAbsolute(relativeLocationOfHead, false);
-        return absoluteLocationOfHead;
-    }
-
-    public int getAbsoluteDurationInFrames() throws IllegalStateException {
-        return mBufferProvider.getDuration();
-    }
-
-    public int getRelativeLocationMs() throws IllegalStateException {
-        return (int) (getRelativeLocationInFrames() / 44.1);
-    }
-
-    public int getRelativeDurationMs() throws IllegalStateException {
-        return (int) ((mBufferProvider.getDuration() - mOperationStack.getSizeFrameCutUncmp()) / 44.1);
-    }
-
-    public int getRelativeDurationInFrames() throws IllegalStateException {
-        return mBufferProvider.getDuration() - mOperationStack.getSizeFrameCutUncmp();
-    }
-
-    public int getRelativeLocationInFrames() throws IllegalStateException {
-        return mOperationStack.absoluteLocToRelative(getAbsoluteLocationInFrames(), false);
-    }
-
-    public boolean isPlaying() {
-        return mPlayer.isPlaying();
-    }
-
-    public void setLoopStart(int frame) {
-        if (frame > mBufferProvider.getLimit()) {
-            int oldLimit = mBufferProvider.getLimit();
-            clearLoopPoints();
-            mBufferProvider.mark(oldLimit);
-            mBufferProvider.setLimit(frame);
-            mBufferProvider.reset();
-        } else {
-            mBufferProvider.mark(frame);
+    @get:Throws(IllegalStateException::class)
+    val absoluteLocationInFrames: Int
+        get() {
+            val relativeLocationOfHead = mOperationStack.absoluteLocToRelative(
+                mBufferProvider.startPosition,
+                false
+            ) + mPlayer.playbackHeadPosition
+            val absoluteLocationOfHead =
+                mOperationStack.relativeLocToAbsolute(relativeLocationOfHead, false)
+            return absoluteLocationOfHead
         }
-    }
 
-    public int getLoopStart() {
-        return mBufferProvider.getMark();
-    }
+    @get:Throws(IllegalStateException::class)
+    val absoluteDurationInFrames: Int
+        get() = mBufferProvider.duration
 
-    public void setLoopEnd(int frame) {
-        if (frame < mBufferProvider.getMark()) {
-            int oldMark = mBufferProvider.getMark();
-            clearLoopPoints();
-            mBufferProvider.mark(oldMark);
-            mBufferProvider.setLimit(oldMark);
-        } else {
-            mBufferProvider.setLimit(frame);
-            mBufferProvider.reset();
+    @get:Throws(IllegalStateException::class)
+    val relativeLocationMs: Int
+        get() = (relativeLocationInFrames / 44.1).toInt()
+
+    @get:Throws(IllegalStateException::class)
+    val relativeDurationMs: Int
+        get() = ((mBufferProvider.duration - mOperationStack.sizeFrameCutUncmp) / 44.1).toInt()
+
+    @get:Throws(IllegalStateException::class)
+    val relativeDurationInFrames: Int
+        get() = mBufferProvider.duration - mOperationStack.sizeFrameCutUncmp
+
+    @get:Throws(IllegalStateException::class)
+    val relativeLocationInFrames: Int
+        get() = mOperationStack.absoluteLocToRelative(absoluteLocationInFrames, false)
+
+    val isPlaying: Boolean
+        get() = mPlayer.isPlaying
+
+    var loopStart: Int
+        get() = mBufferProvider.mark
+        set(frame) {
+            if (frame > mBufferProvider.limit) {
+                val oldLimit = mBufferProvider.limit
+                clearLoopPoints()
+                mBufferProvider.mark(oldLimit)
+                mBufferProvider.limit = frame
+                mBufferProvider.reset()
+            } else {
+                mBufferProvider.mark(frame)
+            }
         }
-    }
 
-    public int getLoopEnd() {
-        return mBufferProvider.getLimit();
-    }
+    var loopEnd: Int
+        get() = mBufferProvider.limit
+        set(frame) {
+            if (frame < mBufferProvider.mark) {
+                val oldMark = mBufferProvider.mark
+                clearLoopPoints()
+                mBufferProvider.mark(oldMark)
+                mBufferProvider.limit = oldMark
+            } else {
+                mBufferProvider.limit = frame
+                mBufferProvider.reset()
+            }
+        }
 
-    public void clearLoopPoints() {
-        mBufferProvider.clearMark();
-        mBufferProvider.clearLimit();
+    fun clearLoopPoints() {
+        mBufferProvider.clearMark()
+        mBufferProvider.clearLimit()
     }
 }

@@ -3,6 +3,8 @@ package org.wycliffeassociates.translationrecorder;
 import android.content.Context;
 
 import com.door43.tools.reporting.Logger;
+
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider;
 import org.wycliffeassociates.translationrecorder.wav.WavFile;
 
 import java.io.BufferedOutputStream;
@@ -79,13 +81,13 @@ public class WavFileLoader {
      *
      * @param wavFile file to be mapped
      */
-    public WavFileLoader(WavFile wavFile, Context ctx) {
+    public WavFileLoader(WavFile wavFile, IDirectoryProvider directoryProvider) {
         visualizationReady = false;
         mAudioFile = wavFile;
         Logger.i(WavFileLoader.class.toString(), "Loading the file: " + wavFile.getFile());
         String filename = wavFile.getFile().getName();
         //If the file was loaded, look for a .vis file with the same name
-        File visDir = new File(ctx.getExternalCacheDir(), "Visualization");
+        File visDir = directoryProvider.getVisualizationDir();
         audioVisFile = new File(visDir, filename.substring(0,
                 filename.lastIndexOf('.')) + ".vis");
 

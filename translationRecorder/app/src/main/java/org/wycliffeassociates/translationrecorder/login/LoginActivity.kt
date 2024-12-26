@@ -7,40 +7,41 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.databinding.ActivityLoginBinding
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile
+import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile.OnProfileCreatedListener
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentReviewProfile
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnProfileCreatedListener
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnRedoListener
+import org.wycliffeassociates.translationrecorder.login.fragments.FragmentReviewProfile.OnReviewProfileListener
 import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.wav.WavFile
 import java.io.File
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 3/9/2018.
  */
 @AndroidEntryPoint
-class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoListener {
+class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnReviewProfileListener {
     override fun onPermissionsAccepted() {}
+
+    @Inject lateinit var directoryProvider: IDirectoryProvider
 
     private lateinit var fragmentCreateProfile: FragmentCreateProfile
     private var fragmentReviewProfile: FragmentReviewProfile? = null
-    private lateinit var profilesDirectory: File
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Screen.lockOrientation(this)
         if (savedInstanceState == null) {
             startActivityForResult(Intent(this, TermsOfUseActivity::class.java), 42)
-            profilesDirectory = File(externalCacheDir, "profiles")
             initializeFragments()
             addFragments()
         }
     }
 
     private fun initializeFragments() {
-        fragmentCreateProfile = FragmentCreateProfile.newInstance(profilesDirectory, this)
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(directoryProvider)
     }
 
     private fun addFragments() {
@@ -50,14 +51,14 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
     }
 
     override fun onProfileCreated(wav: WavFile, audio: File, hash: String) {
-        fragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash, this)
+        fragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash)
         supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragmentReviewProfile!!)
                 .commit()
     }
 
     override fun onRedo() {
-        fragmentCreateProfile = FragmentCreateProfile.newInstance(profilesDirectory, this)
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(directoryProvider)
         supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragmentCreateProfile)
                 .commit()

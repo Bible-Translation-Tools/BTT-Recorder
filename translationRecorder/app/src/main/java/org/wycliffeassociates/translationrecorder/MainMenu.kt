@@ -222,13 +222,6 @@ class MainMenu : AppCompatActivity() {
     private fun initApp() {
         prefs.setDefaultPref("version", BuildConfig.VERSION_NAME)
 
-        //set up Visualization folder
-        Utils.VISUALIZATION_DIR = File(
-            directoryProvider.externalCacheDir, "Visualization"
-        ).apply {
-            mkdirs()
-        }
-
         //configure logger
         val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
         dir.mkdirs()
@@ -254,8 +247,8 @@ class MainMenu : AppCompatActivity() {
 
     @SuppressLint("DefaultLocale")
     private fun removeUnusedVisualizationFiles() {
-        val visFilesLocation = Utils.VISUALIZATION_DIR
-        val visFiles = visFilesLocation?.listFiles() ?: return
+        val visFilesLocation = directoryProvider.visualizationDir
+        val visFiles = visFilesLocation.listFiles() ?: return
         val rootPath = directoryProvider.translationsDir.absolutePath
         val patterns = db.projectPatternMatchers
         for (v in visFiles) {

@@ -17,8 +17,6 @@ import java.util.Locale
  * Created by sarabiaj on 7/1/2016.
  */
 object Utils {
-    var VISUALIZATION_DIR: File? = null
-
     fun swapViews(toShow: Array<View>, toHide: Array<View>) {
         for (v in toShow) {
             v.visibility = View.VISIBLE

@@ -22,7 +22,6 @@ class PermissionsDialogActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Screen.lockOrientation(this)
         createPermissionDialog()
     }
 

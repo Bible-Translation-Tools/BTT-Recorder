@@ -44,7 +44,6 @@ public final class Screen {
      * @param activity an `Activity` reference
      */
     @SuppressLint("NewApi")
-    @SuppressWarnings("deprecation")
     public static void lockOrientation(final Activity activity) {
         final Display display = activity.getWindowManager().getDefaultDisplay();
         final int rotation = display.getRotation();

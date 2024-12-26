@@ -1,198 +1,178 @@
-package org.wycliffeassociates.translationrecorder.Playback.player;
+package org.wycliffeassociates.translationrecorder.Playback.player
 
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
-
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.AudioInfo;
+import android.media.AudioTrack
+import com.door43.tools.reporting.Logger
 
 /**
  * Plays .Wav audio files
  */
-class BufferPlayer {
+class BufferPlayer (
+    private val player: AudioTrack,
+    private val minBufferSize: Int,
+    private val mBufferProvider: BufferProvider,
+    private var mOnCompleteListener: OnCompleteListener?
+) {
+    private var mPlaybackThread: Thread? = null
+    private var mSessionLength = 0
 
-    private final BufferProvider mBufferProvider;
-    private final AudioTrack player;
-    private Thread mPlaybackThread;
-    private int minBufferSize = 0;
-    private int mSessionLength;
-    private BufferPlayer.OnCompleteListener mOnCompleteListener;
-    private short[] mAudioShorts;
-
+    private lateinit var mAudioShorts: ShortArray
 
     interface OnCompleteListener {
-        void onComplete();
+        fun onComplete()
     }
 
     interface BufferProvider {
-        int onBufferRequested(short[] shorts);
-
-        void onPauseAfterPlayingXSamples(int pausedHeadPosition);
+        fun onBufferRequested(shorts: ShortArray): Int
+        fun onPauseAfterPlayingXSamples(pausedHeadPosition: Int)
     }
 
-    BufferPlayer(AudioTrack audioTrack, int trackBufferSize, BufferProvider bp, BufferPlayer.OnCompleteListener onCompleteListener) {
-        player = audioTrack;
-        minBufferSize = trackBufferSize;
-        mBufferProvider = bp;
-        mOnCompleteListener = onCompleteListener;
-        init();
+    init {
+        initialize()
     }
 
-    BufferPlayer setOnCompleteListener(BufferPlayer.OnCompleteListener onCompleteListener) {
-        mOnCompleteListener = onCompleteListener;
-        init();
-        return this;
+    fun setOnCompleteListener(onCompleteListener: OnCompleteListener?): BufferPlayer {
+        mOnCompleteListener = onCompleteListener
+        initialize()
+        return this
     }
 
-    synchronized void play(final int durationToPlay) throws IllegalStateException {
-        if (isPlaying()) {
-            return;
+    @Synchronized
+    @Throws(IllegalStateException::class)
+    fun play(durationToPlay: Int) {
+        if (isPlaying) {
+            return
         }
-        System.out.println("duration to play " + durationToPlay);
-        mSessionLength = durationToPlay;
-        player.setPlaybackHeadPosition(0);
-        player.flush();
-        player.setNotificationMarkerPosition(durationToPlay);
-        player.play();
-        mPlaybackThread = new Thread() {
-            public void run() {
+        println("duration to play $durationToPlay")
+        mSessionLength = durationToPlay
+        player.setPlaybackHeadPosition(0)
+        player.flush()
+        player.setNotificationMarkerPosition(durationToPlay)
+        player.play()
+        mPlaybackThread = object : Thread() {
+            override fun run() {
                 //the starting position needs to beginning of the 16bit PCM data, not in the middle
                 //position in the buffer keeps track of where we are for playback
-                int shortsRetrieved = 1;
-                int shortsWritten = 0;
-                while (!mPlaybackThread.isInterrupted() && isPlaying() && shortsRetrieved > 0) {
-                    shortsRetrieved = mBufferProvider.onBufferRequested(mAudioShorts);
-                    shortsWritten = player.write(mAudioShorts, 0, minBufferSize);
-                    switch (shortsWritten) {
-                        case AudioTrack.ERROR_INVALID_OPERATION: {
-                            Logger.e(this.toString(), "ERROR INVALID OPERATION");
-                            break;
+                var shortsRetrieved = 1
+                var shortsWritten = 0
+                while (!mPlaybackThread!!.isInterrupted && this@BufferPlayer.isPlaying && shortsRetrieved > 0) {
+                    shortsRetrieved = mBufferProvider.onBufferRequested(mAudioShorts)
+                    shortsWritten = player.write(mAudioShorts, 0, minBufferSize)
+                    when (shortsWritten) {
+                        AudioTrack.ERROR_INVALID_OPERATION -> {
+                            Logger.e(this.toString(), "ERROR INVALID OPERATION")
                         }
-                        case AudioTrack.ERROR_BAD_VALUE: {
-                            Logger.e(this.toString(), "ERROR BAD VALUE");
-                            break;
+
+                        AudioTrack.ERROR_BAD_VALUE -> {
+                            Logger.e(this.toString(), "ERROR BAD VALUE")
                         }
-                        case AudioTrack.ERROR: {
-                            Logger.e(this.toString(), "ERROR");
-                            break;
+
+                        AudioTrack.ERROR -> {
+                            Logger.e(this.toString(), "ERROR")
                         }
                     }
                 }
-                System.out.println("shorts written " + shortsWritten);
+                println("shorts written $shortsWritten")
             }
-        };
-        mPlaybackThread.start();
+        }
+        mPlaybackThread?.start()
     }
 
-    void init() {
-        mAudioShorts = new short[minBufferSize];
+    fun initialize() {
+        mAudioShorts = ShortArray(minBufferSize)
         if (mOnCompleteListener != null) {
-            player.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
-                @Override
-                public void onMarkerReached(AudioTrack track) {
-                    finish();
+            player.setPlaybackPositionUpdateListener(object :
+                AudioTrack.OnPlaybackPositionUpdateListener {
+                override fun onMarkerReached(track: AudioTrack) {
+                    finish()
                 }
 
-                @Override
-                public void onPeriodicNotification(AudioTrack track) {
+                override fun onPeriodicNotification(track: AudioTrack) {
                 }
-            });
+            })
         }
     }
 
-    private synchronized void finish() {
-        System.out.println("marker reached");
-        player.stop();
-        mPlaybackThread.interrupt();
-        mOnCompleteListener.onComplete();
+    @Synchronized
+    private fun finish() {
+        println("marker reached")
+        player.stop()
+        mPlaybackThread?.interrupt()
+        mOnCompleteListener?.onComplete()
     }
 
-    //Simply pausing the audiotrack does not seem to allow the player to resume.
-    synchronized void pause() {
-        player.pause();
-        int location = player.getPlaybackHeadPosition();
-        System.out.println("paused at " + location);
-        mBufferProvider.onPauseAfterPlayingXSamples(location);
-        player.setPlaybackHeadPosition(0);
-        player.flush();
+    //Simply pausing the audio track does not seem to allow the player to resume.
+    @Synchronized
+    fun pause() {
+        player.pause()
+        val location = player.playbackHeadPosition
+        println("paused at $location")
+        mBufferProvider.onPauseAfterPlayingXSamples(location)
+        player.setPlaybackHeadPosition(0)
+        player.flush()
     }
 
-    boolean exists() {
-        if (player != null) {
-            return true;
-        } else
-            return false;
+    fun exists(): Boolean {
+        return if (player != null) {
+            true
+        } else false
     }
 
-    synchronized void stop() {
-        if (isPlaying() || isPaused()) {
-            player.pause();
-            player.stop();
-            player.flush();
+    @Synchronized
+    fun stop() {
+        if (isPlaying || isPaused) {
+            player.pause()
+            player.stop()
+            player.flush()
             if (mPlaybackThread != null) {
-                mPlaybackThread.interrupt();
+                mPlaybackThread!!.interrupt()
             }
         }
     }
 
-    synchronized void release() {
-        stop();
-        if (player != null) {
-            player.release();
-        }
+    @Synchronized
+    fun release() {
+        stop()
+        player.release()
     }
 
-    boolean isPlaying() {
-        if (player != null)
-            return player.getPlayState() == AudioTrack.PLAYSTATE_PLAYING;
-        else
-            return false;
+    val isPlaying: Boolean
+        get() = player.playState == AudioTrack.PLAYSTATE_PLAYING
+
+    val isPaused: Boolean
+        get() = player.playState == AudioTrack.PLAYSTATE_PAUSED
+
+    @get:Throws(IllegalStateException::class)
+    val playbackHeadPosition: Int
+        get() = player.playbackHeadPosition
+
+    val duration: Int
+        get() = 0
+
+    val adjustedDuration: Int
+        get() = 0
+
+    val adjustedLocation: Int
+        get() = 0
+
+    fun startSectionAt(i: Int) {
     }
 
-    boolean isPaused() {
-        if (player != null)
-            return player.getPlayState() == AudioTrack.PLAYSTATE_PAUSED;
-        else
-            return false;
+    fun seekTo(i: Int) {
     }
 
-    int getPlaybackHeadPosition() throws IllegalStateException {
-        return player.getPlaybackHeadPosition();
+    fun seekToEnd() {
     }
 
-    int getDuration() {
-        return 0;
+    fun seekToStart() {
     }
 
-    int getAdjustedDuration() {
-        return 0;
+    fun checkIfShouldStop(): Boolean {
+        return true
     }
 
-    int getAdjustedLocation() {
-        return 0;
+    fun setOnlyPlayingSection(b: Boolean) {
     }
 
-    void startSectionAt(int i) {
-    }
-
-    void seekTo(int i) {
-    }
-
-    void seekToEnd() {
-    }
-
-    void seekToStart() {
-    }
-
-    boolean checkIfShouldStop() {
-        return true;
-    }
-
-    void setOnlyPlayingSection(boolean b) {
-    }
-
-    void stopSectionAt(int i) {
+    fun stopSectionAt(i: Int) {
     }
 }

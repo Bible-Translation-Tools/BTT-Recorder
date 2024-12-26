@@ -34,7 +34,7 @@ class InsertTaskFragment : Fragment() {
             try {
                 val result = WavFile.insertWavFile(base, insertClip, insertFrame)
                 insertClip.file.delete()
-                val dir = File(directoryProvider.externalCacheDir, "Visualization")
+                val dir = directoryProvider.visualizationDir
                 val vis = File(
                     dir,
                     getNameWithoutExtension(insertClip.file) + ".vis"

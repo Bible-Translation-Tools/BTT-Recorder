@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.login.fragments
 
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -23,7 +24,6 @@ import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.FragmentReviewProfileBinding
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnRedoListener
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
@@ -40,27 +40,32 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var prefs: IPreferenceRepository
 
+    interface OnReviewProfileListener {
+        fun onRedo()
+    }
+
     private var _binding: FragmentReviewProfileBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var wav: WavFile
     private lateinit var audio: File
     private lateinit var hash: String
-    private lateinit var onRedoListener: OnRedoListener
     private lateinit var waveformLayer: WaveformLayer
     private lateinit var wavVis: WavVisualizer
     private lateinit var player: WavPlayer
+
+    private var onReviewProfileListener: OnReviewProfileListener? = null
+
     private var layoutInitialized = false
     private lateinit var audioTrack: AudioTrack
     private var trackBufferSize: Int = 0
 
     companion object {
-        fun newInstance(wav: WavFile, audio: File, hash: String, redo: OnRedoListener): FragmentReviewProfile {
+        fun newInstance(wav: WavFile, audio: File, hash: String): FragmentReviewProfile {
             val fragment = FragmentReviewProfile()
             fragment.wav = wav
             fragment.audio = audio
             fragment.hash = hash
-            fragment.onRedoListener = redo
             return fragment
         }
     }
@@ -80,6 +85,15 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            wav = savedInstanceState.getSerializable("wav") as WavFile
+            audio = savedInstanceState.getSerializable("audio") as File
+            hash = savedInstanceState.getSerializable("hash") as String
+        }
+    }
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -95,10 +109,10 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
         with(binding) {
             renderIdenticon(hash, iconHash)
             btnRedo.setOnClickListener {
-                onRedoListener.let {
+                onReviewProfileListener?.apply {
                     audio.delete()
                     audio.createNewFile()
-                    onRedoListener.onRedo()
+                    onRedo()
                 }
             }
             btnYes.setOnClickListener {
@@ -138,6 +152,18 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        onReviewProfileListener = context as OnReviewProfileListener
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable("wav", wav)
+        outState.putSerializable("audio", audio)
+        outState.putString("hash", hash)
+    }
+
     private fun renderIdenticon(hash: String, view: ImageView) {
         val svg = Jdenticon.toSvg(hash, 512, 0f)
         Sharp.loadString(svg).into(view)
@@ -146,7 +172,7 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     private fun initializeRenderer() {
         showPlayButton()
         wav.overwriteHeaderData()
-        val wavFileLoader = WavFileLoader(wav, activity)
+        val wavFileLoader = WavFileLoader(wav, directoryProvider)
         val numThreads = 4
         val uncompressed = wavFileLoader.mapAndGetAudioBuffer()
         wavVis = WavVisualizer(
@@ -159,9 +185,13 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
                 CutOp()
         )
         player = WavPlayer(audioTrack, trackBufferSize, uncompressed, CutOp(), LinkedList())
-        player.setOnCompleteListener {
-            showPlayButton()
-        }
+        player.setOnCompleteListener(
+            object : WavPlayer.OnCompleteListener {
+                override fun onComplete() {
+                    showPlayButton()
+                }
+            }
+        )
     }
 
     private fun showPauseButton() {

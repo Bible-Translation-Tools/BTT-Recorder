@@ -1,6 +1,5 @@
 package org.wycliffeassociates.translationrecorder.Playback
 
-import android.content.Context
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
@@ -9,6 +8,7 @@ import org.wycliffeassociates.translationrecorder.Playback.interfaces.AudioState
 import org.wycliffeassociates.translationrecorder.Playback.interfaces.MediaControlReceiver
 import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer
 import org.wycliffeassociates.translationrecorder.WavFileLoader
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.wav.WavCue
 import org.wycliffeassociates.translationrecorder.wav.WavFile
 import java.io.IOException
@@ -22,7 +22,7 @@ class AudioVisualController(
     audioTrack: AudioTrack,
     trackBufferSize: Int,
     wav: WavFile,
-    ctx: Context,
+    directoryProvider: IDirectoryProvider,
     private var mCallback: AudioStateCallback,
 ) : MediaControlReceiver {
 
@@ -34,11 +34,13 @@ class AudioVisualController(
     private val mCues: MutableList<WavCue> = arrayListOf()
 
     init {
-        initPlayer(audioTrack, trackBufferSize, wav, ctx)
+        initPlayer(audioTrack, trackBufferSize, wav, directoryProvider)
         mHandler = Handler(Looper.getMainLooper())
-        mPlayer.setOnCompleteListener {
-            mCallback.onPlayerPaused()
-        }
+        mPlayer.setOnCompleteListener(object : WavPlayer.OnCompleteListener {
+            override fun onComplete() {
+                mCallback.onPlayerPaused()
+            }
+        })
     }
 
     fun setCueList(cueList: List<WavCue>) {
@@ -52,9 +54,9 @@ class AudioVisualController(
         audioTrack: AudioTrack,
         trackBufferSize: Int,
         wav: WavFile,
-        ctx: Context
+        directoryProvider: IDirectoryProvider
     ) {
-        wavLoader = WavFileLoader(wav, ctx).apply {
+        wavLoader = WavFileLoader(wav, directoryProvider).apply {
             setOnVisualizationFileCreatedListener { mappedVisualizationFile ->
                 mCallback.onVisualizationLoaded(
                     mappedVisualizationFile

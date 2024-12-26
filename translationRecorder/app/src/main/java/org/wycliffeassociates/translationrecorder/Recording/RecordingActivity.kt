@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -452,7 +453,7 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         ): Intent {
             Logger.w("RecordingActivity", "Creating Rerecord Intent")
             val intent = getNewRecordingIntent(ctx, project, chapter, unit)
-            intent.putExtra(KEY_WAV_FILE, wavFile)
+            intent.putExtra(KEY_WAV_FILE, wavFile as Parcelable)
             return intent
         }
     }
