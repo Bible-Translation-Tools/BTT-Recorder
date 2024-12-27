@@ -11,6 +11,7 @@ import org.wycliffeassociates.translationrecorder.databinding.FragmentRecordingW
  * Created by sarabiaj on 2/20/2017.
  */
 class FragmentRecordingWaveform : Fragment() {
+
     private var _binding: FragmentRecordingWaveformBinding? = null
     private val binding get() = _binding!!
 
@@ -29,11 +30,13 @@ class FragmentRecordingWaveform : Fragment() {
     }
 
     fun updateWaveform(buffer: FloatArray?) {
+        if (_binding == null) return
         binding.mainCanvas.setBuffer(buffer)
         binding.mainCanvas.postInvalidate()
     }
 
     fun setDrawingFromBuffer(drawFromBuffer: Boolean) {
+        if (_binding == null) return
         binding.mainCanvas.setDrawingFromBuffer(drawFromBuffer)
     }
 

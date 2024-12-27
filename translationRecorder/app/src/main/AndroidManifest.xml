@@ -89,7 +89,7 @@
 
         <activity android:name="com.door43.login.TermsOfUseActivity" />
         <activity android:name="com.door43.login.legal.LegalDocumentActivity" />
-        <activity android:name=".login.LoginActivity" />
+        <activity android:name=".login.LoginActivity" android:configChanges="orientation|screenSize" />
         <activity android:name=".login.UserActivity" />
 
         <activity

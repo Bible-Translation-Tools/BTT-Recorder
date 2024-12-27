@@ -55,6 +55,7 @@ import org.wycliffeassociates.translationrecorder.WavFileLoader
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityPlaybackScreenBinding
+import org.wycliffeassociates.translationrecorder.Screen
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -151,6 +152,11 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         Logger.w(this.toString(), "onCreate")
         val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
         mUser = db.getUser(userId)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Screen.lockOrientation(this, true)
     }
 
     @Throws(IOException::class)

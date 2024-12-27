@@ -65,14 +65,6 @@ class FragmentCreateProfile : Fragment() {
     private var recording: File? = null
     private var newRecording: WavFile? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState != null) {
-            userAudio = savedInstanceState.getSerializable("user_audio") as File
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = FragmentCreateProfileBinding.inflate(inflater, container, false)
@@ -111,11 +103,6 @@ class FragmentCreateProfile : Fragment() {
         parentFragmentManager.beginTransaction()
             .add(binding.waveformView.id, recordingWaveform).commit()
         renderer = ActiveRecordingRenderer(null, null, recordingWaveform)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putSerializable("user_audio", userAudio)
     }
 
     private fun startRecording() {

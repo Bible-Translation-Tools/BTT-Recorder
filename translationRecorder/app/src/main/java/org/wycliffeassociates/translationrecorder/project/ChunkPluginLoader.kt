@@ -27,7 +27,6 @@ class ChunkPluginLoader(
         val jarsDir = File(directoryProvider.pluginsDir, "jars")
         jarsDir.mkdirs()
         val jarFile = File(jarsDir, anthology.pluginFilename)
-        jarFile.setReadOnly()
         val codeDir = File(directoryProvider.codeCacheDir, "dex/")
         codeDir.mkdirs()
         val optimizedDexOutputPath = File(codeDir, "biblechunkdex")

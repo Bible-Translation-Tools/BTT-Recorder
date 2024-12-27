@@ -7,7 +7,6 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.login.Screen
 import android.provider.Settings
 
 private const val PERMISSIONS_PAGE = 50

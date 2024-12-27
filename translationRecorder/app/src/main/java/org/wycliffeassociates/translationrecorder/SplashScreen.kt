@@ -157,8 +157,11 @@ class SplashScreen : PermissionActivity() {
             outputDir.mkdirs()
         }
         try {
+            val plugin = File(outputDir, pluginName)
+            setWritable(plugin, true)
+
             assetsProvider.open("plugins/$prefix/$pluginName").use { inputStream ->
-                FileOutputStream(File(outputDir, pluginName)).use { outputStream ->
+                FileOutputStream(plugin).use { outputStream ->
                     val buf = ByteArray(1024)
                     var len: Int
                     while ((inputStream.read(buf).also { len = it }) > 0) {
@@ -166,6 +169,11 @@ class SplashScreen : PermissionActivity() {
                     }
                 }
             }
+
+            // Starting from Android 14 (api 34) it is required to mark files that
+            // load code dynamically to bew readonly
+            // See https://developer.android.com/about/versions/14/behavior-changes-14#safer-dynamic-code-loading
+            setWritable(plugin, false)
         } catch (e: IOException) {
             Logger.e(this.toString(), "Exception copying $pluginName from assets", e)
         }
@@ -213,6 +221,10 @@ class SplashScreen : PermissionActivity() {
         } catch (e: IOException) {
             null
         }
+    }
+
+    private fun setWritable(file: File, writable: Boolean) {
+        file.setWritable(writable)
     }
 
     companion object {

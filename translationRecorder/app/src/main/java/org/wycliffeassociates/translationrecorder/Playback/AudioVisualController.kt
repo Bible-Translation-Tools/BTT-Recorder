@@ -152,9 +152,7 @@ class AudioVisualController(
     }
 
     fun clearLoopPoints() {
-        println("cues " + mCues.size)
         mPlayer.clearLoopPoints()
-        println("cues " + mCues.size)
     }
 
     fun undo() {

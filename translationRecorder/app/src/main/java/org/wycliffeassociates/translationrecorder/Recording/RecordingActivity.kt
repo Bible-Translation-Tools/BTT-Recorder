@@ -28,6 +28,7 @@ import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityRecordingScreenBinding
+import org.wycliffeassociates.translationrecorder.Screen
 import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -101,6 +102,11 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
 
         initialize(intent)
         initializeTaskFragment(savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Screen.lockOrientation(this, true)
     }
 
     override fun onPermissionsAccepted() {

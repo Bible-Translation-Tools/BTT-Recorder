@@ -298,9 +298,12 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
         mHandler.post {
             mMarkerMediator?.updateCurrentFrame(mCurrentRelativeFrame)
             mWaveformLayer?.invalidate()
-            binding.draggableViewFrame.invalidate()
             mMarkerLineLayer?.invalidate()
             mHighlightLayer?.invalidate()
+
+            if (_binding != null) {
+                binding.draggableViewFrame.invalidate()
+            }
         }
     }
 

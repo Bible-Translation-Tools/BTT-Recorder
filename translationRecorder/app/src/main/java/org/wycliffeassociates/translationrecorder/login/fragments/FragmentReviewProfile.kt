@@ -85,15 +85,6 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            wav = savedInstanceState.getSerializable("wav") as WavFile
-            audio = savedInstanceState.getSerializable("audio") as File
-            hash = savedInstanceState.getSerializable("hash") as String
-        }
-    }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -155,13 +146,6 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         onReviewProfileListener = context as OnReviewProfileListener
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putSerializable("wav", wav)
-        outState.putSerializable("audio", audio)
-        outState.putString("hash", hash)
     }
 
     private fun renderIdenticon(hash: String, view: ImageView) {
