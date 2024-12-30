@@ -1,255 +1,288 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.IntentTests;
+package org.wycliffeassociates.translationrecorder.recordingapp.IntentTests
 
-import android.app.Instrumentation;
-import android.content.Context;
-import android.content.Intent;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wycliffeassociates.translationrecorder.MainMenu;
-import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.Recording.UnitPicker;
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.project.components.Anthology;
-import org.wycliffeassociates.translationrecorder.project.components.Book;
-import org.wycliffeassociates.translationrecorder.project.components.Language;
-import org.wycliffeassociates.translationrecorder.project.components.Mode;
-import org.wycliffeassociates.translationrecorder.project.components.Version;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
-import static org.junit.Assert.assertEquals;
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createBibleTestProject;
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createNotesTestProject;
+import android.content.Context
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.wycliffeassociates.translationrecorder.MainMenu
+import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.Recording.UnitPicker
+import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar
+import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter
+import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.components.Language
+import org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 8/30/2017.
  */
-
-@RunWith(AndroidJUnit4.class)
+@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 @LargeTest
-public class RecordingActivityIntentTest {
+class RecordingActivityIntentTest {
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
-    private static final int TIME_OUT = 5000; /* miliseconds */
+    @get:Rule
+    var mActivityRule: ActivityTestRule<RecordingActivity> = ActivityTestRule(
+        RecordingActivity::class.java,
+        true,
+        false
+    )
 
-    @Rule
-    public ActivityTestRule<RecordingActivity> mActivityRule =
-            new ActivityTestRule<>(
-                    RecordingActivity.class,
-                    true,
-                    false
-            );
+    @get:Rule
+    var mSplashScreenRule: ActivityTestRule<MainMenu> = ActivityTestRule(
+        MainMenu::class.java,
+        true,
+        false
+    )
 
-    @Rule
-    public ActivityTestRule<MainMenu> mSplashScreenRule =
-            new ActivityTestRule<>(
-                    MainMenu.class,
-                    true,
-                    false
-            );
+    @Inject @ApplicationContext lateinit var context: Context
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
+
+    @Before
+    fun setup() {
+        hiltRule.inject()
+    }
 
     @Test
-    public void testNewProjects() {
-        Project project = createBibleTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(project, 1, 1);
-        System.out.println("Passed chapter 1 unit 1!");
-        project = createBibleTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(project, 1, 2);
-        System.out.println("Passed chapter 1 unit 2!");
-        project = createBibleTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(project, 2, 1);
-        System.out.println("Passed chapter 2 unit 1!");
-        project = createBibleTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(project, 2, 2);
-        System.out.println("Passed chapter 2 unit 2!");
+    fun testNewProjects() {
+        var project: Project = ProjectMockingUtil.createBibleTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(project, 1, 1)
+        println("Passed chapter 1 unit 1!")
+        project = ProjectMockingUtil.createBibleTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(project, 1, 2)
+        println("Passed chapter 1 unit 2!")
+        project = ProjectMockingUtil.createBibleTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(project, 2, 1)
+        println("Passed chapter 2 unit 1!")
+        project = ProjectMockingUtil.createBibleTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(project, 2, 2)
+        println("Passed chapter 2 unit 2!")
 
         //use chunk 3 since there is no chunk 2
-        Project projectNotes = createNotesTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(projectNotes, 1, 1);
-        System.out.println("Passed chunk 1 text 1!");
-        projectNotes = createNotesTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(projectNotes, 1, 2);
-        System.out.println("Passed chunk 1 ref 1!");
-        projectNotes = createNotesTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(projectNotes, 3, 1);
-        System.out.println("Passed chunk 3 text 1!");
-        projectNotes = createNotesTestProject(mSplashScreenRule);
-        testRecordingActivityDataFlow(projectNotes, 3, 2);
-        System.out.println("Passed chunk 3 ref 1!");
+        var projectNotes: Project = ProjectMockingUtil.createNotesTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(projectNotes, 1, 1)
+        println("Passed chunk 1 text 1!")
+        projectNotes = ProjectMockingUtil.createNotesTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(projectNotes, 1, 2)
+        println("Passed chunk 1 ref 1!")
+        projectNotes = ProjectMockingUtil.createNotesTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(projectNotes, 3, 1)
+        println("Passed chunk 3 text 1!")
+        projectNotes = ProjectMockingUtil.createNotesTestProject(
+            mSplashScreenRule,
+            directoryProvider
+        )
+        testRecordingActivityDataFlow(projectNotes, 3, 2)
+        println("Passed chunk 3 ref 1!")
     }
 
-    public void testRecordingActivityDataFlow(Project project, int chapter, int unit) {
+    private fun testRecordingActivityDataFlow(project: Project, chapter: Int, unit: Int) {
         //construct Intent to initialize playback activity based on parameters
-        Intent intent = RecordingActivity.getNewRecordingIntent(
-                InstrumentationRegistry.getContext(),
-                project,
-                chapter,
-                unit
-        );
+        val intent = RecordingActivity.getNewRecordingIntent(
+            context,
+            project,
+            chapter,
+            unit
+        )
 
         //launch our activity with this intent
-        mActivityRule.launchActivity(intent);
-        RecordingActivity recordingActivity = mActivityRule.getActivity();
-        testRecordingActivityInitialization(recordingActivity, project, chapter, unit);
-        testFlowToPlaybackActivity(recordingActivity, chapter, unit);
+        mActivityRule.launchActivity(intent)
+        val recordingActivity = mActivityRule.activity
+        testRecordingActivityInitialization(recordingActivity, project, chapter, unit)
+        testFlowToPlaybackActivity(recordingActivity, chapter, unit)
     }
 
-    public void testRecordingActivityInitialization(
-            RecordingActivity recordingActivity,
-            Project project,
-            int chapter,
-            int unit
+    fun testRecordingActivityInitialization(
+        recordingActivity: RecordingActivity,
+        project: Project,
+        chapter: Int,
+        unit: Int
     ) {
         try {
             //test initial chapter member variable is what we would expect
-            Field chapterField = recordingActivity.getClass().getDeclaredField("mInitialChapter");
-            chapterField.setAccessible(true);
-            int mChapter = (int) chapterField.get(recordingActivity);
-            assertEquals(
-                    "Chapter number used for intent vs recording activity member variable",
-                    chapter,
-                    mChapter
-            );
+            val chapterField = recordingActivity.javaClass.getDeclaredField("mInitialChapter")
+            chapterField.isAccessible = true
+            val mChapter = chapterField[recordingActivity] as Int
+            Assert.assertEquals(
+                "Chapter number used for intent vs recording activity member variable",
+                chapter.toLong(),
+                mChapter.toLong()
+            )
 
             //test initial chunk member variable is what we would expect
-            Field chunkField = recordingActivity.getClass().getDeclaredField("mInitialChunk");
-            chunkField.setAccessible(true);
-            int mChunk = (int) chapterField.get(recordingActivity);
-            assertEquals(unit, mChunk);
+            val chunkField = recordingActivity.javaClass.getDeclaredField("mInitialChunk")
+            chunkField.isAccessible = true
+            val mChunk = chapterField[recordingActivity] as Int
+            Assert.assertEquals(unit.toLong(), mChunk.toLong())
 
             //test that these initial values correctly initialized the fragment field
-            Field fragmentField = recordingActivity
-                    .getClass()
-                    .getDeclaredField("mFragmentRecordingFileBar");
-            fragmentField.setAccessible(true);
-            FragmentRecordingFileBar frfb =
-                    (FragmentRecordingFileBar) fragmentField.get(recordingActivity);
-            assertEquals(chapter, frfb.getChapter());
-            assertEquals(unit, frfb.getUnit());
+            val fragmentField = recordingActivity
+                .javaClass
+                .getDeclaredField("mFragmentRecordingFileBar")
+            fragmentField.isAccessible = true
+            val frfb =
+                fragmentField[recordingActivity] as FragmentRecordingFileBar
+            Assert.assertEquals(chapter.toLong(), frfb.chapter.toLong())
+            Assert.assertEquals(unit.toLong(), frfb.unit.toLong())
 
-            Field chapterPickerField = frfb.getClass().getDeclaredField("mChapterPicker");
-            chapterPickerField.setAccessible(true);
-            UnitPicker mChapterPicker = (UnitPicker) chapterPickerField.get(frfb);
-            assertEquals(
-                    project.getFileName(
-                        chapter,
-                        frfb.getChapter(),
-                        Integer.parseInt(frfb.getStartVerse()),
-                        Integer.parseInt(frfb.getEndVerse())
-                    ),
-                    mChapterPicker.getCurrentDisplayedValue()
-            );
-
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            val chapterPickerField = frfb.javaClass.getDeclaredField("mChapterPicker")
+            chapterPickerField.isAccessible = true
+            val mChapterPicker = chapterPickerField[frfb] as UnitPicker
+            Assert.assertEquals(
+                project.getFileName(
+                    chapter,
+                    frfb.chapter,
+                    frfb.startVerse.toInt(),
+                    frfb.endVerse.toInt()
+                ),
+                mChapterPicker.currentDisplayedValue
+            )
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
         }
     }
 
-    public void testFlowToPlaybackActivity(
-            final RecordingActivity recordingActivity,
-            int chapter,
-            int unit
-    ){
+    fun testFlowToPlaybackActivity(
+        recordingActivity: RecordingActivity,
+        chapter: Int,
+        unit: Int
+    ) {
         //Attach monitor to listen for the playback activity to launch
-        Instrumentation instrumentation = getInstrumentation();
-        Instrumentation.ActivityMonitor monitor = instrumentation.addMonitor(
-                PlaybackActivity.class.getName(),
-                null,
-                false
-        );
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val monitor = instrumentation.addMonitor(
+            PlaybackActivity::class.java.name,
+            null,
+            false
+        )
 
-        recordingActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //Fire intent from recording Activity
-                recordingActivity.onStartRecording();
-            }
-        });
+        recordingActivity.runOnUiThread { //Fire intent from recording Activity
+            recordingActivity.onStartRecording()
+        }
 
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.sleep(1000)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
 
-        recordingActivity.onStopRecording();
+        recordingActivity.onStopRecording()
 
         //try to get the playback activity now that the intent has fired
-        PlaybackActivity pba = (PlaybackActivity) instrumentation.waitForMonitorWithTimeout(
-                monitor,
-                TIME_OUT
-        );
+        val pba = instrumentation.waitForMonitorWithTimeout(
+            monitor,
+            TIME_OUT.toLong()
+        ) as PlaybackActivity
 
-        Intent intent = pba.getIntent();
+        val intent = pba.intent
 
-        int playbackChapter = intent.getIntExtra(PlaybackActivity.KEY_CHAPTER, -1);
-        int playbackUnit = intent.getIntExtra(PlaybackActivity.KEY_UNIT, -1);
-        assertEquals("chapter and playback initialized chapter", chapter, playbackChapter);
-        assertEquals("unit and playback initialized unit", unit, playbackUnit);
+        val playbackChapter = intent.getIntExtra(PlaybackActivity.KEY_CHAPTER, -1)
+        val playbackUnit = intent.getIntExtra(PlaybackActivity.KEY_UNIT, -1)
+        Assert.assertEquals(
+            "chapter and playback initialized chapter",
+            chapter.toLong(),
+            playbackChapter.toLong()
+        )
+        Assert.assertEquals(
+            "unit and playback initialized unit",
+            unit.toLong(),
+            playbackUnit.toLong()
+        )
 
-        pba.finish();
+        pba.finish()
     }
 
-    //constructs a list of all possible combinations of projects
-    List<Project> getProjectsList() {
-        ArrayList<Project> projects = new ArrayList<>();
-        Context ctx = InstrumentationRegistry.getContext();
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(ctx);
-        Anthology[] anthologies = db.getAnthologies();
-        Language[] languages = new Language[] {new Language("en", "English")};
-        for(Language language : languages) {
-            Project project = new Project();
-            project.setTargetLanguage(language);
-            for (Anthology anthology : anthologies) {
-                project.setAnthology(anthology);
-                Version[] versions = db.getVersions(anthology.getSlug());
-                for (Version version : versions) {
-                    project.setVersion(version);
-                    Book[] books = db.getBooks(anthology.getSlug());
-                    for (Book book : books) {
-                        project.setBook(book);
-                        Mode[] modes = db.getModes(anthology.getSlug());
-                        for (Mode mode : modes) {
-                            project.setMode(mode);
-                            projects.add(project);
+    val projectsList: List<Project>
+        //constructs a list of all possible combinations of projects
+        get() {
+            val projects = ArrayList<Project>()
+            val anthologies = db.anthologies
+            val languages = arrayOf(Language("en", "English"))
+            for (language in languages) {
+                for (anthology in anthologies) {
+                    val versions = db.getVersions(anthology.slug)
+                    for (version in versions) {
+                        val books = db.getBooks(anthology.slug)
+                        for (book in books) {
+                            val modes = db.getModes(anthology.slug)
+                            for (mode in modes) {
+                                val project = Project(
+                                    language,
+                                    anthology,
+                                    book,
+                                    version,
+                                    mode
+                                )
+                                projects.add(project)
+                            }
                         }
                     }
                 }
             }
+            return projects
         }
-        return projects;
+
+    @Throws(NoSuchFieldException::class, IOException::class, IllegalAccessException::class)
+    fun getChunkPlugin(ctx: Context, project: Project): List<Chapter> {
+        val chunkLoader = ChunkPluginLoader(directoryProvider, assetsProvider)
+        val plugin = project.getChunkPlugin(chunkLoader)
+        val field = ChunkPlugin::class.java.getDeclaredField("mChapters")
+        val chapters = field[plugin] as List<Chapter>
+        return chapters
     }
 
-    List<Chapter> getChunkPlugin(Context ctx, Project project) throws NoSuchFieldException, IOException, IllegalAccessException {
-            ChunkPlugin plugin = project.getChunkPlugin(new ChunkPluginLoader(ctx));
-            Field field = ChunkPlugin.class.getDeclaredField("mChapters");
-            List<Chapter> chapters = (List<Chapter>) field.get(plugin);
-            return chapters;
-    }
-
-    int[] getChapterNumbersArray(List<Chapter> chapters) {
-        int[] chapterNumbers = new int[chapters.size()];
-        for(int i = 0; i < chapterNumbers.length; i++) {
-            chapterNumbers[i] = chapters.get(i).getNumber();
+    fun getChapterNumbersArray(chapters: List<Chapter>): IntArray {
+        val chapterNumbers = IntArray(chapters.size)
+        for (i in chapterNumbers.indices) {
+            chapterNumbers[i] = chapters[i].number
         }
-        return chapterNumbers;
+        return chapterNumbers
     }
 
+    companion object {
+        private const val TIME_OUT = 5000 /* miliseconds */
+    }
 }

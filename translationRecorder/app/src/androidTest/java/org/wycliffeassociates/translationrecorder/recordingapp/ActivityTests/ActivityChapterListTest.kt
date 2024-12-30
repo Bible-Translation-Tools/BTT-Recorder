@@ -1,196 +1,161 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.ActivityTests;
+package org.wycliffeassociates.translationrecorder.recordingapp.ActivityTests
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Context;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.matcher.BoundedMatcher;
-import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityChapterList;
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList;
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.TestUtils.FragmentTestActivity;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil;
-import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static org.junit.Assert.assertEquals;
+import android.app.Instrumentation.ActivityMonitor
+import android.content.Context
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.BoundedMatcher
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.Description
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityChapterList
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 9/21/2017.
  */
-
-@RunWith(Parameterized.class)
+@HiltAndroidTest
+@RunWith(Parameterized::class)
 @LargeTest
-public class ActivityChapterListTest  {
+class ActivityChapterListTest(private val i: Int, private val project: Project) {
 
-    @Rule
-    public ActivityTestRule<ActivityChapterList> mActivityChapterListRule =
-            new ActivityTestRule<>(
-                    ActivityChapterList.class,
-                    true,
-                    false
-            );
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
-    @ClassRule
-    public static ActivityTestRule<FragmentTestActivity> mTestActivity =
-            new ActivityTestRule<>(
-                    FragmentTestActivity.class,
-                    true,
-                    false
-            );
+    @get:Rule
+    var mActivityChapterListRule: ActivityTestRule<ActivityChapterList> = ActivityTestRule(
+        ActivityChapterList::class.java,
+        true,
+        false
+    )
 
-    @Parameterized.Parameters
-    public static Iterable<Object[]> data() throws IOException {
+    @Inject @ApplicationContext lateinit var context: Context
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-        //Project notesProject = ProjectMockingUtil.createNotesTestProject(mainMenuActivityTestRule);
-        Project bibleProject = ProjectMockingUtil.createBibleTestProject(mTestActivity);
-
-        ArrayList<Object[]> bibleTestArgs = new ArrayList<>();
-        ChunkPlugin plugin = bibleProject.getChunkPlugin(new ChunkPluginLoader(mTestActivity.getActivity()));
-        int numChapters  = plugin.numChapters();
-
-        for(int i = 1; i < numChapters +1; i++) {
-            bibleTestArgs.add(new Object[]{i, bibleProject});
-        }
-        return bibleTestArgs;
-
-//        return Arrays.asList(new Object[][] {
-//                //Bible Projects
-//                {
-//                        1,
-//                        bibleProject
-//                },
-//                {
-//                        2,
-//                        bibleProject
-//                }
-//        });
+    @Before
+    fun setup() {
+        hiltRule.inject()
     }
 
-    private final int i;
-    private final Project project;
-
-    public ActivityChapterListTest(int chapter, Project project) {
-        i = chapter;
-        this.project = project;
-    }
-
-
-//    @Test
-//    public void ActivityChapterListTest() throws IllegalAccessException, NoSuchFieldException, IOException {
-//        Project bibleProject = createBibleTestProject(mTestActivity);
-//        Project notesProject = createNotesTestProject(mTestActivity);
-//
-//        testClickingChapterCard(bibleProject);
-//        testClickingChapterCard(notesProject);
-//    }
+    //    @Test
+    //    public void ActivityChapterListTest() throws IllegalAccessException, NoSuchFieldException, IOException {
+    //        Project bibleProject = createBibleTestProject(mTestActivity);
+    //        Project notesProject = createNotesTestProject(mTestActivity);
+    //
+    //        testClickingChapterCard(bibleProject);
+    //        testClickingChapterCard(notesProject);
+    //    }
     @Test
-    public void testClickingChapterCard() throws IllegalAccessException, NoSuchFieldException, IOException {
-        Context ctx = InstrumentationRegistry.getContext();
-        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        Instrumentation.ActivityMonitor chapterListMonitor = new Instrumentation.ActivityMonitor(
-                ActivityChapterList.class.getName(),
-                null,
-                false
-        );
-        instrumentation.addMonitor(chapterListMonitor);
+    @Throws(
+        IllegalAccessException::class,
+        NoSuchFieldException::class,
+        IOException::class
+    )
+    fun testClickingChapterCard() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val chapterListMonitor = ActivityMonitor(
+            ActivityChapterList::class.java.name,
+            null,
+            false
+        )
+        instrumentation.addMonitor(chapterListMonitor)
         mActivityChapterListRule.launchActivity(
-                ActivityChapterList.getActivityUnitListIntent(ctx, project)
-        );
-        Activity chapterListActivity = chapterListMonitor.waitForActivity();
-        Field recyclerViewField = chapterListActivity.getClass().getDeclaredField("mChapterList");
-        recyclerViewField.setAccessible(true);
-        RecyclerView rv = (RecyclerView) recyclerViewField.get(chapterListActivity);
+            ActivityChapterList.getActivityUnitListIntent(context, project)
+        )
+        val chapterListActivity = chapterListMonitor.waitForActivity()
+        val recyclerViewField = chapterListActivity.javaClass.getDeclaredField("mChapterList")
+        recyclerViewField.isAccessible = true
+        val rv = recyclerViewField[chapterListActivity] as RecyclerView
 
-        ChunkPlugin plugin = project.getChunkPlugin(new ChunkPluginLoader(chapterListActivity));
+        val pluginLoader = ChunkPluginLoader(directoryProvider, assetsProvider)
+        val plugin = project.getChunkPlugin(pluginLoader)
 
-        List<Chapter> chapters = plugin.getChapters();
+        val chapters = plugin.chapters
         //number of children in the recycler view should match the number of chapters
-        assertEquals("Number of chapters vs number in adapter", chapters.size(), rv.getAdapter().getItemCount());
+        Assert.assertEquals(
+            "Number of chapters vs number in adapter", chapters.size.toLong(), rv.adapter!!
+                .itemCount.toLong()
+        )
 
 
         //for(int i = 0; i < chapters.size(); i++) {
-            final ChapterCard cc = ((ChapterCardAdapter)rv.getAdapter()).getItem(i-1);
-            assertEquals(cc.getChapterNumber(), chapters.get(i-1).getNumber());
-            Instrumentation.ActivityMonitor activityMonitor = new Instrumentation.ActivityMonitor(ActivityUnitList.class.getName(), null, false);
-            InstrumentationRegistry.getInstrumentation().addMonitor(activityMonitor);
+        val cc = (rv.adapter as ChapterCardAdapter).getItem(i - 1)
+        Assert.assertEquals(cc.chapterNumber.toLong(), chapters[i - 1].number.toLong())
+        val activityMonitor = ActivityMonitor(ActivityUnitList::class.java.name, null, false)
+        InstrumentationRegistry.getInstrumentation().addMonitor(activityMonitor)
 
 
-            //this hack seems to work? the sleep is necessary probably to give enough time for the data to bind to the view holder
-            //fumbling around first with the scrolling seems to be necessary for it to not throw an exception saying one of the chapter numbers can't match
-            onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.scrollToHolder(withChapterNumber(cc.getChapterNumber())));
+        //this hack seems to work? the sleep is necessary probably to give enough time for the data to bind to the view holder
+        //fumbling around first with the scrolling seems to be necessary for it to not throw an exception saying one of the chapter numbers can't match
+        Espresso.onView(ViewMatchers.withId(R.id.chapter_list)).perform(
+            RecyclerViewActions.scrollToHolder(
+                withChapterNumber(cc.chapterNumber)
+            )
+        )
 
-            //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.scrollToHolder(withChapterNumber(chapters.get(0).getNumber())));
-            //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.scrollToHolder(withChapterNumber(cc.getChapterNumber())));
+        //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.scrollToHolder(withChapterNumber(chapters.get(0).getNumber())));
+        //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.scrollToHolder(withChapterNumber(cc.getChapterNumber())));
 //            try {
 //                Thread.sleep(100);
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
 //            }
+        val view = rv.findViewHolderForAdapterPosition(i - 1) as ChapterCardAdapter.ViewHolder?
+        view?.onClick(view.binding.cardHeader)
 
-            ChapterCardAdapter.ViewHolder view = (ChapterCardAdapter.ViewHolder) rv.findViewHolderForAdapterPosition(i-1);
-            view.onClick(view.cardHeader);
-            //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.actionOnHolderItem(withChapterNumber(cc.getChapterNumber()), click()));
-
-
-            ActivityUnitList aul = (ActivityUnitList) activityMonitor.waitForActivity();
+        //onView(withId(R.id.chapter_list)).perform(RecyclerViewActions.actionOnHolderItem(withChapterNumber(cc.getChapterNumber()), click()));
+        val aul = activityMonitor.waitForActivity() as ActivityUnitList
 
 
-            Field chapterField = ActivityUnitList.class.getDeclaredField("mChapterNum");
-            chapterField.setAccessible(true);
-            int unitListChapter = chapterField.getInt(aul);
-            System.out.println("chapters.get is " + chapters.get(i-1).getNumber());
-            System.out.println("i is " + i);
-            System.out.println("unitListChapter is " + unitListChapter);
-            assertEquals(unitListChapter, chapters.get(i-1).getNumber());
-            System.out.println("SUCCESS: UnitListChapter " + unitListChapter + " and Chapter Number " + chapters.get(i-1).getNumber() + " are the same!");
-            aul.finish();
-            InstrumentationRegistry.getInstrumentation().removeMonitor(activityMonitor);
+        val chapterField = ActivityUnitList::class.java.getDeclaredField("mChapterNum")
+        chapterField.isAccessible = true
+        val unitListChapter = chapterField.getInt(aul)
+        println("chapters.get is " + chapters[i - 1].number)
+        println("i is $i")
+        println("unitListChapter is $unitListChapter")
+        Assert.assertEquals(unitListChapter.toLong(), chapters[i - 1].number.toLong())
+        println("SUCCESS: UnitListChapter " + unitListChapter + " and Chapter Number " + chapters[i - 1].number + " are the same!")
+        aul.finish()
+        InstrumentationRegistry.getInstrumentation().removeMonitor(activityMonitor)
         //}
-        chapterListActivity.finish();
-        instrumentation.removeMonitor(chapterListMonitor);
-
+        chapterListActivity.finish()
+        instrumentation.removeMonitor(chapterListMonitor)
     }
 
-    public static Matcher<RecyclerView.ViewHolder> withChapterNumber(final int chapterNumber)
-    {
-        return new BoundedMatcher<RecyclerView.ViewHolder, ChapterCardAdapter.ViewHolder>(ChapterCardAdapter.ViewHolder.class)
-        {
-            @Override
-            protected boolean matchesSafely(ChapterCardAdapter.ViewHolder item)
-            {
-                return item.chapterCard.getChapterNumber() == chapterNumber;
-            }
+    companion object {
+        fun withChapterNumber(chapterNumber: Int): BoundedMatcher<RecyclerView.ViewHolder?, ChapterCardAdapter.ViewHolder> {
+            return object : BoundedMatcher<RecyclerView.ViewHolder?, ChapterCardAdapter.ViewHolder>(
+                ChapterCardAdapter.ViewHolder::class.java
+            ) {
+                override fun matchesSafely(item: ChapterCardAdapter.ViewHolder): Boolean {
+                    return item.chapterCard!!.chapterNumber == chapterNumber
+                }
 
-            @Override
-            public void describeTo(Description description)
-            {
-                description.appendText("view holder with chapter number: " + chapterNumber);
+                override fun describeTo(description: Description) {
+                    description.appendText("view holder with chapter number: $chapterNumber")
+                }
             }
-        };
+        }
     }
-
 }

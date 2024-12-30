@@ -1,169 +1,201 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.ActivityTests;
+package org.wycliffeassociates.translationrecorder.recordingapp.ActivityTests
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Context;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.matcher.BoundedMatcher;
-import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import android.view.View;
-
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList;
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter;
-import org.wycliffeassociates.translationrecorder.R;
-import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity;
-import org.wycliffeassociates.translationrecorder.TestUtils.FragmentTestActivity;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chunk;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.widgets.UnitCard;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static org.junit.Assert.assertEquals;
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createBibleTestProject;
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createNotesTestProject;
+import android.app.Instrumentation.ActivityMonitor
+import android.content.Context
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.BoundedMatcher
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.Description
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityUnitList.Companion.getActivityUnitListIntent
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter
+import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
+import org.wycliffeassociates.translationrecorder.TestUtils.FragmentTestActivity
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 9/21/2017.
  */
-
-@RunWith(AndroidJUnit4.class)
+@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
 @LargeTest
-public class ActivityUnitListTest  {
+class ActivityUnitListTest {
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
-    @Rule
-    public ActivityTestRule<ActivityUnitList> mActivityUnitListRule =
-            new ActivityTestRule<>(
-                    ActivityUnitList.class,
-                    true,
-                    false
-            );
+    @get:Rule
+    var mActivityUnitListRule: ActivityTestRule<ActivityUnitList> = ActivityTestRule(
+        ActivityUnitList::class.java,
+        true,
+        false
+    )
 
-    @Rule
-    public ActivityTestRule<FragmentTestActivity> mTestActivity =
-            new ActivityTestRule<>(
-                    FragmentTestActivity.class,
-                    true,
-                    false
-            );
+    @get:Rule
+    var mTestActivity: ActivityTestRule<FragmentTestActivity> = ActivityTestRule(
+        FragmentTestActivity::class.java,
+        true,
+        false
+    )
 
-    @Test
-    public void ActivityUnitListTest() throws IllegalAccessException, NoSuchFieldException, IOException {
-        Project bibleProject = createBibleTestProject(mTestActivity);
-        Project notesProject = createNotesTestProject(mTestActivity);
+    @Inject @ApplicationContext lateinit var context: Context
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetProvider: AssetsProvider
 
-        testClickingUnitCard(bibleProject);
-        testClickingUnitCard(notesProject);
+    @Before
+    fun setup() {
+        hiltRule.inject()
     }
 
-    public void testClickingUnitCard(Project project) throws IllegalAccessException, NoSuchFieldException, IOException {
-        Context ctx = InstrumentationRegistry.getContext();
-        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        Instrumentation.ActivityMonitor unitListMonitor = new Instrumentation.ActivityMonitor(
-                ActivityUnitList.class.getName(),
-                null,
-                false
-        );
-        instrumentation.addMonitor(unitListMonitor);
+    @Test
+    fun testBibleProject() {
+        val bibleProject: Project = ProjectMockingUtil.createBibleTestProject(
+            mTestActivity,
+            directoryProvider
+        )
+        testClickingUnitCard(bibleProject)
+    }
+
+    @Test
+    fun testNotesProject() {
+        val notesProject: Project = ProjectMockingUtil.createNotesTestProject(
+            mTestActivity,
+            directoryProvider
+        )
+        testClickingUnitCard(notesProject)
+    }
+
+    @Throws(
+        IllegalAccessException::class,
+        NoSuchFieldException::class,
+        IOException::class
+    )
+    fun testClickingUnitCard(project: Project) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val unitListMonitor = ActivityMonitor(
+            ActivityUnitList::class.java.name,
+            null,
+            false
+        )
+        instrumentation.addMonitor(unitListMonitor)
         mActivityUnitListRule.launchActivity(
-                ActivityUnitList.getActivityUnitListIntent(ctx, project, 1)
-        );
-        Activity unitListActivity = unitListMonitor.waitForActivity();
-        Field recyclerViewField = unitListActivity.getClass().getDeclaredField("mUnitList");
-        recyclerViewField.setAccessible(true);
-        RecyclerView rv = (RecyclerView) recyclerViewField.get(unitListActivity);
+            getActivityUnitListIntent(context, project, 1)
+        )
+        val unitListActivity = unitListMonitor.waitForActivity()
+        val recyclerViewField = unitListActivity.javaClass.getDeclaredField("mUnitList")
+        recyclerViewField.isAccessible = true
+        val rv = recyclerViewField[unitListActivity] as RecyclerView
 
-        ChunkPlugin plugin = project.getChunkPlugin(new ChunkPluginLoader(unitListActivity));
+        val pluginLoader = ChunkPluginLoader(directoryProvider, assetProvider)
+        val plugin = project.getChunkPlugin(pluginLoader)
 
-        List<Chunk> units = plugin.getChunks(1);
+        val units = plugin.getChunks(1)
         //number of children in the recycler view should match the number of units
-        assertEquals("Number of units vs number in adapter", units.size(), rv.getAdapter().getItemCount());
+        Assert.assertEquals(
+            "Number of units vs number in adapter", units.size.toLong(), rv.adapter!!
+                .itemCount.toLong()
+        )
 
-        Instrumentation.ActivityMonitor activityMonitor = new Instrumentation.ActivityMonitor(RecordingActivity.class.getName(), null, false);
-        InstrumentationRegistry.getInstrumentation().addMonitor(activityMonitor);
-        for(int i = 0; i < units.size(); i++) {
-            final UnitCard cc = ((UnitCardAdapter)rv.getAdapter()).getItem(i);
-            assertEquals(cc.getStartVerse(), units.get(i).getStartVerse());
-
-
+        val activityMonitor = ActivityMonitor(RecordingActivity::class.java.name, null, false)
+        InstrumentationRegistry.getInstrumentation().addMonitor(activityMonitor)
+        for (i in units.indices) {
+            val cc = (rv.adapter as UnitCardAdapter).getItem(i)
+            Assert.assertEquals(cc.startVerse.toLong(), units[i].startVerse.toLong())
 
             //this hack seems to work? the sleep is necessary probably to give enough time for the data to bind to the view holder
             //fumbling around first with the scrolling seems to be necessary for it to not throw an exception saying one of the unit numbers can't match
-            onView(withId(R.id.unit_list)).perform(RecyclerViewActions.scrollToHolder(withUnitNumber(cc.getStartVerse())));
-            onView(withId(R.id.unit_list)).perform(RecyclerViewActions.scrollToHolder(withUnitNumber(units.get(0).getStartVerse())));
-            onView(withId(R.id.unit_list)).perform(RecyclerViewActions.scrollToHolder(withUnitNumber(cc.getStartVerse())));
+            Espresso.onView(ViewMatchers.withId(R.id.unit_list)).perform(
+                RecyclerViewActions.scrollToHolder(
+                    withUnitNumber(cc.startVerse)
+                )
+            )
+            Espresso.onView(ViewMatchers.withId(R.id.unit_list)).perform(
+                RecyclerViewActions.scrollToHolder(
+                    withUnitNumber(
+                        units[0].startVerse
+                    )
+                )
+            )
+            Espresso.onView(ViewMatchers.withId(R.id.unit_list)).perform(
+                RecyclerViewActions.scrollToHolder(
+                    withUnitNumber(cc.startVerse)
+                )
+            )
             try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.sleep(100)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
 
-            View view = ((UnitCardAdapter.ViewHolder)(rv.findViewHolderForAdapterPosition(i))).unitRecordBtn;
-            int unitCardStartVerse = ((UnitCardAdapter.ViewHolder)(rv.findViewHolderForAdapterPosition(i))).unitCard.getStartVerse();
-            view.callOnClick();
+            val view: View =
+                ((rv.findViewHolderForAdapterPosition(i)) as UnitCardAdapter.ViewHolder).binding.unitRecordBtn
+            val unitCardStartVerse =
+                ((rv.findViewHolderForAdapterPosition(i)) as UnitCardAdapter.ViewHolder).unitCard!!.startVerse
+            view.callOnClick()
 
-            while(activityMonitor.getHits() < i+1) {
+            while (activityMonitor.hits < i + 1) {
                 try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.sleep(100)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
                 }
             }
-            RecordingActivity aul = (RecordingActivity) activityMonitor.getLastActivity();
-            if(aul == null) {
-                aul = (RecordingActivity) activityMonitor.waitForActivity();
+            var aul: RecordingActivity? = activityMonitor.lastActivity as RecordingActivity
+            if (aul == null) {
+                aul = activityMonitor.waitForActivity() as RecordingActivity
             }
-//            Field unitField = RecordingActivity.class.getDeclaredField("mInitialUnit");
+            //            Field unitField = RecordingActivity.class.getDeclaredField("mInitialUnit");
 //            unitField.setAccessible(true);
             //int unitListUnit = unitField.getInt(aul);
-            int unitListUnit = aul.getIntent().getIntExtra(RecordingActivity.KEY_UNIT, -1);
-            System.out.println("units.get is " + units.get(i).getStartVerse());
-            System.out.println("i is " + i);
-            System.out.println("unitListUnit is " + unitListUnit);
-            System.out.println("unitcard start verse is " + unitCardStartVerse);
-            assertEquals(unitListUnit, units.get(i).getStartVerse());
-            System.out.println("SUCCESS: UnitListUnit " + unitListUnit + " and Unit Number " + units.get(i).getStartVerse() + " are the same!");
-            aul.finish();
-            aul = null;
+            val unitListUnit = aul.intent.getIntExtra(RecordingActivity.KEY_UNIT, -1)
+            println("units.get is " + units[i].startVerse)
+            println("i is $i")
+            println("unitListUnit is $unitListUnit")
+            println("unitcard start verse is $unitCardStartVerse")
+            Assert.assertEquals(unitListUnit.toLong(), units[i].startVerse.toLong())
+            println("SUCCESS: UnitListUnit " + unitListUnit + " and Unit Number " + units[i].startVerse + " are the same!")
+            aul.finish()
+            aul = null
         }
-        InstrumentationRegistry.getInstrumentation().removeMonitor(activityMonitor);
-        unitListActivity.finish();
-        instrumentation.removeMonitor(unitListMonitor);
-
+        InstrumentationRegistry.getInstrumentation().removeMonitor(activityMonitor)
+        unitListActivity.finish()
+        instrumentation.removeMonitor(unitListMonitor)
     }
 
-    public static Matcher<RecyclerView.ViewHolder> withUnitNumber(final int unitNumber)
-    {
-        return new BoundedMatcher<RecyclerView.ViewHolder, UnitCardAdapter.ViewHolder>(UnitCardAdapter.ViewHolder.class)
-        {
-            @Override
-            protected boolean matchesSafely(UnitCardAdapter.ViewHolder item)
-            {
-                return item.unitCard.getStartVerse() == unitNumber;
-            }
+    companion object {
+        fun withUnitNumber(unitNumber: Int): BoundedMatcher<RecyclerView.ViewHolder?, UnitCardAdapter.ViewHolder> {
+            return object : BoundedMatcher<RecyclerView.ViewHolder?, UnitCardAdapter.ViewHolder>(
+                UnitCardAdapter.ViewHolder::class.java
+            ) {
+                override fun matchesSafely(item: UnitCardAdapter.ViewHolder): Boolean {
+                    return item.unitCard!!.startVerse == unitNumber
+                }
 
-            @Override
-            public void describeTo(Description description)
-            {
-                description.appendText("view holder with unit number: " + unitNumber);
+                override fun describeTo(description: Description) {
+                    description.appendText("view holder with unit number: $unitNumber")
+                }
             }
-        };
+        }
     }
-
 }

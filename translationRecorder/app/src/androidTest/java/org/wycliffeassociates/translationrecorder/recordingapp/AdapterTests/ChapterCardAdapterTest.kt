@@ -1,79 +1,89 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.AdapterTests;
+package org.wycliffeassociates.translationrecorder.recordingapp.AdapterTests
 
-import android.content.Context;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.rule.ActivityTestRule;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.runner.RunWith;
-import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityChapterList;
-import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter;
-import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter;
-import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin;
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
-import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader;
-import org.wycliffeassociates.translationrecorder.project.Project;
-import org.wycliffeassociates.translationrecorder.widgets.ChapterCard;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createBibleTestProject;
-import static org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil.createNotesTestProject;
+import android.content.Context
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.ActivityTestRule
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Before
+import org.junit.Rule
+import org.junit.runner.RunWith
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityChapterList
+import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil
+import org.wycliffeassociates.translationrecorder.widgets.ChapterCard
+import java.io.IOException
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 9/20/2017.
  */
+@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
+class ChapterCardAdapterTest {
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
-@RunWith(AndroidJUnit4.class)
-public class ChapterCardAdapterTest {
+    @get:Rule
+    var mActivityChapterListRule: ActivityTestRule<ActivityChapterList> = ActivityTestRule(
+        ActivityChapterList::class.java,
+        true,
+        false
+    )
 
-    @Rule
-    public ActivityTestRule<ActivityChapterList> mActivityChapterListRule =
-            new ActivityTestRule<>(
-                    ActivityChapterList.class,
-                    true,
-                    false
-            );
+    @Inject @ApplicationContext lateinit var context: Context
+    @Inject lateinit var db: IProjectDatabaseHelper
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject lateinit var assetsProvider: AssetsProvider
 
-    ChapterCardAdapter mBibleAdapter;
-    ChapterCardAdapter mNotesAdapter;
-    Project bibleProject;
-    Project notesProject;
+    private var mBibleAdapter: ChapterCardAdapter? = null
+    private var mNotesAdapter: ChapterCardAdapter? = null
+    private var bibleProject: Project? = null
+    private var notesProject: Project? = null
 
     @Before
-    public void setUp() {
-        ProjectDatabaseHelper db = new ProjectDatabaseHelper(mActivityChapterListRule.getActivity());
-        bibleProject = createBibleTestProject(mActivityChapterListRule);
-        notesProject = createNotesTestProject(mActivityChapterListRule);
-        try {
-            mBibleAdapter = new ChapterCardAdapter(
-                    mActivityChapterListRule.getActivity(),
-                    bibleProject,
-                    createChapterCardList(bibleProject),
-                    db
-            );
-            mNotesAdapter = new ChapterCardAdapter(
-                    mActivityChapterListRule.getActivity(),
-                    notesProject,
-                    createChapterCardList(notesProject),
-                    db
-            );
+    fun setUp() {
+        hiltRule.inject()
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        bibleProject = ProjectMockingUtil.createBibleTestProject(
+            mActivityChapterListRule,
+            directoryProvider
+        )
+        notesProject = ProjectMockingUtil.createNotesTestProject(
+            mActivityChapterListRule,
+            directoryProvider
+        )
+        try {
+            mBibleAdapter = ChapterCardAdapter(
+                mActivityChapterListRule.activity,
+                bibleProject!!,
+                createChapterCardList(bibleProject!!),
+                db
+            )
+            mNotesAdapter = ChapterCardAdapter(
+                mActivityChapterListRule.activity,
+                notesProject!!,
+                createChapterCardList(notesProject!!),
+                db
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
-    List<ChapterCard> createChapterCardList(Project project) throws IOException {
-        Context ctx = InstrumentationRegistry.getContext();
-        ChunkPlugin plugin = project.getChunkPlugin(new ChunkPluginLoader(ctx));
-        List<Chapter> chapters = plugin.getChapters();
-        List<ChapterCard> cards = new ArrayList<>();
-        for(Chapter chapter : chapters) {
+    @Throws(IOException::class)
+    fun createChapterCardList(project: Project): List<ChapterCard> {
+        val pluginLoader = ChunkPluginLoader(directoryProvider, assetsProvider)
+        val plugin = project.getChunkPlugin(pluginLoader)
+        val chapters = plugin.chapters
+        val cards: List<ChapterCard> = ArrayList()
+        for (chapter in chapters) {
 //            cards.add(new ChapterCard(
 //                    mActivityChapterListRule.getActivity(),
 //                    project,
@@ -81,7 +91,6 @@ public class ChapterCardAdapterTest {
 //                    chapter.getChunks().size()
 //            ));
         }
-        return cards;
+        return cards
     }
-
 }

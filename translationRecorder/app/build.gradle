@@ -35,9 +35,11 @@ android {
         targetSdk 35
         versionCode 36
         versionName "1.4.16"
-        versionNameSuffix
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
         multiDexEnabled true
+        testBuildType "verify"
+        testInstrumentationRunner "org.wycliffeassociates.translationrecorder.recordingapp.CustomTestRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
 
     def shouldRelease = project.hasProperty('keystorePath')
@@ -62,6 +64,10 @@ android {
                 proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
         }
+        verify {
+            initWith debug
+            applicationIdSuffix = ".test"
+        }
     }
     sourceSets { main { assets.srcDirs = ['src/main/assets', 'src/main/assets/'] } }
     compileOptions {
@@ -76,7 +82,10 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE.txt', 'LICENSE.txt']
+            excludes += [
+                    'META-INF/*',
+                    'LICENSE.txt'
+            ]
         }
     }
     lint {
@@ -160,6 +169,17 @@ dependencies {
     // Hilt/Dagger dependencies
     implementation 'com.google.dagger:hilt-android:2.52'
     kapt 'com.google.dagger:hilt-compiler:2.52'
+    androidTestImplementation  'com.google.dagger:hilt-android-testing:2.52'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.52'
+    androidTestAnnotationProcessor 'com.google.dagger:hilt-android-compiler:2.52'
+
+    // Mockk
+    testImplementation "io.mockk:mockk:1.13.13"
+    testImplementation "io.mockk:mockk-agent:1.13.13"
+    androidTestImplementation "io.mockk:mockk-android:1.13.13"
+    androidTestImplementation "io.mockk:mockk-agent:1.13.13"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
 }
 
 kapt {
