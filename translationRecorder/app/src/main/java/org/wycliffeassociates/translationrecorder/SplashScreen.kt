@@ -71,7 +71,7 @@ class SplashScreen : PermissionActivity() {
     }
 
     private fun initDatabase() {
-        val parse = ParseJSON(assetsProvider)
+        val parse = ParseJSON(assetsProvider, baseContext)
         try {
             //Book[] books = parse.pullBooks();
             val languages = parse.pullLangNames()
@@ -114,7 +114,7 @@ class SplashScreen : PermissionActivity() {
         plugin: String
     ) {
         val pluginPath = File(anthologiesDir, plugin)
-        val projectPlugin = ProjectPlugin(pluginsDir, pluginPath, db)
+        val projectPlugin = ProjectPlugin(pluginsDir, pluginPath, db, baseContext)
         copyPluginContentFromAssets(pluginsDir, "anthologies", plugin)
         copyPluginContentFromAssets(pluginsDir, "books", projectPlugin.booksPath)
         copyPluginContentFromAssets(pluginsDir, "versions", projectPlugin.versionsPath)
@@ -134,7 +134,7 @@ class SplashScreen : PermissionActivity() {
             for (plugin in plugins) {
                 copyPluginContentFromAssets(pluginsDir, "anthologies", plugin)
                 val pluginPath = File(anthologiesDir, plugin)
-                val projectPlugin = ProjectPlugin(pluginsDir, pluginPath, db)
+                val projectPlugin = ProjectPlugin(pluginsDir, pluginPath, db, baseContext)
                 copyPluginContentFromAssets(pluginsDir, "books", projectPlugin.booksPath)
                 copyPluginContentFromAssets(pluginsDir, "versions", projectPlugin.versionsPath)
                 copyPluginContentFromAssets(pluginsDir, "jars", projectPlugin.jarPath)

@@ -36,8 +36,7 @@ class PermissionsDialogActivity : AppCompatActivity() {
                 .setTitle(R.string.permissions_denied_title)
                 .setMessage(R.string.permissions_denied_message)
                 .setPositiveButton(R.string.open_permissions)
-                {
-                    _, _ ->
+                { _, _ ->
                     val intent = Intent()
                     intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                     val uri = Uri.fromParts("package", packageName, null)
@@ -45,7 +44,7 @@ class PermissionsDialogActivity : AppCompatActivity() {
                     this@PermissionsDialogActivity.startActivityForResult(intent, PERMISSIONS_PAGE)
                 }
                 .setCancelable(false)
-                .setView(R.layout.dialog_permissions_guide)
+                //.setView(R.layout.dialog_permissions_guide)
                 .create()
                 .show()
 

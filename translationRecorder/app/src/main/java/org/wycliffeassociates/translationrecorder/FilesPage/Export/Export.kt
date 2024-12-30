@@ -153,7 +153,7 @@ abstract class Export : SimpleProgressCallback {
         }
     }
 
-    override fun setCurrentFile(id: Int, currentFile: String) {
+    override fun setCurrentFile(id: Int, currentFile: String?) {
         handler.post { progressCallback?.setCurrentFile(currentFile) }
     }
 

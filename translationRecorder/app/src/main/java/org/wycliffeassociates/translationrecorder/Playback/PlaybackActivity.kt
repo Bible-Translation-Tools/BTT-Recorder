@@ -151,7 +151,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         }
         Logger.w(this.toString(), "onCreate")
         val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
-        mUser = db.getUser(userId)
+        mUser = db.getUser(userId)!!
     }
 
     override fun onStart() {
@@ -689,7 +689,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
                     val ppm = mProject.patternMatcher
                     ppm.match(to)
                     db.addTake(
-                        ppm.takeInfo,
+                        ppm.takeInfo!!,
                         to.name,
                         from.metadata.modeSlug,
                         to.lastModified(),
@@ -747,7 +747,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         get() {
             val ppm = mProject.patternMatcher
             ppm.match(mWavFile.file)
-            val takeInfo = ppm.takeInfo
+            val takeInfo = ppm.takeInfo!!
             mTotalVerses = (takeInfo.endVerse - takeInfo.startVerse + 1)
             startVerse = takeInfo.startVerse
             endVerse = takeInfo.endVerse

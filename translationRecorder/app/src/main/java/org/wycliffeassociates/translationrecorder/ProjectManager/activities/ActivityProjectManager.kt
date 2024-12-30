@@ -245,8 +245,8 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     }
 
     private fun initializeIdenticon() {
-        val userId = prefs.getDefaultPref(Settings.KEY_PROFILE, -1)
-        val user = db.getUser(userId)
+        val userId = prefs.getDefaultPref(Settings.KEY_PROFILE, 1)
+        val user = db.getUser(userId)!!
         val svg = Jdenticon.toSvg(user.hash, 512, 0f)
         binding.identicon?.background = Sharp.loadString(svg).drawable
         binding.identicon?.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
@@ -355,30 +355,25 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                 if (resultCode == RESULT_OK) {
                     val uri = data?.data
                     uri?.let {
-                        contentResolver.openOutputStream(it, "w").use { fos ->
-                            BufferedOutputStream(fos).use { bos ->
-                                try {
-                                    //sending output streams to the task to run in a thread means
-                                    // they cannot be closed in a finally block here
-                                    mProjectToExport?.let { project ->
-                                        val task = ExportSourceAudioTask(
-                                            SOURCE_AUDIO_TASK,
-                                            project,
-                                            ProjectFileUtils.getProjectDirectory(project, directoryProvider),
-                                            filesDir,
-                                            bos
-                                        )
-                                        mTaskFragment!!.executeRunnable(
-                                            task,
-                                            getString(R.string.exporting_source_audio),
-                                            getString(R.string.please_wait),
-                                            false
-                                        )
-                                    }
-                                } catch (e: FileNotFoundException) {
-                                    e.printStackTrace()
-                                }
+                        try {
+                            mProjectToExport?.let { project ->
+                                val task = ExportSourceAudioTask(
+                                    SOURCE_AUDIO_TASK,
+                                    baseContext,
+                                    project,
+                                    ProjectFileUtils.getProjectDirectory(project, directoryProvider),
+                                    directoryProvider.internalAppDir,
+                                    it
+                                )
+                                mTaskFragment!!.executeRunnable(
+                                    task,
+                                    getString(R.string.exporting_source_audio),
+                                    getString(R.string.please_wait),
+                                    false
+                                )
                             }
+                        } catch (e: FileNotFoundException) {
+                            e.printStackTrace()
                         }
                     }
                 }
@@ -526,8 +521,10 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     }
 
     override fun delegateExport(exp: Export) {
-        exp.setFragmentContext(mExportTaskFragment!!)
-        mExportTaskFragment!!.delegateExport(exp)
+        mExportTaskFragment?.let { fragment ->
+            exp.setFragmentContext(fragment)
+            fragment.delegateExport(exp)
+        }
     }
 
     override fun delegateSourceAudio(project: Project) {
@@ -540,7 +537,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                 + project.bookSlug + "_"
                 + project.modeSlug
                 + ".tr")
-        mSourceAudioFile = File(filesDir, trName)
+        mSourceAudioFile = File(directoryProvider.internalAppDir, trName)
         intent.putExtra(Intent.EXTRA_TITLE, mSourceAudioFile!!.name)
         startActivityForResult(intent, SAVE_SOURCE_AUDIO_REQUEST)
     }

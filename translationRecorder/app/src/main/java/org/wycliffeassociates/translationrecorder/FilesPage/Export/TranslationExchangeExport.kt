@@ -2,17 +2,22 @@ package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
 import android.content.Context
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.door43.tools.reporting.Logger
-import net.gotev.uploadservice.BinaryUploadRequest
-import net.gotev.uploadservice.ServerResponse
-import net.gotev.uploadservice.UploadInfo
-import net.gotev.uploadservice.UploadNotificationConfig
-import net.gotev.uploadservice.UploadServiceSingleBroadcastReceiver
-import net.gotev.uploadservice.UploadStatusDelegate
+import net.gotev.uploadservice.data.UploadInfo
+import net.gotev.uploadservice.data.UploadNotificationConfig
+import net.gotev.uploadservice.data.UploadNotificationStatusConfig
+import net.gotev.uploadservice.exceptions.UploadError
+import net.gotev.uploadservice.exceptions.UserCancelledUploadException
+import net.gotev.uploadservice.network.ServerResponse
+import net.gotev.uploadservice.observer.request.RequestObserverDelegate
+import net.gotev.uploadservice.protocols.binary.BinaryUploadRequest
 import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -20,7 +25,6 @@ import org.wycliffeassociates.translationrecorder.persistance.IPreferenceReposit
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.project.Project
 import java.io.File
-import java.util.UUID
 
 /**
  * Created by sarabiaj on 11/16/2017.
@@ -31,15 +35,13 @@ class TranslationExchangeExport(
     private val db: IProjectDatabaseHelper,
     private val directoryProvider: IDirectoryProvider,
     private val prefs: IPreferenceRepository,
-    private val assetsProvider: AssetsProvider
-) : Export(projectToExport, project, directoryProvider), UploadStatusDelegate {
+    private val assetsProvider: AssetsProvider,
+) : Export(projectToExport, project, directoryProvider), RequestObserverDelegate {
 
     private var differ: TranslationExchangeDiff? = null
-    private var uploadReceiver: UploadServiceSingleBroadcastReceiver
 
     init {
         directoryToZip = null
-        uploadReceiver = UploadServiceSingleBroadcastReceiver(this)
     }
 
     override fun initialize() {
@@ -49,19 +51,25 @@ class TranslationExchangeExport(
             directoryProvider,
             assetsProvider
         ).apply {
-            computeDiff(outputFile(), this@TranslationExchangeExport)
+            outputFile()
+            computeDiff(this@TranslationExchangeExport)
         }
     }
 
     override fun onStart(id: Int) {
         handler.post {
-            if (id == TranslationExchangeDiff.DIFF_ID) {
-                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_one))
-            } else if (id == ZipProject.ZIP_PROJECT_ID) {
-                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_two))
-            } else if (id == EXPORT_UPLOAD_ID) {
-                progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_three))
+            when (id) {
+                TranslationExchangeDiff.DIFF_ID -> {
+                    progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_one))
+                }
+                ZipProject.ZIP_PROJECT_ID -> {
+                    progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_two))
+                }
+                EXPORT_UPLOAD_ID -> {
+                    progressCallback?.setProgressTitle(fragment.getString(R.string.upload_step_three))
+                }
             }
+
             zipDone = false
             progressCallback?.setZipping(true)
             progressCallback?.showProgress(ProgressUpdateCallback.ZIP)
@@ -87,7 +95,7 @@ class TranslationExchangeExport(
         thread.start()
     }
 
-    fun uploadBinary(context: Context, file: File) {
+    private fun uploadBinary(context: Context, file: File) {
         try {
             this.onStart(EXPORT_UPLOAD_ID)
 
@@ -99,43 +107,60 @@ class TranslationExchangeExport(
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
             val filePath = file.absolutePath
             val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
-            val user = db.getUser(userId)
+            val user = db.getUser(userId)!!
             val hash = user.hash
 
-            val uploadId = UUID.randomUUID().toString()
-            uploadReceiver.setUploadID(uploadId)
-            uploadReceiver.register(context)
-
-            BinaryUploadRequest(context, uploadId, "http://$uploadServer/api/upload/zip")
+            val request = BinaryUploadRequest(context, "http://$uploadServer/api/upload/zip")
                 .addHeader("tr-user-hash", hash)
                 .addHeader("tr-file-name", file.name)
                 .setFileToUpload(filePath)
-                .setNotificationConfig(notificationConfig)
-                .setDelegate(null)
+                .setNotificationConfig { _, _ ->  notificationConfig}
                 .setAutoDeleteFilesAfterSuccessfulUpload(true)
                 .setMaxRetries(30)
-                .startUpload()
+
+            Handler(Looper.getMainLooper()).post {
+                request.subscribe(fragment.requireContext(), fragment, this)
+            }
         } catch (exc: Exception) {
             Log.e("AndroidUploadService", exc.message, exc)
         }
     }
 
-    protected val notificationConfig: UploadNotificationConfig
+    private val notificationConfig: UploadNotificationConfig
         get() {
-            val config = UploadNotificationConfig()
+            val progressConfig = UploadNotificationStatusConfig(
+                "Progress",
+                "Upload progress.",
+                R.drawable.ic_upload,
+                Color.BLUE
+            )
+            val successConfig = UploadNotificationStatusConfig(
+                "Success",
+                "Successfully uploaded.",
+                R.drawable.ic_upload_success,
+                Color.GREEN
+            )
+            val errorConfig = UploadNotificationStatusConfig(
+                "Error",
+                "An error occurred.",
+                R.drawable.ic_upload_error,
+                Color.RED
+            )
+            val cancelConfig = UploadNotificationStatusConfig(
+                "Canceled",
+                "Canceled by the user.",
+                R.drawable.ic_cancelled,
+                Color.YELLOW
+            )
 
-            config.progress.iconResourceID = R.drawable.ic_upload
-            config.progress.iconColorResourceID = Color.BLUE
-
-            config.completed.iconResourceID = R.drawable.ic_upload_success
-            config.completed.iconColorResourceID = Color.GREEN
-
-            config.error.iconResourceID = R.drawable.ic_upload_error
-            config.error.iconColorResourceID = Color.RED
-
-            config.cancelled.iconResourceID = R.drawable.ic_cancelled
-            config.cancelled.iconColorResourceID = Color.YELLOW
-
+            val config = UploadNotificationConfig(
+                TranslationRecorderApp.NOTIFICATION_CHANNEL_ID,
+                true,
+                progressConfig,
+                successConfig,
+                errorConfig,
+                cancelConfig
+            )
             return config
         }
 
@@ -143,7 +168,7 @@ class TranslationExchangeExport(
         this.setUploadProgress(EXPORT_UPLOAD_ID, uploadInfo.progressPercent)
     }
 
-    override fun onCompleted(
+    override fun onSuccess(
         context: Context,
         uploadInfo: UploadInfo,
         serverResponse: ServerResponse
@@ -158,35 +183,48 @@ class TranslationExchangeExport(
 
         Logger.e(
             TranslationExchangeExport::class.java.toString(),
-            "code: " + serverResponse.httpCode + " " + serverResponse.bodyAsString
+            "code: " + serverResponse.code + " " + serverResponse.bodyString
         )
         this.onComplete(EXPORT_UPLOAD_ID)
     }
 
-    override fun onError(
-        context: Context,
-        uploadInfo: UploadInfo,
-        serverResponse: ServerResponse?,
-        exception: Exception?
-    ) {
-        val message: String?
-        if (serverResponse != null) {
-            message = String.format(
-                "code: %s: %s",
-                serverResponse.httpCode,
-                serverResponse.bodyAsString
-            )
-            Logger.e(TranslationExchangeExport::class.java.toString(), message, exception)
-        } else if (exception != null) {
-            message = exception.message
-            Logger.e(
-                TranslationExchangeExport::class.java.toString(),
-                "Error: $message", exception
-            )
-        } else {
-            message = ("An error occurred without a response or exception, upload percent is "
-                    + uploadInfo.progressPercent)
-            Logger.e(TranslationExchangeExport::class.java.toString(), message)
+    override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
+    }
+
+    override fun onCompletedWhileNotObserving() {
+    }
+
+    override fun onError(context: Context, uploadInfo: UploadInfo, exception: Throwable) {
+        val message: String
+        when (exception) {
+            is UserCancelledUploadException -> {
+                Logger.e(TranslationExchangeExport::class.java.toString(), "Cancelled upload")
+                Logger.e(
+                    TranslationExchangeExport::class.java.toString(),
+                    "Upload percent was " + uploadInfo.progressPercent
+                )
+                message = "Upload was cancelled by user: ${exception.message ?: ""}"
+                this.onComplete(EXPORT_UPLOAD_ID)
+            }
+            is UploadError -> {
+                message = String.format(
+                    "code: %s: %s",
+                    exception.serverResponse.code,
+                    exception.serverResponse.bodyString
+                )
+                Logger.e(TranslationExchangeExport::class.java.toString(), message, exception)
+                Logger.e(
+                    TranslationExchangeExport::class.java.toString(),
+                    "Error: $exception.message", exception
+                )
+            }
+            else -> {
+                Logger.e(
+                    TranslationExchangeExport::class.java.toString(),
+                    "Error: $uploadInfo", exception
+                )
+                message = "Error: ${exception.message ?: ""}"
+            }
         }
 
         val fd = FeedbackDialog.newInstance(
@@ -194,17 +232,6 @@ class TranslationExchangeExport(
             this.fragment.getString(R.string.project_upload_failed, message)
         )
         fd.show(this.fragment.parentFragmentManager, "UPLOAD_FEEDBACK")
-        this.onComplete(EXPORT_UPLOAD_ID)
-    }
-
-    override fun onCancelled(context: Context, uploadInfo: UploadInfo?) {
-        Logger.e(TranslationExchangeExport::class.java.toString(), "Cancelled upload")
-        if (uploadInfo != null) {
-            Logger.e(
-                TranslationExchangeExport::class.java.toString(),
-                "Upload percent was " + uploadInfo.progressPercent
-            )
-        }
         this.onComplete(EXPORT_UPLOAD_ID)
     }
 

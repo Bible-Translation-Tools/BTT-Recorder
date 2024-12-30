@@ -109,7 +109,7 @@ interface IProjectDatabaseHelper {
 
     fun getLanguage(id: Int): Language
 
-    fun getUser(id: Int): User
+    fun getUser(id: Int): User?
 
     fun addUser(user: User)
 
@@ -202,7 +202,7 @@ interface IProjectDatabaseHelper {
 
     fun getTakeRating(takeInfo: TakeInfo): Int
 
-    fun getTakeUser(takeInfo: TakeInfo): User
+    fun getTakeUser(takeInfo: TakeInfo): User?
 
     fun getSelectedTakeId(
         languageSlug: String,

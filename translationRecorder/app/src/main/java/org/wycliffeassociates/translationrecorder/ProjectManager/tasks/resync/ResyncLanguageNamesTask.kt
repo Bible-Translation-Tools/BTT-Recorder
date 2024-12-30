@@ -30,7 +30,8 @@ class ResyncLanguageNamesTask private constructor(
     taskTag: Int,
     private val mCtx: Context,
     private val db: IProjectDatabaseHelper,
-    private val assetsProvider: AssetsProvider
+    private val assetsProvider: AssetsProvider,
+    private val context: Context
 ) : Task(taskTag) {
     private var isLocal: Boolean = false
     private var localFile: Uri? = null
@@ -42,8 +43,9 @@ class ResyncLanguageNamesTask private constructor(
         ctx: Context,
         db: IProjectDatabaseHelper,
         assetsProvider: AssetsProvider,
+        context: Context,
         url: String?
-    ) : this(taskTag, ctx, db, assetsProvider) {
+    ) : this(taskTag, ctx, db, assetsProvider, context) {
         this.remoteUrl = url
     }
 
@@ -52,12 +54,14 @@ class ResyncLanguageNamesTask private constructor(
         ctx: Context,
         db: IProjectDatabaseHelper,
         assetsProvider: AssetsProvider,
+        context: Context,
         uri: Uri?
     ) : this(
         taskTag,
         ctx,
         db,
-        assetsProvider
+        assetsProvider,
+        context
     ) {
         this.isLocal = true
         this.localFile = uri
@@ -67,7 +71,7 @@ class ResyncLanguageNamesTask private constructor(
         val json = if (isLocal) loadJsonFromFile() else loadJsonFromUrl()
         try {
             val jsonObject = JSONArray(json)
-            val parseJSON = ParseJSON(assetsProvider)
+            val parseJSON = ParseJSON(assetsProvider, context)
             val languages: List<Language> = parseJSON.pullLangNames(jsonObject)
             db.addLanguages(languages)
             onTaskCompleteDelegator()

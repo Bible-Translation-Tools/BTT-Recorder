@@ -1,5 +1,6 @@
 package org.wycliffeassociates.translationrecorder.project
 
+import android.content.Context
 import android.util.JsonReader
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.project.components.Book
@@ -16,7 +17,8 @@ import java.io.Reader
 class ProjectPlugin(
     private val pluginDir: File,
     plugin: File,
-    private val db: IProjectDatabaseHelper
+    private val db: IProjectDatabaseHelper,
+    private val context: Context
 ) {
     var resource: String? = null
     var slug: String? = null
@@ -96,7 +98,7 @@ class ProjectPlugin(
                     "name" -> name = jsonReader.nextString()
                 }
             }
-            bookList.add(Book(slug, name, anth, num))
+            bookList.add(Book(context, slug, name, anth, num))
             jsonReader.endObject()
         }
         jsonReader.endArray()

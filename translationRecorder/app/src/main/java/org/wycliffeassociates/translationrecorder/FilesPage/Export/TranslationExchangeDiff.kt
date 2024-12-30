@@ -117,7 +117,7 @@ class TranslationExchangeDiff(
         return map
     }
 
-    fun computeDiff(outFile: File?, progressCallback: SimpleProgressCallback) {
+    fun computeDiff(progressCallback: SimpleProgressCallback) {
         val diff = Thread {
             try {
                 progressCallback.onStart(DIFF_ID)

@@ -171,7 +171,7 @@ class SourceAudioActivity : AppCompatActivity(), ScrollableListFragment.OnItemCl
         }
 
         mFragment = ScrollableListFragment.Builder(
-            TargetLanguageAdapter(ParseJSON.getLanguages(assetsProvider), this)
+            TargetLanguageAdapter(ParseJSON.getLanguages(baseContext, assetsProvider), this)
         ).setSearchHint(getString(R.string.choose_source_language) + ":").build()
 
         supportFragmentManager

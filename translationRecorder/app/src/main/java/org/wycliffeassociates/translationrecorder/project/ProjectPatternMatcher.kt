@@ -14,9 +14,9 @@ class ProjectPatternMatcher(var regex: String, var groups: String) {
     private var mName: String? = null
     private var mMatched: Boolean = false
 
-    lateinit var projectSlugs: ProjectSlugs
+    var projectSlugs: ProjectSlugs? = null
         private set
-    lateinit var takeInfo: TakeInfo
+    var takeInfo: TakeInfo? = null
         private set
 
     init {
@@ -62,7 +62,7 @@ class ProjectPatternMatcher(var regex: String, var groups: String) {
                         )
 
                         takeInfo = TakeInfo(
-                            projectSlugs,
+                            projectSlugs!!,
                             values[4],
                             values[5]!!,
                             values[6],

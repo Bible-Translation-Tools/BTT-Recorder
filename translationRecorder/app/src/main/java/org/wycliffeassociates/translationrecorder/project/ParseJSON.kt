@@ -1,5 +1,6 @@
 package org.wycliffeassociates.translationrecorder.project
 
+import android.content.Context
 import android.util.Pair
 import org.json.JSONArray
 import org.json.JSONException
@@ -11,7 +12,10 @@ import java.io.IOException
 /**
  * Created by Abi on 7/29/2015.
  */
-class ParseJSON(private val assetsProvider: AssetsProvider) {
+class ParseJSON(
+    private val assetsProvider: AssetsProvider,
+    private val context: Context
+) {
 
     private var mBooks: MutableList<Book> = arrayListOf()
 
@@ -75,7 +79,7 @@ class ParseJSON(private val assetsProvider: AssetsProvider) {
             val slug = bookObj.getString("slug")
             val anthology = bookObj.getString("anth")
             val order = bookObj.getInt("num")
-            val book = Book(slug, name, anthology, order)
+            val book = Book(context, slug, name, anthology, order)
             books.add(book)
         }
         val sortedBooks = books.sortedWith { lhs, rhs ->
@@ -238,8 +242,8 @@ class ParseJSON(private val assetsProvider: AssetsProvider) {
     }
 
     companion object {
-        fun getLanguages(assetsProvider: AssetsProvider): List<Language> {
-            val parse = ParseJSON(assetsProvider)
+        fun getLanguages(context: Context, assetsProvider: AssetsProvider): List<Language> {
+            val parse = ParseJSON(assetsProvider, context)
             return try {
                 parse.pullLangNames()
             } catch (e: JSONException) {
@@ -248,8 +252,8 @@ class ParseJSON(private val assetsProvider: AssetsProvider) {
             }
         }
 
-        fun getBooks(assetsProvider: AssetsProvider, testament: String): List<Book> {
-            val parse = ParseJSON(assetsProvider)
+        fun getBooks(context: Context, assetsProvider: AssetsProvider, testament: String): List<Book> {
+            val parse = ParseJSON(assetsProvider, context)
             val books = parse.pullBooks()
             return books.filter {
                 when (testament) {

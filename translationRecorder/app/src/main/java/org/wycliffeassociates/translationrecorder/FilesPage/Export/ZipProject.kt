@@ -11,8 +11,8 @@ import java.io.File
  * Created by sarabiaj on 1/24/2018.
  */
 class ZipProject {
-    val mFiles: List<File>?
-    val mDirectory: File?
+    private val mFiles: List<File>?
+    private val mDirectory: File?
 
     //Arraylist explicitly specified because of zip4j dependency
     constructor(files: List<File>?) {

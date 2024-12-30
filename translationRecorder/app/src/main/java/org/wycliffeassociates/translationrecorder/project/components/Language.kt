@@ -1,5 +1,6 @@
 package org.wycliffeassociates.translationrecorder.project.components
 
+import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import org.wycliffeassociates.translationrecorder.Utils
@@ -7,7 +8,7 @@ import org.wycliffeassociates.translationrecorder.Utils
 class Language : ProjectComponent, Parcelable {
     constructor(slug: String?, name: String?) : super(slug, name)
 
-    override fun getLabel(): String {
+    override fun getLabel(context: Context): String {
         return Utils.capitalizeFirstLetter(mName)
     }
 

@@ -136,7 +136,7 @@ class GenericAdapter(
 
         fun bind(position: Int) {
             // render view
-            val label = getLocalizedModeLabel(context, getItem(position).label)
+            val label = getLocalizedModeLabel(context, getItem(position).getLabel(context))
             binding.majorText.text = label
             binding.minorText.text = getItem(position).slug
 

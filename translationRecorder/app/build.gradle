@@ -117,7 +117,7 @@ dependencies {
     implementation 'com.karumi:dexter:5.0.0'
     implementation 'androidx.preference:preference-ktx:1.2.1'
 
-    def uploadServiceVersion = "3.4.2"
+    def uploadServiceVersion = "4.9.3"
     implementation "net.gotev:uploadservice:$uploadServiceVersion"
     implementation "net.gotev:uploadservice-okhttp:$uploadServiceVersion"
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'

@@ -37,7 +37,8 @@ class UnitCard(
     val startVerse: Int,
     private val endVerse: Int,
     private val onTakeActionListener: OnTakeActionListener,
-    private val directoryProvider: IDirectoryProvider
+    private val directoryProvider: IDirectoryProvider,
+    private val context: Context
 ) {
     interface DatabaseAccessor {
         fun updateSelectedTake(takeInfo: TakeInfo)
@@ -163,9 +164,9 @@ class UnitCard(
             val ppm: ProjectPatternMatcher = project.patternMatcher
             val ppm2: ProjectPatternMatcher = project.patternMatcher
             ppm.match(f)
-            val takeInfo: TakeInfo = ppm.takeInfo
+            val takeInfo: TakeInfo = ppm.takeInfo!!
             ppm2.match(s)
-            val takeInfo2: TakeInfo = ppm2.takeInfo
+            val takeInfo2: TakeInfo = ppm2.takeInfo!!
 
             //                Long first = f.lastModified();
             //                Long second = s.lastModified();
@@ -194,7 +195,7 @@ class UnitCard(
     private fun refreshSelectedTake(take: File) {
         val ppm: ProjectPatternMatcher = project.patternMatcher
         ppm.match(take)
-        val takeInfo: TakeInfo = ppm.takeInfo
+        val takeInfo: TakeInfo = ppm.takeInfo!!
         val chosen = databaseAccessor.selectedTakeNumber(takeInfo)
         viewHolder.binding.selectTakeBtn.isActivated = chosen == takeInfo.take
     }
@@ -202,7 +203,7 @@ class UnitCard(
     private fun refreshTakeRating(take: File) {
         val ppm: ProjectPatternMatcher = project.patternMatcher
         ppm.match(take)
-        val takeInfo: TakeInfo = ppm.takeInfo
+        val takeInfo: TakeInfo = ppm.takeInfo!!
         Logger.w(this.toString(), "Refreshing take rating for " + take.name)
         currentTakeRating = databaseAccessor.takeRating(takeInfo)
         viewHolder.binding.rateTakeBtn.setStep(currentTakeRating)
@@ -217,7 +218,7 @@ class UnitCard(
         val text: String
 
         if (takes.isNotEmpty()) {
-            text = TranslationRecorderApp.getContext().resources.getString(
+            text = context.resources.getString(
                 R.string.label_take_detailed,
                 (takeIndex + 1).toString(),
                 takes.size.toString()
@@ -225,7 +226,7 @@ class UnitCard(
             val created: Long = takes[takeIndex].lastModified()
             viewHolder.binding.currentTakeTimeStamp.text = convertTime(created)
         } else {
-            text = TranslationRecorderApp.getContext().resources.getString(
+            text = context.resources.getString(
                 R.string.label_take_detailed,
                 "0",
                 takes.size.toString()
@@ -266,7 +267,7 @@ class UnitCard(
                     val ppm: ProjectPatternMatcher = this.project.patternMatcher
                     ppm.match(f)
                     if (ppm.matched()) {
-                        val takeInfo: TakeInfo = ppm.takeInfo
+                        val takeInfo = ppm.takeInfo!!
                         if (takeInfo.startVerse == startVerse) {
                             isEmpty = false
                             return
@@ -423,7 +424,7 @@ class UnitCard(
                         val selectedFile: File = takes[takeIndex]
                         val ppm: ProjectPatternMatcher = project.patternMatcher
                         ppm.match(selectedFile)
-                        val takeInfo: TakeInfo = ppm.takeInfo
+                        val takeInfo = ppm.takeInfo!!
                         db.deleteTake(takeInfo)
                         takes[takeIndex].delete()
                         takes.removeAt(takeIndex)
@@ -503,7 +504,7 @@ class UnitCard(
             if (takes.isNotEmpty()) {
                 val ppm: ProjectPatternMatcher = project.patternMatcher
                 ppm.match(takes[takeIndex])
-                val takeInfo: TakeInfo = ppm.takeInfo
+                val takeInfo = ppm.takeInfo!!
                 if (view.isActivated) {
                     view.isActivated = false
                     db.removeSelectedTake(takeInfo)

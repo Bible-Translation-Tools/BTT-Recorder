@@ -2,7 +2,9 @@ package org.wycliffeassociates.translationrecorder.permissions
 
 import android.Manifest
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -30,8 +32,23 @@ abstract class PermissionActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         requestingPermission.set(true)
+
+        val permissions = arrayListOf(
+            Manifest.permission.RECORD_AUDIO
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val wasDenied = ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+            // Request POST_NOTIFICATIONS only once
+            if (!wasDenied) {
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         Dexter.withActivity(this)
-                .withPermissions(Manifest.permission.RECORD_AUDIO)
+                .withPermissions(permissions)
                 .withListener(
                         object : MultiplePermissionsListener {
                             override fun onPermissionsChecked(report: MultiplePermissionsReport) {
@@ -39,8 +56,17 @@ abstract class PermissionActivity : AppCompatActivity() {
                                     requestingPermission.set(false)
                                     onPermissionsAccepted()
                                 } else {
-                                    requestingPermission.set(false)
-                                    presentPermissionDialog()
+                                    val denied = report.deniedPermissionResponses
+                                        .map { it.permissionName }
+
+                                    // Skip POST_NOTIFICATIONS if the user has denied it
+                                    if (denied.size == 1 && denied.first() == Manifest.permission.POST_NOTIFICATIONS) {
+                                        requestingPermission.set(false)
+                                        onPermissionsAccepted()
+                                    } else {
+                                        requestingPermission.set(false)
+                                        presentPermissionDialog()
+                                    }
                                 }
                             }
                             override fun onPermissionRationaleShouldBeShown(

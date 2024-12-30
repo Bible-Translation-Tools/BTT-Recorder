@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
@@ -27,25 +26,14 @@ public class Book extends ProjectComponent implements Parcelable {
     private ArrayList<ArrayList<Chunk>> mChunks;
     private int mOrder;
 
-
-    public Book(String slug, String name, String anthology, int chapters, ArrayList<ArrayList<Chunk>> chunks, int order){
-        super(slug, name);
-        mNumChapters = chapters;
-        mAnthology = anthology;
-        mChunks = chunks;
-        mOrder = order;
-        String localizedName = getLocalizedName(slug, anthology);
-        mName = (localizedName != null) ? localizedName : name;
-    }
-
-    public Book(String slug, String name, String anthology, int order){
+    public Book(Context context, String slug, String name, String anthology, int order){
         super(slug, name);
         // get localized name from resources
         mNumChapters = 0;
         mAnthology = anthology;
         mChunks = null;
         mOrder = order;
-        String localizedName = getLocalizedName(slug, anthology);
+        String localizedName = getLocalizedName(context, slug, anthology);
         mName = (localizedName != null) ? localizedName : name;
     }
 
@@ -66,18 +54,20 @@ public class Book extends ProjectComponent implements Parcelable {
     }
 
     @Override
-    public String getLabel() {
-        String label = "";
+    public String getLabel(Context context) {
+        StringBuilder label = new StringBuilder();
         String[] resourceLabels = mName.split(" ");
-        for(String part : resourceLabels) {
-            label += " " + Utils.capitalizeFirstLetter(part);
+        for(String part: resourceLabels) {
+            label
+                    .append(" ")
+                    .append(Utils.capitalizeFirstLetter(part));
         }
-        return label;
+        return label.toString();
     }
 
     @Override
     public int compareTo(Object another) {
-        return new Integer(mOrder).compareTo(((Book)another).getOrder());
+        return Integer.compare(mOrder, ((Book) another).getOrder());
     }
 
     @Override
@@ -109,13 +99,11 @@ public class Book extends ProjectComponent implements Parcelable {
         mOrder = in.readInt();
     }
 
-    private String getLocalizedName(String slug, String anthology) {
-        Context ctx = TranslationRecorderApp.getContext();
+    private String getLocalizedName(Context context, String slug, String anthology) {
         String localizationSlug = (anthology.equals("obs")) ? "obs_book_" : "book_";
         return ResourceUtility.getStringByName(
                 localizationSlug + slug,
-                ctx.getResources(),
-                ctx.getPackageName()
+                context
         );
     }
 }

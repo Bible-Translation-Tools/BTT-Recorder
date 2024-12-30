@@ -29,7 +29,7 @@ import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
  * Created by sarabiaj on 5/10/2016.
  */
 class ProjectDatabaseHelper(
-    context: Context,
+    private val context: Context,
     private val directoryProvider: IDirectoryProvider
 ) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION), IProjectDatabaseHelper {
 
@@ -754,7 +754,7 @@ class ProjectDatabaseHelper(
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun getUser(id: Int): User {
+    override fun getUser(id: Int): User? {
         val db = readableDatabase
         val query = String.format(
             "SELECT * FROM %s WHERE %s=%s",
@@ -763,7 +763,7 @@ class ProjectDatabaseHelper(
             id.toString()
         )
         val cursor = db.rawQuery(query, null)
-        val user: User
+        var user: User? = null
         if (cursor.moveToFirst()) {
             val userId = cursor.getInt(cursor.getColumnIndex(ProjectContract.UserEntry._ID))
             val audio =
@@ -771,7 +771,7 @@ class ProjectDatabaseHelper(
             val hash = cursor.getString(cursor.getColumnIndex(ProjectContract.UserEntry.USER_HASH))
             user = User(userId, audio, hash)
         } else {
-            throw IllegalArgumentException("User id not found in database.")
+            Logger.e("ProjectDatabaseHelper.getUser", "User id not found in database.")
         }
         return user
     }
@@ -879,7 +879,7 @@ class ProjectDatabaseHelper(
                 cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER))
             val anthology =
                 getAnthologySlug(cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)))
-            book = Book(bookSlug, bookName, anthology, bookNumber)
+            book = Book(context, bookSlug, bookName, anthology, bookNumber)
         } else {
             throw IllegalArgumentException("Book id not found in database.")
         }
@@ -1436,7 +1436,7 @@ class ProjectDatabaseHelper(
         return rating
     }
 
-    override fun getTakeUser(takeInfo: TakeInfo): User {
+    override fun getTakeUser(takeInfo: TakeInfo): User? {
         val slugs = takeInfo.projectSlugs
         val unitId = getUnitId(
             slugs.language,
@@ -1453,11 +1453,12 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_UNIT_FK,
             ProjectContract.TakeEntry.TAKE_NUMBER
         )
-        val userId =
-            DatabaseUtils.longForQuery(db, getTake, arrayOf(unitId, takeInfo.take.toString()))
-                .toInt()
-        val user = getUser(userId)
-        return user
+        val userId = DatabaseUtils.longForQuery(
+            db,
+            getTake,
+            arrayOf(unitId, takeInfo.take.toString())
+        ).toInt()
+        return getUser(userId)
     }
 
     private fun getSelectedTakeId(unitId: Int): Int {
@@ -1932,7 +1933,7 @@ class ProjectDatabaseHelper(
                 val takeName = c.getString(nameIndex)
                 val ppm = project.patternMatcher
                 ppm.match(takeName)
-                val takeInfo = ppm.takeInfo
+                val takeInfo = ppm.takeInfo!!
                 val slugs = takeInfo.projectSlugs
                 if (!languageExists(slugs.language)) {
                     if (callback != null) {
@@ -2093,7 +2094,7 @@ class ProjectDatabaseHelper(
                 val takeName = c.getString(nameIndex)
                 val ppm = project.patternMatcher
                 ppm.match(takeName)
-                val takeInfo = ppm.takeInfo
+                val takeInfo = ppm.takeInfo!!
                 val slugs = takeInfo.projectSlugs
                 if (!languageExists(slugs.language)) {
                     if (onLanguageNotFound != null) {
@@ -2238,7 +2239,7 @@ class ProjectDatabaseHelper(
                 val takeName = c.getString(nameIndex)
                 val ppm = project.patternMatcher
                 ppm.match(takeName)
-                val takeInfo = ppm.takeInfo
+                val takeInfo = ppm.takeInfo!!
                 val slugs = takeInfo.projectSlugs
                 if (!languageExists(slugs.language)) {
                     if (languageNotFoundCallback != null) {
@@ -2358,7 +2359,7 @@ class ProjectDatabaseHelper(
                     cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK))
                 val order =
                     cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER))
-                bookList.add(Book(bookSlug, bookName, getAnthologySlug(anthologyId), order))
+                bookList.add(Book(context, bookSlug, bookName, getAnthologySlug(anthologyId), order))
             } while (cursor.moveToNext())
         }
         cursor.close()

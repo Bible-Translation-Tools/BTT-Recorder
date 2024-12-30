@@ -43,7 +43,7 @@
     <dimen name="splash_title_size">36sp</dimen>
 
 
-    <dimen name="headline">20dp</dimen>
+    <dimen name="headline">20sp</dimen>
     <dimen name="dialog_content_margin">24dp</dimen>
     <dimen name="dialog_controls_margin">8dp</dimen>
 

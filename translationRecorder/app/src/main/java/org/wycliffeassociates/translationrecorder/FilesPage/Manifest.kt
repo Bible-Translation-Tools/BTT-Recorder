@@ -72,7 +72,7 @@ class Manifest(
         jw.name("language")
         jw.beginObject()
         jw.name("slug").value(project.targetLanguageSlug)
-        jw.name("name").value(project.targetLanguage?.name)
+        jw.name("name").value(project.targetLanguage.name)
         jw.endObject()
     }
 
@@ -101,7 +101,7 @@ class Manifest(
         jw.name("version")
         jw.beginObject()
         jw.name("slug").value(project.versionSlug)
-        jw.name("name").value(project.version?.name)
+        jw.name("name").value(project.version.name)
         jw.endObject()
     }
 
@@ -110,7 +110,7 @@ class Manifest(
         jw.name("anthology")
         jw.beginObject()
         jw.name("slug").value(project.anthologySlug)
-        jw.name("name").value(project.anthology?.name)
+        jw.name("name").value(project.anthology.name)
         jw.endObject()
     }
 
@@ -176,16 +176,18 @@ class Manifest(
             val ppm = project.patternMatcher
             ppm.match(take)
             if (ppm.matched()) {
-                val info = ppm.takeInfo
-                val rating = db.getTakeRating(info)
-                val user = db.getTakeUser(info)
-                if (!users.containsKey(user.id)) {
-                    users[user.id] = user
-                }
                 jw.beginObject()
                 jw.name("name").value(take.name)
-                jw.name("rating").value(rating.toLong())
-                jw.name("user_id").value(user.id.toLong())
+                ppm.takeInfo?.let { info ->
+                    val rating = db.getTakeRating(info)
+                    val user = db.getTakeUser(info)?.apply {
+                        if (!users.containsKey(id)) {
+                            users[id] = this
+                        }
+                    }
+                    jw.name("rating").value(rating.toLong())
+                    jw.name("user_id").value(user?.id?.toLong())
+                }
                 jw.endObject()
             } else {
                 i.remove()
@@ -230,10 +232,10 @@ class Manifest(
         for (file in projectFiles) {
             ppm = project.patternMatcher
             ppm.match(file)
-            val ti = ppm.takeInfo
-            if (ti != null && ti.chapter == chapter && ti.startVerse == startv && ti.endVerse == endv
-            ) {
-                resultFiles.add(file)
+            ppm.takeInfo?.let { takeInfo ->
+                if (takeInfo.chapter == chapter && takeInfo.startVerse == startv && takeInfo.endVerse == endv) {
+                    resultFiles.add(file)
+                }
             }
         }
         return resultFiles

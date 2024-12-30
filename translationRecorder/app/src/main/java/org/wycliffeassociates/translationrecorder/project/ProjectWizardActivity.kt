@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
 import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityScrollableListBinding
@@ -283,7 +282,7 @@ class ProjectWizardActivity : AppCompatActivity(), ScrollableListFragment.OnItem
             val builder = AlertDialog.Builder(context)
             builder.setTitle(R.string.project_exists)
             builder.setMessage(
-                TranslationRecorderApp.getContext().resources.getString(R.string.project_exists_message)
+                context.getString(R.string.project_exists_message)
             )
             builder.setPositiveButton(
                 context.getString(R.string.label_ok)

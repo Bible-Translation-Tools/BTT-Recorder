@@ -4,7 +4,6 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import net.gotev.uploadservice.UploadService
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -20,6 +19,7 @@ object ConvertAudio {
     private const val COMPRESSED_AUDIO_FILE_BIT_RATE = 64000 // 64kbps
     private const val SAMPLING_RATE = 44100
     private const val CODEC_TIMEOUT_IN_MS = 5000
+    private const val BUFFER_SIZE = 44100
 
     fun convertWavToMp4(inputFile: File, outputFile: File): String {
         FileInputStream(inputFile).use { fis ->
@@ -40,7 +40,7 @@ object ConvertAudio {
 
             val outBuffInfo = MediaCodec.BufferInfo()
 
-            val tempBuffer = ByteArray(UploadService.BUFFER_SIZE)
+            val tempBuffer = ByteArray(BUFFER_SIZE)
             var hasMoreData = true
             var presentationTimeUs = 0.0
             var audioTrackIdx = 0

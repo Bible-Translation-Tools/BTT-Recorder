@@ -179,7 +179,7 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         mInitialChapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
         mInitialUnit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
         val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
-        mUser = db.getUser(userId)
+        mUser = db.getUser(userId)!!
     }
 
     private fun initializeFragments() {
@@ -371,7 +371,7 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
         val ppm = mProject.patternMatcher
         ppm.match(newRecording.file)
         db.addTake(
-            ppm.takeInfo,
+            ppm.takeInfo!!,
             newRecording.file.name,
             newRecording.metadata.modeSlug,
             newRecording.file.lastModified(),

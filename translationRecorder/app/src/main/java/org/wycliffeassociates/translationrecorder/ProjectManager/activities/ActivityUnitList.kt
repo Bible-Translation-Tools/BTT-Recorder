@@ -200,7 +200,8 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
                         unit.startVerse,
                         unit.endVerse,
                         this,
-                        directoryProvider
+                        directoryProvider,
+                        baseContext
                     )
                 )
             }
@@ -216,7 +217,7 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
     override fun onRated(name: String, currentTakeRating: Int) {
         val ppm: ProjectPatternMatcher = project.patternMatcher
         ppm.match(name)
-        val takeInfo: TakeInfo = ppm.takeInfo
+        val takeInfo = ppm.takeInfo
         val dialog = RatingDialog.newInstance(takeInfo, currentTakeRating)
         dialog.show(supportFragmentManager, "single_take_rating")
     }

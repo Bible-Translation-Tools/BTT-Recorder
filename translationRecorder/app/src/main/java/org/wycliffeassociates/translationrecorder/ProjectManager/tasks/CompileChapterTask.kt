@@ -41,11 +41,11 @@ class CompileChapterTask(
         return files.sortedWith { lhs, rhs ->
             val ppmLeft = mProject.patternMatcher
             ppmLeft.match(lhs)
-            val takeInfoLeft = ppmLeft.takeInfo
+            val takeInfoLeft = ppmLeft.takeInfo!!
 
             val ppmRight = mProject.patternMatcher
             ppmRight.match(rhs)
-            val takeInfoRight = ppmRight.takeInfo
+            val takeInfoRight = ppmRight.takeInfo!!
 
             val startLeft = takeInfoLeft.startVerse
             val startRight = takeInfoRight.startVerse

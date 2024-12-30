@@ -6,16 +6,14 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
-import org.wycliffeassociates.translationrecorder.Utils
+import org.wycliffeassociates.translationrecorder.Screen
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ProjectLayoutDialogBinding
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
@@ -73,6 +71,8 @@ class ProjectInfoDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = ProjectLayoutDialogBinding.inflate(layoutInflater)
 
+        Screen.lockOrientation(requireActivity())
+
         val builder = AlertDialog.Builder(requireActivity())
         builder.setView(binding.root)
 
@@ -110,7 +110,7 @@ class ProjectInfoDialog : DialogFragment() {
             (activity as InfoDialogCallback).onDelete(project)
         }
 
-        val localExport = View.OnClickListener {
+        binding.folderButton.setOnClickListener {
             export = FolderExport(
                 ProjectFileUtils.getProjectDirectory(project, directoryProvider),
                 project,
@@ -119,10 +119,8 @@ class ProjectInfoDialog : DialogFragment() {
                 exportDelegator?.delegateExport(this)
             }
         }
-        binding.sdcardButton.setOnClickListener(localExport)
-        binding.folderButton.setOnClickListener(localExport)
 
-        val tEExport = View.OnClickListener {
+        binding.publishButton.setOnClickListener {
             export = TranslationExchangeExport(
                 ProjectFileUtils.getProjectDirectory(project, directoryProvider),
                 project,
@@ -134,7 +132,6 @@ class ProjectInfoDialog : DialogFragment() {
                 exportDelegator?.delegateExport(this)
             }
         }
-        binding.publishButton.setOnClickListener(tEExport)
 
         binding.otherButton.setOnClickListener {
             export = AppExport(
@@ -192,6 +189,7 @@ class ProjectInfoDialog : DialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        Screen.unlockOrientation(requireActivity())
     }
 
     companion object {

@@ -30,7 +30,7 @@ object ProjectFileUtils {
         val files = directory.listFiles() ?: return 0
         val ppm = project.patternMatcher
         ppm.match(nameWithoutTake)
-        val baseTakeInfo = ppm.takeInfo
+        val baseTakeInfo = ppm.takeInfo!!
         var maxTake = max(baseTakeInfo.take.toDouble(), 0.0).toInt()
         for (f in files) {
             ppm.match(f)
@@ -46,7 +46,7 @@ object ProjectFileUtils {
         val files = directory.listFiles() ?: return 0
         val ppm = project.patternMatcher
         ppm.match(filename)
-        val takeInfo = ppm.takeInfo
+        val takeInfo = ppm.takeInfo!!
         var maxTake = takeInfo.take
         for (f in files) {
             ppm.match(f)
@@ -78,7 +78,7 @@ object ProjectFileUtils {
     ): File {
         val ppm = project.patternMatcher
         ppm.match(file)
-        val takeInfo = ppm.takeInfo
+        val takeInfo = ppm.takeInfo!!
         val slugs = takeInfo.projectSlugs
         val path = String.format(
             "%s/%s/%s/%s",
@@ -98,7 +98,7 @@ object ProjectFileUtils {
     ): File {
         val ppm = project.patternMatcher
         ppm.match(file)
-        val takeInfo = ppm.takeInfo
+        val takeInfo = ppm.takeInfo!!
         val slugs = takeInfo.projectSlugs
         val path = String.format(
             "%s/%s/%s/%s",
