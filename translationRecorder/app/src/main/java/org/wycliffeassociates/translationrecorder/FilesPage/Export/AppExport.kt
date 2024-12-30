@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.content.FileProvider
-import androidx.multidex.BuildConfig
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
 import java.io.File
@@ -33,32 +32,29 @@ class AppExport(
     }
 
     class ShareZipToApps : Activity() {
-        var mFile: File? = null
+        private var mFile: File? = null
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            val path = intent.getStringExtra("zipPath")
-            val sendIntent = Intent()
-            sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val path = intent.getStringExtra("zipPath")!!
             mFile = File(path)
             val audioUri = FileProvider.getUriForFile(
-                this@ShareZipToApps,
-                BuildConfig.APPLICATION_ID + ".provider",
+                this,
+                application.packageName + ".provider",
                 mFile!!
             )
-            sendIntent.setAction(Intent.ACTION_SEND)
-            //send individual URI
-            sendIntent.putExtra(Intent.EXTRA_STREAM, audioUri)
-            //open
+
+            val sendIntent = Intent(Intent.ACTION_SEND)
             sendIntent.setType("application/zip")
+            sendIntent.putExtra(Intent.EXTRA_STREAM, audioUri)
+            sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             this.startActivityForResult(Intent.createChooser(sendIntent, "Export Zip"), 3)
         }
 
-        override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
             super.onActivityResult(requestCode, resultCode, data)
-            if (mFile != null) {
-                mFile!!.delete()
-            }
+            mFile?.delete()
+            finish()
         }
     }
 }
