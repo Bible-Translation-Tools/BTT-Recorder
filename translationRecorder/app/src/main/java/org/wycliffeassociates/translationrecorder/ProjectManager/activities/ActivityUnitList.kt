@@ -23,7 +23,6 @@ import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
 import org.wycliffeassociates.translationrecorder.project.ProjectProgress
-import org.wycliffeassociates.translationrecorder.project.TakeInfo
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
@@ -186,25 +185,23 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
     }
 
     private fun prepareUnitCardData() {
-        if (chunkPlugin != null) {
-            val chunks = chunkPlugin.getChapter(chapterNum).chunks
-            for (unit in chunks) {
-                val modeLabel = project.getLocalizedModeName(this)
-                val title = modeLabel + " " + unit.label
-                unitCardList.add(
-                    UnitCard(
-                        adapter!!,
-                        project,
-                        title,
-                        chapterNum,
-                        unit.startVerse,
-                        unit.endVerse,
-                        this,
-                        directoryProvider,
-                        baseContext
-                    )
+        val chunks = chunkPlugin.getChapter(chapterNum).chunks
+        for (unit in chunks) {
+            val modeLabel = project.getLocalizedModeName(this)
+            val title = modeLabel + " " + unit.label
+            unitCardList.add(
+                UnitCard(
+                    adapter!!,
+                    project,
+                    title,
+                    chapterNum,
+                    unit.startVerse,
+                    unit.endVerse,
+                    this,
+                    directoryProvider,
+                    baseContext
                 )
-            }
+            )
         }
     }
 

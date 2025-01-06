@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Bundle
 import android.os.Handler
@@ -18,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.door43.tools.reporting.Logger
 import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.AudioInfo
 import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualizer
 import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog
 import org.wycliffeassociates.translationrecorder.FilesPage.ExitDialog.DeleteFileCallback
@@ -132,8 +136,31 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
     private var mDrawLoop: DrawThread? = null
 
     private lateinit var mUser: User
-    private lateinit var audioTrack: AudioTrack
-    private var trackBufferSize = 0
+
+    private val trackBufferSize = AudioTrack.getMinBufferSize(
+        AudioInfo.SAMPLERATE,
+        AudioFormat.CHANNEL_OUT_MONO,
+        AudioFormat.ENCODING_PCM_16BIT
+    )
+
+    private val audioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    private val audioFormat = AudioFormat.Builder()
+        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+        .setSampleRate(AudioInfo.SAMPLERATE)
+        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+        .build()
+
+    private val audioTrack = AudioTrack(
+        audioAttributes,
+        audioFormat,
+        trackBufferSize,
+        AudioTrack.MODE_STREAM,
+        AudioManager.AUDIO_SESSION_ID_GENERATE
+    )
 
     private lateinit var binding: ActivityPlaybackScreenBinding
 
@@ -142,8 +169,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         binding = ActivityPlaybackScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        audioTrack = (application as TranslationRecorderApp).audioTrack
-        trackBufferSize = (application as TranslationRecorderApp).trackBufferSize
+
         try {
             initialize(intent)
         } catch (e: IOException) {

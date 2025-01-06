@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.persistance
 
 import android.content.Context
+import com.door43.sysutils.FileUtilities
 import java.io.File
 
 class DirectoryProvider (private val context: Context) : IDirectoryProvider {
@@ -83,5 +84,11 @@ class DirectoryProvider (private val context: Context) : IDirectoryProvider {
 
     override fun createTempFile(prefix: String, suffix: String?, dir: File?): File {
         return File.createTempFile(prefix, suffix, dir ?: internalCacheDir)
+    }
+
+    override fun clearCache() {
+        internalCacheDir.listFiles()?.forEach {
+            FileUtilities.deleteRecursive(it)
+        }
     }
 }

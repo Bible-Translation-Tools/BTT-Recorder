@@ -276,8 +276,9 @@ class ActivityChapterList : AppCompatActivity(), CheckingDialog.DialogListener,
         private val COMPILE_CHAPTER_TASK = Task.FIRST_TASK + 1
         private val STATE_RESYNC = "db_resync"
         private val TAG_TASK_FRAGMENT = "task_fragment"
-        fun getActivityUnitListIntent(ctx: Context?, p: Project?): Intent {
-            val intent = Intent(ctx, ActivityUnitList::class.java)
+
+        fun getActivityChapterListIntent(ctx: Context?, p: Project?): Intent {
+            val intent = Intent(ctx, ActivityChapterList::class.java)
             intent.putExtra(Project.PROJECT_EXTRA, p)
             return intent
         }

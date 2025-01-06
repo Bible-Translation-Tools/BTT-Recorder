@@ -35,25 +35,25 @@ class FragmentSourceAudio : Fragment() {
     }
 
     fun loadAudio(project: Project, filename: String, chapter: Int) {
-        binding.sourceAudioPlayer.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
+        _binding?.sourceAudioPlayer?.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
     }
 
     fun disableSourceAudio() {
-        binding.sourceAudioPlayer.cleanup()
-        binding.sourceAudioPlayer.isEnabled = false
+        _binding?.sourceAudioPlayer?.cleanup()
+        _binding?.sourceAudioPlayer?.isEnabled = false
     }
 
     fun resetSourceAudio(project: Project, filename: String, chapter: Int) {
-        binding.sourceAudioPlayer.reset(project, filename, chapter, directoryProvider, prefs)
+        _binding?.sourceAudioPlayer?.reset(project, filename, chapter, directoryProvider, prefs)
     }
 
     fun initialize(project: Project, filename: String, chapter: Int) {
-        binding.sourceAudioPlayer.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
+        _binding?.sourceAudioPlayer?.initSrcAudio(project, filename, chapter, directoryProvider, prefs)
     }
 
     override fun onPause() {
         super.onPause()
-        binding.sourceAudioPlayer.pauseSource()
+        _binding?.sourceAudioPlayer?.pauseSource()
     }
 
     override fun onDestroyView() {

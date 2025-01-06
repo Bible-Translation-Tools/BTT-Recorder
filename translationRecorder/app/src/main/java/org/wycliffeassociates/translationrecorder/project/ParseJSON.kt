@@ -79,7 +79,8 @@ class ParseJSON(
             val slug = bookObj.getString("slug")
             val anthology = bookObj.getString("anth")
             val order = bookObj.getInt("num")
-            val book = Book(context, slug, name, anthology, order)
+            val localizedName = Book.getLocalizedName(context, slug, name, anthology)
+            val book = Book(slug, localizedName, anthology, order)
             books.add(book)
         }
         val sortedBooks = books.sortedWith { lhs, rhs ->

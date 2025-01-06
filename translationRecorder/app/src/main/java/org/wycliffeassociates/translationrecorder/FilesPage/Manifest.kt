@@ -203,7 +203,7 @@ class Manifest(
         jw.beginArray()
         for (user in users.values) {
             jw.beginObject()
-            jw.name("name_audio").value(user.audio.name)
+            jw.name("name_audio").value(user.audio!!.name)
             jw.name("icon_hash").value(user.hash)
             jw.name("id").value(user.id.toLong())
             jw.endObject()
@@ -245,7 +245,7 @@ class Manifest(
         get() {
             val userAudioFiles: MutableList<File> = arrayListOf()
             for (user in users.values) {
-                userAudioFiles.add(user.audio)
+                userAudioFiles.add(user.audio!!)
             }
             return userAudioFiles
         }

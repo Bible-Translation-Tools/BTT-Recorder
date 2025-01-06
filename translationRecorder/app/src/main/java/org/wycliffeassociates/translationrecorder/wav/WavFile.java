@@ -537,7 +537,7 @@ public class WavFile implements Parcelable, Serializable {
         dest.writeInt(mMetadataLength);
     }
 
-    public static final Parcelable.Creator<WavFile> CREATOR = new Parcelable.Creator<WavFile>() {
+    public static final Parcelable.Creator<WavFile> CREATOR = new Parcelable.Creator<>() {
         public WavFile createFromParcel(Parcel in) {
             return new WavFile(in);
         }

@@ -55,11 +55,11 @@ class UserActivity : AppCompatActivity() {
 
     private fun userList(): List<Pair<User, Drawable>> {
         val userList = arrayListOf<Pair<User, Drawable>>()
-        val newEmptyUser = User(0, null, null)
+        val newEmptyUser = User()
         userList.add(Pair(newEmptyUser, resources.getDrawable(R.drawable.ic_person_add_black_48dp)))
         val users = db.allUsers
         for (user in users) {
-            val identicon = generateIdenticon(user.hash)
+            val identicon = generateIdenticon(user.hash!!)
             userList.add(Pair(user, identicon))
         }
         return userList

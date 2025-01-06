@@ -1,4 +1,4 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.UnitTests.project
+package org.wycliffeassociates.translationrecorder.recordingapp.integration
 
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,7 +13,6 @@ import org.junit.runner.RunWith
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.createFile
-import org.wycliffeassociates.translationrecorder.project.TakeInfo
 import org.wycliffeassociates.translationrecorder.project.components.Anthology
 import org.wycliffeassociates.translationrecorder.project.components.Book
 import org.wycliffeassociates.translationrecorder.project.components.Language
@@ -31,24 +30,26 @@ class ProjectFileUtilsTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
-    @Inject @ApplicationContext lateinit var context: Context
-    @Inject lateinit var directoryProvider: IDirectoryProvider
+    @Inject
+    @ApplicationContext lateinit var context: Context
+    @Inject
+    lateinit var directoryProvider: IDirectoryProvider
 
-    var regex: String =
+    private var regex: String =
         ("([a-zA-Z]{2,3}[-[\\d\\w]+]*)_([a-zA-Z]{3})_b([\\d]{2})_([1-3]*[a-zA-Z]+)_c([\\d]{2,3})"
                 + "_v([\\d]{2,3})(-([\\d]{2,3}))?(_t([\\d]{2}))?(.wav)?")
 
     //lang, version booknum book chapter start end take
-    private var groups: String = "1 2 3 4 5 6 8 10"
-    private var language: Language = Language("en", "English")
-    private var book: Book = Book(context, "gen", "Genesis", "ot", 1)
-    private var version: Version = Version("ulb", "Unlocked Literal Bible")
-    private var mask: String = "1111111111"
-    private var sort: Int = 1
+    private var groups = "1 2 3 4 5 6 8 10"
+    private var language = Language("en", "English")
+    private var book = Book("gen", "Genesis", "ot", 1)
+    private var version = Version("ulb", "Unlocked Literal Bible")
+    private var mask = "1001111111"
+    private var sort = 1
 
-    private var jarName: String = "biblechunk.jar"
-    private var className: String = "org.wycliffeassociates.translationrecorder.biblechunk.BibleChunkPlugin"
-    private var anthology: Anthology = Anthology(
+    private var jarName = "biblechunk.jar"
+    private var className = "org.wycliffeassociates.translationrecorder.biblechunk.BibleChunkPlugin"
+    private var anthology = Anthology(
         "ot",
         "Old Testament",
         "bible",
@@ -59,8 +60,8 @@ class ProjectFileUtilsTest {
         jarName,
         className
     )
-    var mode: Mode = Mode("chunk", "chunk", "chunk")
-    var project: Project = Project(language, anthology, book, version, mode)
+    private var mode = Mode("chunk", "chunk", "chunk")
+    private var project = Project(language, anthology, book, version, mode)
 
     @Before
     fun setup() {
@@ -94,19 +95,6 @@ class ProjectFileUtilsTest {
 
         val name2 = project.getFileName(1, 1, -1)
         val expected2 = "en_ulb_b01_gen_c01_v01"
-        Assert.assertEquals(expected, name)
-    }
-
-    @Test
-    fun testGetParentDirectory() {
-        val name = project.getFileName(1, 1, 2)
-        val expected = "en_ulb_b01_gen_c01_v01-02_t01.wav"
-        val ti = TakeInfo(project.projectSlugs, 1, 1, 2, 1)
-        //        ProjectFileUtils.getParentDirectory();
-        Assert.assertEquals(expected, name)
-
-        val name2 = project.getFileName(1, 1, -1)
-        val expected2 = "en_ulb_b01_gen_c01_v01"
-        Assert.assertEquals(expected, name)
+        Assert.assertEquals(expected2, name2)
     }
 }

@@ -166,15 +166,15 @@ class FragmentRecordingControls : Fragment() {
     private val btnClick = View.OnClickListener { v ->
         when (v.id) {
             R.id.btnRecording -> {
-                Logger.w(this.toString(), "User pressed Record")
+                Logger.w(this::javaClass.name, "User pressed Record")
                 startRecording()
             }
             R.id.btnStop -> {
-                Logger.w(this.toString(), "User pressed Stop")
+                Logger.w(this::javaClass.name, "User pressed Stop")
                 stopRecording()
             }
             R.id.btnPauseRecording -> {
-                Logger.w(this.toString(), "User pressed Pause")
+                Logger.w(this::javaClass.name, "User pressed Pause")
                 pauseRecording()
             }
         }

@@ -83,4 +83,9 @@ interface IDirectoryProvider {
      * @param dir The optional directory to create the file in.
      */
     fun createTempFile(prefix: String, suffix: String?, dir: File? = null): File
+
+    /**
+     * Clear the cache directory
+     */
+    fun clearCache()
 }

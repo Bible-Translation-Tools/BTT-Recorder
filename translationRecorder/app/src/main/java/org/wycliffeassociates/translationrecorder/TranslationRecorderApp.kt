@@ -4,9 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.media.AudioFormat
-import android.media.AudioManager
-import android.media.AudioTrack
 import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
 import net.gotev.uploadservice.UploadServiceConfig
@@ -34,21 +31,6 @@ import javax.net.ssl.TrustManagerFactory
  */
 @HiltAndroidApp
 class TranslationRecorderApp : Application() {
-
-    var trackBufferSize: Int = AudioTrack.getMinBufferSize(
-        AudioInfo.SAMPLERATE,
-        AudioFormat.CHANNEL_OUT_MONO,
-        AudioFormat.ENCODING_PCM_16BIT
-    )
-
-    var audioTrack: AudioTrack = AudioTrack(
-        AudioManager.STREAM_MUSIC,
-        AudioInfo.SAMPLERATE,
-        AudioFormat.CHANNEL_OUT_MONO,
-        AudioFormat.ENCODING_PCM_16BIT,
-        trackBufferSize,
-        AudioTrack.MODE_STREAM
-    )
 
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "TranslationRecorderUpload"

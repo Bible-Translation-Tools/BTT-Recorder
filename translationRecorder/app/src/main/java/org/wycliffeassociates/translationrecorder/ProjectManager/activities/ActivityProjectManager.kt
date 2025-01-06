@@ -247,7 +247,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     private fun initializeIdenticon() {
         val userId = prefs.getDefaultPref(Settings.KEY_PROFILE, 1)
         val user = db.getUser(userId)!!
-        val svg = Jdenticon.toSvg(user.hash, 512, 0f)
+        val svg = Jdenticon.toSvg(user.hash!!, 512, 0f)
         binding.identicon?.background = Sharp.loadString(svg).drawable
         binding.identicon?.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         binding.identicon?.setOnClickListener(identiconPlayerClick(user.audio.toString()))

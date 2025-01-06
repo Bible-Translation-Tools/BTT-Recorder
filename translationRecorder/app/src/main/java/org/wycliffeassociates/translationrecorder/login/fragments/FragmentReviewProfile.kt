@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -57,8 +60,30 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
     private var onReviewProfileListener: OnReviewProfileListener? = null
 
     private var layoutInitialized = false
-    private lateinit var audioTrack: AudioTrack
-    private var trackBufferSize: Int = 0
+
+    private val trackBufferSize = AudioTrack.getMinBufferSize(
+        AudioInfo.SAMPLERATE,
+        AudioFormat.CHANNEL_OUT_MONO,
+        AudioFormat.ENCODING_PCM_16BIT
+    )
+    private val audioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    private val audioFormat = AudioFormat.Builder()
+        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+        .setSampleRate(AudioInfo.SAMPLERATE)
+        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+        .build()
+
+    private val audioTrack = AudioTrack(
+        audioAttributes,
+        audioFormat,
+        trackBufferSize,
+        AudioTrack.MODE_STREAM,
+        AudioManager.AUDIO_SESSION_ID_GENERATE
+    )
 
     companion object {
         fun newInstance(wav: WavFile, audio: File, hash: String): FragmentReviewProfile {
@@ -138,8 +163,8 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
                 showPlayButton()
                 player.pause()
             }
-            audioTrack = (requireActivity().application as TranslationRecorderApp).audioTrack
-            trackBufferSize = (requireActivity().application as TranslationRecorderApp).trackBufferSize
+            //audioTrack = (requireActivity().application as TranslationRecorderApp).audioTrack
+            //trackBufferSize = (requireActivity().application as TranslationRecorderApp).trackBufferSize
         }
     }
 

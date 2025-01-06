@@ -20,7 +20,7 @@ import java.util.Vector;
  * Created by sarabiaj on 12/22/2015.
  */
 public class CutOp {
-    private Vector<Pair<Integer, Integer>> mTimeStack = new Vector<>();
+    private Vector<Pair<Integer, Integer>> mTimeStack;
     private Vector<Pair<Integer, Integer>> mFlattenedFrameStack = new Vector<>();
     private Vector<Pair<Integer, Integer>> mUncompressedFrameStack = new Vector<>();
     private Vector<Pair<Integer, Integer>> mCompressedFrameStack = new Vector<>();

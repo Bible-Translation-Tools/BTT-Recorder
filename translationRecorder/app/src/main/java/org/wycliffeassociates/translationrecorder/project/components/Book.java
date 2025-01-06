@@ -26,15 +26,13 @@ public class Book extends ProjectComponent implements Parcelable {
     private ArrayList<ArrayList<Chunk>> mChunks;
     private int mOrder;
 
-    public Book(Context context, String slug, String name, String anthology, int order){
+    public Book(String slug, String name, String anthology, int order){
         super(slug, name);
-        // get localized name from resources
         mNumChapters = 0;
         mAnthology = anthology;
         mChunks = null;
         mOrder = order;
-        String localizedName = getLocalizedName(context, slug, anthology);
-        mName = (localizedName != null) ? localizedName : name;
+        mName = name;
     }
 
     public int getNumChapters() {
@@ -83,7 +81,7 @@ public class Book extends ProjectComponent implements Parcelable {
         dest.writeInt(mOrder);
     }
 
-    public static final Parcelable.Creator<Book> CREATOR = new Parcelable.Creator<Book>() {
+    public static final Parcelable.Creator<Book> CREATOR = new Parcelable.Creator<>() {
         public Book createFromParcel(Parcel in) {
             return new Book(in);
         }
@@ -99,11 +97,13 @@ public class Book extends ProjectComponent implements Parcelable {
         mOrder = in.readInt();
     }
 
-    private String getLocalizedName(Context context, String slug, String anthology) {
+    public static String getLocalizedName(Context context, String slug, String name, String anthology) {
         String localizationSlug = (anthology.equals("obs")) ? "obs_book_" : "book_";
-        return ResourceUtility.getStringByName(
+        String localizedName = ResourceUtility.getStringByName(
                 localizationSlug + slug,
                 context
         );
+
+        return localizedName != null ? localizedName : name;
     }
 }

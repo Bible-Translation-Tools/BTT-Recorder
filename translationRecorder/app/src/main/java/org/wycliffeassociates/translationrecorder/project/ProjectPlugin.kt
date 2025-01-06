@@ -98,7 +98,8 @@ class ProjectPlugin(
                     "name" -> name = jsonReader.nextString()
                 }
             }
-            bookList.add(Book(context, slug, name, anth, num))
+            val localizedName = Book.getLocalizedName(context, slug, name, anth)
+            bookList.add(Book(slug, localizedName, anth, num))
             jsonReader.endObject()
         }
         jsonReader.endArray()

@@ -77,9 +77,9 @@ class ProjectDatabaseHelper(
                             cursor.getString(cursor.getColumnIndex(ProjectContract.UserEntry.USER_HASH))
                         val user =
                             User(
-                                id,
                                 audio,
-                                hash
+                                hash,
+                                id
                             )
                         userList.add(user)
                     } while (cursor.moveToNext())
@@ -769,7 +769,7 @@ class ProjectDatabaseHelper(
             val audio =
                 File(cursor.getString(cursor.getColumnIndex(ProjectContract.UserEntry.USER_AUDIO)))
             val hash = cursor.getString(cursor.getColumnIndex(ProjectContract.UserEntry.USER_HASH))
-            user = User(userId, audio, hash)
+            user = User(audio, hash, userId)
         } else {
             Logger.e("ProjectDatabaseHelper.getUser", "User id not found in database.")
         }
@@ -779,7 +779,7 @@ class ProjectDatabaseHelper(
     override fun addUser(user: User) {
         val db = writableDatabase
         val cv = ContentValues()
-        cv.put(ProjectContract.UserEntry.USER_AUDIO, user.audio.absolutePath)
+        cv.put(ProjectContract.UserEntry.USER_AUDIO, user.audio!!.absolutePath)
         cv.put(ProjectContract.UserEntry.USER_HASH, user.hash)
         val result = db.insertWithOnConflict(
             ProjectContract.UserEntry.TABLE_USER,
@@ -879,7 +879,9 @@ class ProjectDatabaseHelper(
                 cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER))
             val anthology =
                 getAnthologySlug(cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)))
-            book = Book(context, bookSlug, bookName, anthology, bookNumber)
+
+            val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthology)
+            book = Book(bookSlug, localizedBookName, anthology, bookNumber)
         } else {
             throw IllegalArgumentException("Book id not found in database.")
         }
@@ -2359,7 +2361,9 @@ class ProjectDatabaseHelper(
                     cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK))
                 val order =
                     cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER))
-                bookList.add(Book(context, bookSlug, bookName, getAnthologySlug(anthologyId), order))
+
+                val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthologySlug)
+                bookList.add(Book(bookSlug, localizedBookName, getAnthologySlug(anthologyId), order))
             } while (cursor.moveToNext())
         }
         cursor.close()

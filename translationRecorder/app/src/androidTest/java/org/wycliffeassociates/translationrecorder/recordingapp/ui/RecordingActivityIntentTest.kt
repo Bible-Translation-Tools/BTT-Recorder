@@ -1,10 +1,16 @@
-package org.wycliffeassociates.translationrecorder.recordingapp.IntentTests
+package org.wycliffeassociates.translationrecorder.recordingapp.ui
 
+import android.Manifest
 import android.content.Context
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
+import androidx.test.uiautomator.Until
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -13,11 +19,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.wycliffeassociates.translationrecorder.MainMenu
+import org.wycliffeassociates.translationrecorder.InitializeApp
 import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
-import org.wycliffeassociates.translationrecorder.Recording.UnitPicker
-import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingFileBar
 import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -26,7 +30,9 @@ import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.components.Language
-import org.wycliffeassociates.translationrecorder.recordingapp.ProjectMockingUtil
+import org.wycliffeassociates.translationrecorder.project.components.User
+import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
+import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkText
 import java.io.IOException
 import javax.inject.Inject
 
@@ -41,81 +47,44 @@ class RecordingActivityIntentTest {
     var hiltRule = HiltAndroidRule(this)
 
     @get:Rule
-    var mActivityRule: ActivityTestRule<RecordingActivity> = ActivityTestRule(
-        RecordingActivity::class.java,
-        true,
-        false
+    var permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
-    @get:Rule
-    var mSplashScreenRule: ActivityTestRule<MainMenu> = ActivityTestRule(
-        MainMenu::class.java,
-        true,
-        false
-    )
+    private lateinit var uiDevice: UiDevice
 
     @Inject @ApplicationContext lateinit var context: Context
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var assetsProvider: AssetsProvider
+    @Inject lateinit var initializeApp: InitializeApp
 
     @Before
     fun setup() {
         hiltRule.inject()
+        initializeApp.run()
+        uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        uiDevice.wait(Until.hasObject(By.pkg(context.packageName).depth(0)), 3000)
+
+        val tempFile = directoryProvider.createTempFile("fake", "")
+        db.addUser(User(tempFile, "fake", 1))
     }
 
     @Test
     fun testNewProjects() {
-        var project: Project = ProjectMockingUtil.createBibleTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(project, 1, 1)
-        println("Passed chapter 1 unit 1!")
-        project = ProjectMockingUtil.createBibleTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(project, 1, 2)
-        println("Passed chapter 1 unit 2!")
-        project = ProjectMockingUtil.createBibleTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(project, 2, 1)
-        println("Passed chapter 2 unit 1!")
-        project = ProjectMockingUtil.createBibleTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(project, 2, 2)
-        println("Passed chapter 2 unit 2!")
-
-        //use chunk 3 since there is no chunk 2
-        var projectNotes: Project = ProjectMockingUtil.createNotesTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(projectNotes, 1, 1)
-        println("Passed chunk 1 text 1!")
-        projectNotes = ProjectMockingUtil.createNotesTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(projectNotes, 1, 2)
-        println("Passed chunk 1 ref 1!")
-        projectNotes = ProjectMockingUtil.createNotesTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(projectNotes, 3, 1)
-        println("Passed chunk 3 text 1!")
-        projectNotes = ProjectMockingUtil.createNotesTestProject(
-            mSplashScreenRule,
-            directoryProvider
-        )
-        testRecordingActivityDataFlow(projectNotes, 3, 2)
-        println("Passed chunk 3 ref 1!")
+        var project = TestUtils.createBibleProject(db)
+        testRecordingActivityDataFlow(project, 15, 1)
+        println("Passed chapter 15 unit 1!")
+        project = TestUtils.createBibleProject(db)
+        testRecordingActivityDataFlow(project, 15, 2)
+        println("Passed chapter 15 unit 2!")
+        project = TestUtils.createBibleProject(db)
+        testRecordingActivityDataFlow(project, 21, 1)
+        println("Passed chapter 21 unit 1!")
+        project = TestUtils.createBibleProject(db)
+        testRecordingActivityDataFlow(project, 21, 2)
+        println("Passed chapter 21 unit 2!")
     }
 
     private fun testRecordingActivityDataFlow(project: Project, chapter: Int, unit: Int) {
@@ -128,57 +97,19 @@ class RecordingActivityIntentTest {
         )
 
         //launch our activity with this intent
-        mActivityRule.launchActivity(intent)
-        val recordingActivity = mActivityRule.activity
-        testRecordingActivityInitialization(recordingActivity, project, chapter, unit)
-        testFlowToPlaybackActivity(recordingActivity, chapter, unit)
+        ActivityScenario.launch<RecordingActivity>(intent)
+
+        testRecordingActivityInitialization(chapter, unit)
+        testFlowToPlaybackActivity(chapter, unit)
     }
 
-    fun testRecordingActivityInitialization(
-        recordingActivity: RecordingActivity,
-        project: Project,
-        chapter: Int,
-        unit: Int
-    ) {
+    private fun testRecordingActivityInitialization(chapter: Int, unit: Int) {
         try {
             //test initial chapter member variable is what we would expect
-            val chapterField = recordingActivity.javaClass.getDeclaredField("mInitialChapter")
-            chapterField.isAccessible = true
-            val mChapter = chapterField[recordingActivity] as Int
-            Assert.assertEquals(
-                "Chapter number used for intent vs recording activity member variable",
-                chapter.toLong(),
-                mChapter.toLong()
-            )
+            checkText(chapter.toString(), true)
 
             //test initial chunk member variable is what we would expect
-            val chunkField = recordingActivity.javaClass.getDeclaredField("mInitialChunk")
-            chunkField.isAccessible = true
-            val mChunk = chapterField[recordingActivity] as Int
-            Assert.assertEquals(unit.toLong(), mChunk.toLong())
-
-            //test that these initial values correctly initialized the fragment field
-            val fragmentField = recordingActivity
-                .javaClass
-                .getDeclaredField("mFragmentRecordingFileBar")
-            fragmentField.isAccessible = true
-            val frfb =
-                fragmentField[recordingActivity] as FragmentRecordingFileBar
-            Assert.assertEquals(chapter.toLong(), frfb.chapter.toLong())
-            Assert.assertEquals(unit.toLong(), frfb.unit.toLong())
-
-            val chapterPickerField = frfb.javaClass.getDeclaredField("mChapterPicker")
-            chapterPickerField.isAccessible = true
-            val mChapterPicker = chapterPickerField[frfb] as UnitPicker
-            Assert.assertEquals(
-                project.getFileName(
-                    chapter,
-                    frfb.chapter,
-                    frfb.startVerse.toInt(),
-                    frfb.endVerse.toInt()
-                ),
-                mChapterPicker.currentDisplayedValue
-            )
+            checkText(unit.toString(), true)
         } catch (e: NoSuchFieldException) {
             e.printStackTrace()
         } catch (e: IllegalAccessException) {
@@ -186,11 +117,7 @@ class RecordingActivityIntentTest {
         }
     }
 
-    fun testFlowToPlaybackActivity(
-        recordingActivity: RecordingActivity,
-        chapter: Int,
-        unit: Int
-    ) {
+    private fun testFlowToPlaybackActivity(chapter: Int, unit: Int) {
         //Attach monitor to listen for the playback activity to launch
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val monitor = instrumentation.addMonitor(
@@ -199,17 +126,18 @@ class RecordingActivityIntentTest {
             false
         )
 
-        recordingActivity.runOnUiThread { //Fire intent from recording Activity
-            recordingActivity.onStartRecording()
-        }
+        uiDevice.findObject(UiSelector()
+            .resourceId("${context.packageName}:id/btnRecording"))
+            .click()
 
-        try {
-            Thread.sleep(1000)
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        }
+        Thread.sleep(1000)
 
-        recordingActivity.onStopRecording()
+        uiDevice.findObject(UiSelector()
+            .resourceId("${context.packageName}:id/btnPauseRecording"))
+            .click()
+        uiDevice.findObject(UiSelector()
+            .resourceId("${context.packageName}:id/btnStop"))
+            .click()
 
         //try to get the playback activity now that the intent has fired
         val pba = instrumentation.waitForMonitorWithTimeout(

@@ -168,9 +168,24 @@ class FragmentRecordingFileBar : Fragment() {
     private fun initializeUnitPicker() {
         val values = mChunks.chunkDisplayLabels
         binding.unitPicker.displayedValues = values
-        mHandler.post {
-            if (!values.isNullOrEmpty()) {
-                binding.unitPicker.setCurrent(mChunks.startVerseLabelIndex)
+        if (!values.isNullOrEmpty()) {
+            binding.unitPicker.setCurrent(mChunks.startVerseLabelIndex)
+            mOnUnitChangedListener?.onUnitChanged(
+                mProject,
+                mProject.getFileName(
+                    mChunks.chapter,
+                    mChunks.startVerse,
+                    mChunks.endVerse
+                ),
+                mChunks.chapter
+            )
+            //reinitialize all of the filenames
+            binding.unitPicker.setOnValueChangedListener { _, _, _, direction ->
+                if (direction == DIRECTION.INCREMENT) {
+                    mChunks.nextChunk()
+                } else {
+                    mChunks.previousChunk()
+                }
                 mOnUnitChangedListener?.onUnitChanged(
                     mProject,
                     mProject.getFileName(
@@ -180,26 +195,9 @@ class FragmentRecordingFileBar : Fragment() {
                     ),
                     mChunks.chapter
                 )
-                //reinitialize all of the filenames
-                binding.unitPicker.setOnValueChangedListener { _, _, _, direction ->
-                    if (direction == DIRECTION.INCREMENT) {
-                        mChunks.nextChunk()
-                    } else {
-                        mChunks.previousChunk()
-                    }
-                    mOnUnitChangedListener?.onUnitChanged(
-                        mProject,
-                        mProject.getFileName(
-                            mChunks.chapter,
-                            mChunks.startVerse,
-                            mChunks.endVerse
-                        ),
-                        mChunks.chapter
-                    )
-                }
-            } else {
-                Logger.e(this.toString(), "values was null or of zero length")
             }
+        } else {
+            Logger.e(this.toString(), "values was null or of zero length")
         }
     }
 

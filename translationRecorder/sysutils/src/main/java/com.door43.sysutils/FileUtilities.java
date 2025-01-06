@@ -71,7 +71,7 @@ public class FileUtilities {
     }
 
     /**
-     * Recursively deletes a direcotry or just deletes the file
+     * Recursively deletes a directory or just deletes the file
      * @param fileOrDirectory
      */
     public static void deleteRecursive(File fileOrDirectory) {

@@ -34,8 +34,6 @@ class Project(
     var sourceAudioPath: String? = null
 ) : Parcelable {
 
-    private val fileName: FileName = FileName(targetLanguage, anthology, version, book)
-
     interface ProjectPluginLoader {
         fun loadChunkPlugin(anthology: Anthology, book: Book, type: TYPE): ChunkPlugin
         fun chunksInputStream(anthology: Anthology, book: Book): InputStream?
@@ -51,6 +49,8 @@ class Project(
         parcel.readParcelable(Language::class.java.classLoader),
         parcel.readString()
     )
+
+    private val fileName = FileName(targetLanguage, anthology, version, book)
 
     val isOBS: Boolean get() = anthologySlug == "obs"
 

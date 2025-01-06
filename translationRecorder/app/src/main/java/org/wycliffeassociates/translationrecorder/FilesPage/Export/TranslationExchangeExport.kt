@@ -108,7 +108,7 @@ class TranslationExchangeExport(
             val filePath = file.absolutePath
             val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
             val user = db.getUser(userId)!!
-            val hash = user.hash
+            val hash = user.hash!!
 
             val request = BinaryUploadRequest(context, "http://$uploadServer/api/upload/zip")
                 .addHeader("tr-user-hash", hash)

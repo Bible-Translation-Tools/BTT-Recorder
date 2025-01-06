@@ -1,74 +1,72 @@
-package org.wycliffeassociates.translationrecorder.recordingapp;
+package org.wycliffeassociates.translationrecorder.recordingapp
 
-import androidx.test.espresso.ViewAction;
-import androidx.test.espresso.action.CoordinatesProvider;
-import androidx.test.espresso.action.GeneralClickAction;
-import androidx.test.espresso.action.Press;
-import androidx.test.espresso.action.Tap;
-import androidx.test.espresso.matcher.BoundedMatcher;
-import android.view.View;
-import android.widget.NumberPicker;
-
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.project.Project
+import java.lang.reflect.Field
 
 /**
- * Created by oliverc on 3/3/2016.
+ * Created by sarabiaj on 9/20/2017.
  */
-public class TestUtils {
+object TestUtils {
 
-    public static Matcher<View> hasNumberPickerValue(final Matcher<Integer> intMatcher) {
-        return new BoundedMatcher<View, NumberPicker>(NumberPicker.class) {
-
-            @Override
-            public void describeTo(final Description description) {
-                description.appendText("With number picker index value: ");
-                intMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(final NumberPicker view) {
-                return intMatcher.matches(view.getValue());
-            }
-        };
+    fun createBibleProject(db: IProjectDatabaseHelper): Project {
+        val anthology = db.getAnthology(db.getAnthologyId("ot"))
+        val project = Project(
+            db.getLanguage(db.getLanguageId("en")),
+            anthology,
+            db.getBook(db.getBookId("gen")),
+            db.getVersion(db.getVersionId("ulb")),
+            db.getMode(db.getModeId("verse", anthology.slug)),
+        )
+        db.addProject(project)
+        return project
     }
 
-    public static Matcher<View> hasNumberPickerDisplayedValue(final Matcher<String> stringMatcher) {
-        return new BoundedMatcher<View, NumberPicker>(NumberPicker.class) {
-
-            @Override
-            public void describeTo(final Description description) {
-                description.appendText("With number picker displayed value: ");
-                stringMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(final NumberPicker view) {
-                int index = view.getValue();
-                String[] displayedValues = view.getDisplayedValues();
-                return stringMatcher.matches(displayedValues[index-1]);
-            }
-        };
+    fun createBibleProject(
+        languageId: String,
+        anthologyId: String,
+        bookId: String,
+        versionId: String,
+        modeId: String,
+        db: IProjectDatabaseHelper
+    ): Project {
+        val anthology = db.getAnthology(db.getAnthologyId(anthologyId))
+        val project = Project(
+            db.getLanguage(db.getLanguageId(languageId)),
+            anthology,
+            db.getBook(db.getBookId(bookId)),
+            db.getVersion(db.getVersionId(versionId)),
+            db.getMode(db.getModeId(modeId, anthology.slug)),
+        )
+        db.addProject(project)
+        return project
     }
 
-    public static ViewAction clickXY(final int x, final int y){
-        return new GeneralClickAction(
-                Tap.SINGLE,
-                new CoordinatesProvider() {
-                    @Override
-                    public float[] calculateCoordinates(View view) {
-
-                        final int[] screenPos = new int[2];
-                        view.getLocationOnScreen(screenPos);
-
-                        final float screenX = screenPos[0] + x;
-                        final float screenY = screenPos[1] + y;
-                        float[] coordinates = {screenX, screenY};
-
-                        return coordinates;
-                    }
-                },
-                Press.FINGER);
+    /**
+     * Sets a property of an object using reflection
+     * @param obj the source object
+     * @param fieldName the name of the field
+     * @param value the value to set
+     */
+    fun setPropertyReflection(obj: Any, fieldName: String, value: Any) {
+        val cls = obj::class.java
+        val field = findField(cls, fieldName)
+        field?.isAccessible = true
+        field?.set(obj, value)
     }
 
+    /**
+     * Finds a field in a class hierarchy
+     */
+    private fun findField(cls: Class<*>, fieldName: String): Field? {
+        var field: Field? = null
+        try {
+            field = cls.getDeclaredField(fieldName)
+        } catch (e: NoSuchFieldException) {
+            if (cls.superclass != null) {
+                field = findField(cls.superclass, fieldName)
+            }
+        }
+        return field
+    }
 }

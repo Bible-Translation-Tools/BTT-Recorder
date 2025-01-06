@@ -6,8 +6,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.DirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -23,15 +21,6 @@ object AppModule {
         @ApplicationContext context: Context
     ): IDirectoryProvider {
         return DirectoryProvider(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideProjectDatabaseHelper(
-        @ApplicationContext context: Context,
-        directoryProvider: IDirectoryProvider
-    ): IProjectDatabaseHelper {
-        return ProjectDatabaseHelper(context, directoryProvider)
     }
 
     @Provides
