@@ -2,23 +2,23 @@ package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
+import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.URL
 
 /**
  * Created by sarabiaj on 1/24/2018.
@@ -28,7 +28,8 @@ class TranslationExchangeDiff(
     private val project: Project,
     private val db: IProjectDatabaseHelper,
     private val directoryProvider: IDirectoryProvider,
-    private val assetsProvider: AssetsProvider
+    private val assetsProvider: AssetsProvider,
+    private val prefs: IPreferenceRepository
 ) {
     val diff: MutableList<File> = arrayListOf()
 
@@ -42,29 +43,25 @@ class TranslationExchangeDiff(
         )
     }
 
-    fun getUploadedFilesList(project: Project): Map<String, String> {
+    private fun getUploadedFilesList(project: Project): Map<String, String> {
         try {
             val query = constructProjectQueryParameters(project)
-            val url = URL("http://opentranslationtools.org/api/exclude_files/?$query")
-
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "GET"
-            conn.setRequestProperty("Accept", "application/json")
-            if (conn.responseCode != 200) {
-                throw RuntimeException("Failed : HTTP error code : ${conn.responseCode}")
-            }
-            val br = BufferedReader(
-                InputStreamReader(conn.inputStream)
+            val server = prefs.getDefaultPref(
+                Settings.KEY_PREF_UPLOAD_SERVER,
+                "http://opentranslationtools.org"
             )
-            var output: String?
-            val builder = StringBuilder()
-            while ((br.readLine().also { output = it }) != null) {
-                builder.append(output)
+
+            val client = OkHttpClient()
+            val request = Request.Builder()
+                .url("$server/api/exclude_files/?$query")
+                .addHeader("Accept", "application/json")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                return parseJsonOutput(response.body?.string()!!)
             }
-            return parseJsonOutput(builder.toString())
-        } catch (e: MalformedURLException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         return HashMap()
@@ -93,10 +90,6 @@ class TranslationExchangeDiff(
                 //compare hash to hash received from tE
                 if (hash == existingFiles[f.name]) {
                     iterator.remove()
-                } else {
-                    println(f.name)
-                    println(hash)
-                    println(existingFiles[f.name])
                 }
             }
         }
@@ -138,7 +131,7 @@ class TranslationExchangeDiff(
                     diff.add(file)
                 }
                 progressCallback.onComplete(DIFF_ID)
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }

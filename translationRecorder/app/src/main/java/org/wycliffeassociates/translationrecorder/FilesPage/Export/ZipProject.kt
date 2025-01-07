@@ -14,7 +14,6 @@ class ZipProject {
     private val mFiles: List<File>?
     private val mDirectory: File?
 
-    //Arraylist explicitly specified because of zip4j dependency
     constructor(files: List<File>?) {
         mFiles = files
         mDirectory = null

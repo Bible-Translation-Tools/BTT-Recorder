@@ -49,7 +49,8 @@ class TranslationExchangeExport(
             project,
             db,
             directoryProvider,
-            assetsProvider
+            assetsProvider,
+            prefs
         ).apply {
             outputFile()
             computeDiff(this@TranslationExchangeExport)
@@ -101,7 +102,7 @@ class TranslationExchangeExport(
 
             val uploadServer = prefs.getDefaultPref(
                 Settings.KEY_PREF_UPLOAD_SERVER,
-                "opentranslationtools.org"
+                "http://opentranslationtools.org"
             )
 
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
@@ -110,7 +111,7 @@ class TranslationExchangeExport(
             val user = db.getUser(userId)!!
             val hash = user.hash!!
 
-            val request = BinaryUploadRequest(context, "http://$uploadServer/api/upload/zip")
+            val request = BinaryUploadRequest(context, "$uploadServer/api/upload/zip")
                 .addHeader("tr-user-hash", hash)
                 .addHeader("tr-file-name", file.name)
                 .setFileToUpload(filePath)
