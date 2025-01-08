@@ -35,9 +35,6 @@ object ConvertAudio {
             codec.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             codec.start()
 
-            val codecInputBuffers = codec.inputBuffers // Note: Array of buffers
-            val codecOutputBuffers = codec.outputBuffers
-
             val outBuffInfo = MediaCodec.BufferInfo()
 
             val tempBuffer = ByteArray(BUFFER_SIZE)
@@ -52,16 +49,16 @@ object ConvertAudio {
                     inputBufIndex = codec.dequeueInputBuffer(CODEC_TIMEOUT_IN_MS.toLong())
 
                     if (inputBufIndex >= 0) {
-                        val dstBuf = codecInputBuffers[inputBufIndex]
-                        dstBuf.clear()
+                        val dstBuf = codec.getInputBuffer(inputBufIndex)
+                        dstBuf?.clear()
 
-                        val bytesRead = fis.read(tempBuffer, 0, dstBuf.limit())
+                        val bytesRead = fis.read(tempBuffer, 0, dstBuf?.limit() ?: 0)
                         if (bytesRead == -1) { // -1 implies EOS
                             hasMoreData = false
                             codec.queueInputBuffer(inputBufIndex, 0, 0, presentationTimeUs.toLong(), MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                         } else {
                             totalBytesRead += bytesRead
-                            dstBuf.put(tempBuffer, 0, bytesRead)
+                            dstBuf?.put(tempBuffer, 0, bytesRead)
                             codec.queueInputBuffer(inputBufIndex, 0, bytesRead, presentationTimeUs.toLong(), 0)
                             presentationTimeUs = (1000000L * (totalBytesRead / 2) / SAMPLING_RATE).toDouble()
                         }
@@ -73,14 +70,14 @@ object ConvertAudio {
                 while (outputBufIndex != MediaCodec.INFO_TRY_AGAIN_LATER) {
                     outputBufIndex = codec.dequeueOutputBuffer(outBuffInfo, CODEC_TIMEOUT_IN_MS.toLong())
                     if (outputBufIndex >= 0) {
-                        val encodedData = codecOutputBuffers[outputBufIndex]
-                        encodedData.position(outBuffInfo.offset)
-                        encodedData.limit(outBuffInfo.offset + outBuffInfo.size)
+                        val encodedData = codec.getOutputBuffer(outputBufIndex)
+                        encodedData?.position(outBuffInfo.offset)
+                        encodedData?.limit(outBuffInfo.offset + outBuffInfo.size)
 
                         if (outBuffInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0 && outBuffInfo.size != 0) {
                             codec.releaseOutputBuffer(outputBufIndex, false)
                         } else {
-                            mux.writeSampleData(audioTrackIdx, codecOutputBuffers[outputBufIndex], outBuffInfo)
+                            mux.writeSampleData(audioTrackIdx, encodedData!!, outBuffInfo)
                             codec.releaseOutputBuffer(outputBufIndex, false)
                         }
                     } else if (outputBufIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
@@ -99,6 +96,8 @@ object ConvertAudio {
     }
 
     private fun getHash(file: File): String {
-        return String(Hex.encodeHex(DigestUtils.md5(FileInputStream(file))))
+        return FileInputStream(file).use {
+            String(Hex.encodeHex(DigestUtils.md5(it)))
+        }
     }
 }

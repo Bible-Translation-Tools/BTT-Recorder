@@ -1,7 +1,6 @@
 package org.wycliffeassociates.translationrecorder.Playback.Editing;
 
 import android.app.ProgressDialog;
-import android.util.Pair;
 
 import org.wycliffeassociates.translationrecorder.AudioInfo;
 import com.door43.tools.reporting.Logger;
@@ -15,6 +14,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Vector;
+
+import kotlin.Pair;
 
 /**
  * Created by sarabiaj on 12/22/2015.
@@ -44,7 +45,7 @@ public class CutOp {
             mLock.writeLock();
             Pair<Integer, Integer> temp = new Pair<>(startFrame, endFrame);
             mUncompressedFrameStack.add(temp);
-            mSizeTimeCut = totalFramesRemoved(); //?
+            mSizeTimeCut = totalFramesRemoved();
             Logger.w(this.toString(), "Generating location stacks");
             generateTimeStack();
             generateCutStackCmpLoc();
@@ -102,8 +103,8 @@ public class CutOp {
         try {
             mLock.readLock();
             for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
-                if (frame >= mFlattenedFrameStack.get(i).first && frame < mFlattenedFrameStack.get(i).second) {
-                    max = Math.max(mFlattenedFrameStack.get(i).second, max);
+                if (frame >= mFlattenedFrameStack.get(i).getFirst() && frame < mFlattenedFrameStack.get(i).getSecond()) {
+                    max = Math.max(mFlattenedFrameStack.get(i).getSecond(), max);
                 }
             }
         } catch (InterruptedException e) {
@@ -133,8 +134,8 @@ public class CutOp {
         try {
             mLock.readLock();
             for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
-                if (frame > mFlattenedFrameStack.get(i).first && frame <= mFlattenedFrameStack.get(i).second) {
-                    min = Math.min(mFlattenedFrameStack.get(i).first, min);
+                if (frame > mFlattenedFrameStack.get(i).getFirst() && frame <= mFlattenedFrameStack.get(i).getSecond()) {
+                    min = Math.min(mFlattenedFrameStack.get(i).getFirst(), min);
                 }
             }
             return min;
@@ -164,14 +165,14 @@ public class CutOp {
         Vector<Pair<Integer, Integer>> copy = new Vector<>(mUncompressedFrameStack.capacity());
         mFlattenedFrameStack = new Vector<>();
         for (Pair<Integer, Integer> p : mUncompressedFrameStack) {
-            copy.add(new Pair<>(p.first, p.second));
+            copy.add(new Pair<>(p.getFirst(), p.getSecond()));
         }
         Collections.sort(copy, new Comparator<>() {
             @Override
             public synchronized int compare(Pair<Integer, Integer> lhs, Pair<Integer, Integer> rhs) {
-                if (Objects.equals(lhs.first, rhs.first)) {
+                if (Objects.equals(lhs.getFirst(), rhs.getFirst())) {
                     return 0;
-                } else if (lhs.first > rhs.first) {
+                } else if (lhs.getFirst() > rhs.getFirst()) {
                     return 1;
                 } else {
                     return -1;
@@ -189,16 +190,16 @@ public class CutOp {
                 copy.remove(p);
                 for (int j = copy.size() - 1; j >= 0; j--) {
                     Pair<Integer, Integer> q = copy.get(j);
-                    if ((q.first >= p.first && q.first <= p.second) || (p.first >= q.first && p.first <= q.second)) {
+                    if ((q.getFirst() >= p.getFirst() && q.getFirst() <= p.getSecond()) || (p.getFirst() >= q.getFirst() && p.getFirst() <= q.getSecond())) {
                         list.add(q);
                         copy.remove(q);
                     }
                 }
             }
-            int start = list.get(0).first;
-            int end = list.get(0).second;
+            int start = list.get(0).getFirst();
+            int end = list.get(0).getSecond();
             for (int i = 1; i < list.size(); i++) {
-                end = (end < list.get(i).second) ? list.get(i).second : end;
+                end = (end < list.get(i).getSecond()) ? list.get(i).getSecond() : end;
             }
             mFlattenedFrameStack.add(new Pair<>(start, end));
             sum += end - start;
@@ -212,9 +213,9 @@ public class CutOp {
         mSizeTimeCut = 0;
         mTimeStack = new Vector<>();
         for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-            Pair<Integer, Integer> y = new Pair<>(uncompressedFrameToTime(p.first), uncompressedFrameToTime(p.second));
+            Pair<Integer, Integer> y = new Pair<>(uncompressedFrameToTime(p.getFirst()), uncompressedFrameToTime(p.getSecond()));
             mTimeStack.add(y);
-            mSizeTimeCut += y.second - y.first;
+            mSizeTimeCut += y.getSecond() - y.getFirst();
         }
     }
 
@@ -223,9 +224,9 @@ public class CutOp {
         mSizeFrameCutUncmp = 0;
         mUncompressedFrameStack = new Vector<Pair<Integer, Integer>>();
         for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-            Pair<Integer, Integer> y = new Pair<>((p.first), (p.second));
+            Pair<Integer, Integer> y = new Pair<>((p.getFirst()), (p.getSecond()));
             mUncompressedFrameStack.add(y);
-            mSizeFrameCutUncmp += y.second - y.first;
+            mSizeFrameCutUncmp += y.getSecond() - y.getFirst();
         }
     }
 
@@ -234,9 +235,9 @@ public class CutOp {
         mSizeFrameCutCmp = 0;
         mCompressedFrameStack = new Vector<>();
         for (Pair<Integer, Integer> p : mFlattenedFrameStack) {
-            Pair<Integer, Integer> y = new Pair<>(uncompressedToCompressed(p.first), uncompressedToCompressed(p.second));
+            Pair<Integer, Integer> y = new Pair<>(uncompressedToCompressed(p.getFirst()), uncompressedToCompressed(p.getSecond()));
             mCompressedFrameStack.add(y);
-            mSizeFrameCutCmp += y.second - y.first;
+            mSizeFrameCutCmp += y.getSecond() - y.getFirst();
         }
     }
 
@@ -270,8 +271,8 @@ public class CutOp {
             mLock.readLock();
             Vector<Pair<Integer, Integer>> stack = (compressed) ? mCompressedFrameStack : mFlattenedFrameStack;
             for (int i = 0; i < stack.size(); i++) {
-                if (frame >= stack.get(i).first && frame < stack.get(i).second) {
-                    max = Math.max(stack.get(i).second, max);
+                if (frame >= stack.get(i).getFirst() && frame < stack.get(i).getSecond()) {
+                    max = Math.max(stack.get(i).getSecond(), max);
                 }
             }
             return max;
@@ -291,8 +292,8 @@ public class CutOp {
                 return frame;
             }
             for (int i = 0; i < stack.size(); i++) {
-                if (frame >= stack.get(i).first) {
-                    frame += stack.get(i).second - stack.get(i).first;
+                if (frame >= stack.get(i).getFirst()) {
+                    frame += stack.get(i).getSecond() - stack.get(i).getFirst();
                 }
             }
             return frame;
@@ -310,13 +311,13 @@ public class CutOp {
                 mLock.readLock();
                 for (int i = 0; i < mFlattenedFrameStack.size(); i++) {
                     //if the frame is in the middle of a cut
-                    if (frame >= mFlattenedFrameStack.get(i).first && frame <= mFlattenedFrameStack.get(i).second) {
+                    if (frame >= mFlattenedFrameStack.get(i).getFirst() && frame <= mFlattenedFrameStack.get(i).getSecond()) {
                         return true;
                         //if the cut is between the frame and the end of the range
-                    } else if (frame < mFlattenedFrameStack.get(i).first && (frame + range) >= mFlattenedFrameStack.get(i).second) {
+                    } else if (frame < mFlattenedFrameStack.get(i).getFirst() && (frame + range) >= mFlattenedFrameStack.get(i).getSecond()) {
                         return true;
                         //if the frame begins before the first cut, and ends after
-                    } else if (frame < mFlattenedFrameStack.get(i).first && (frame + range) > mFlattenedFrameStack.get(i).first) {
+                    } else if (frame < mFlattenedFrameStack.get(i).getFirst() && (frame + range) > mFlattenedFrameStack.get(i).getFirst()) {
                         return true;
                     }
                 }
@@ -341,8 +342,8 @@ public class CutOp {
                 return loc;
             }
             for (int i = stack.size() - 1; i >= 0; i--) {
-                if (frame >= stack.get(i).second) {
-                    loc -= stack.get(i).second - stack.get(i).first;
+                if (frame >= stack.get(i).getSecond()) {
+                    loc -= stack.get(i).getSecond() - stack.get(i).getFirst();
                 }
             }
         } catch (InterruptedException e) {
@@ -428,6 +429,4 @@ public class CutOp {
             mLock.readUnlock();
         }
     }
-
-
 }

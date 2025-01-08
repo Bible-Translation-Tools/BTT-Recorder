@@ -37,7 +37,7 @@ class CompileChapterTask(
         onTaskCompleteDelegator()
     }
 
-    fun sortFilesInChapter(files: List<String>): List<String> {
+    private fun sortFilesInChapter(files: List<String>): List<String> {
         return files.sortedWith { lhs, rhs ->
             val ppmLeft = mProject.patternMatcher
             ppmLeft.match(lhs)
