@@ -17,10 +17,10 @@ object TestUtils {
     fun createBibleProject(db: IProjectDatabaseHelper): Project {
         val anthology = db.getAnthology(db.getAnthologyId("ot"))
         val project = Project(
-            db.getLanguage(db.getLanguageId("en")),
+            db.getLanguage(db.getLanguageId("aa")),
             anthology,
             db.getBook(db.getBookId("gen")),
-            db.getVersion(db.getVersionId("ulb")),
+            db.getVersion(db.getVersionId("reg")),
             db.getMode(db.getModeId("verse", anthology.slug)),
         )
         db.addProject(project)
