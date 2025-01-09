@@ -3,7 +3,6 @@ package org.wycliffeassociates.translationrecorder.recordingapp.ui
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
@@ -25,7 +24,7 @@ import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
-import org.wycliffeassociates.translationrecorder.project.components.User
+import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.tryPerform
 import javax.inject.Inject
 
@@ -48,8 +47,7 @@ class MainMenuTest {
 
         Intents.init()
 
-        val tempFile = directoryProvider.createTempFile("user", "")
-        db.addUser(User(tempFile, "ff8adece0631821959f443c9d956fc39", 1))
+        TestUtils.createTestUser(directoryProvider, db)
     }
 
     @After
@@ -62,7 +60,7 @@ class MainMenuTest {
         ActivityScenario.launch(MainMenu::class.java)
 
         // Touch the "files" button (hamburger icon)
-        Espresso.onView(ViewMatchers.withId(R.id.files)).tryPerform(ViewActions.click())
+        onView(ViewMatchers.withId(R.id.files)).tryPerform(click())
         // Verify that an Intent was sent to open the Project Wizard Screen
         Intents.intended(hasComponent(ActivityProjectManager::class.java.name))
     }
@@ -72,7 +70,7 @@ class MainMenuTest {
         ActivityScenario.launch(MainMenu::class.java)
 
         // Touch the "new_record" button (the big microphone)
-        Espresso.onView(ViewMatchers.withId(R.id.new_record)).perform(ViewActions.click())
+        Espresso.onView(ViewMatchers.withId(R.id.new_record)).perform(click())
         // Verify that an Intent was sent to open the Recording Screen
         Intents.intended(hasComponent(ProjectWizardActivity::class.java.name))
 

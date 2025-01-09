@@ -242,7 +242,7 @@ object UiTestUtils {
                     assertEquals(view.adapter?.itemCount, count)
                 }
                 is ListView -> {
-                    assertEquals(view.adapter?.count, count)
+                    assertEquals(count, view.adapter?.count)
                 }
                 else -> throw Exception("Parent is not supported")
             }

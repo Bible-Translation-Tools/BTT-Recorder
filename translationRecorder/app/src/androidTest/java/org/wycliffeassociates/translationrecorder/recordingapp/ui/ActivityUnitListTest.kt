@@ -32,7 +32,6 @@ import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
-import org.wycliffeassociates.translationrecorder.project.components.User
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkListViewHasItemsCount
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.clickItemWithId
@@ -61,8 +60,7 @@ class ActivityUnitListTest {
         hiltRule.inject()
         initializeApp.run()
 
-        val tempFile = directoryProvider.createTempFile("fake", "")
-        db.addUser(User(tempFile, "fake", 1))
+        TestUtils.createTestUser(directoryProvider, db)
     }
 
     @Test

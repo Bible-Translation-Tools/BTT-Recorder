@@ -56,7 +56,6 @@ class ActivityChapterListTest {
     @Before
     fun setup() {
         hiltRule.inject()
-
         initializeApp.run()
     }
 

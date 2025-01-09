@@ -1,7 +1,9 @@
 package org.wycliffeassociates.translationrecorder.recordingapp
 
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.components.User
 import java.lang.reflect.Field
 
 /**
@@ -40,6 +42,16 @@ object TestUtils {
         )
         db.addProject(project)
         return project
+    }
+
+    fun createTestUser(
+        directoryProvider: IDirectoryProvider,
+        db: IProjectDatabaseHelper
+    ): User {
+        val tempFile = directoryProvider.createTempFile("fake", "")
+        val user = User(tempFile, "ff8adece0631821959f443c9d956fc39", 1)
+        db.addUser(user)
+        return user
     }
 
     /**

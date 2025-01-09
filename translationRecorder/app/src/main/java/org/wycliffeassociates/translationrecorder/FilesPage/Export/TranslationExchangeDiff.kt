@@ -130,9 +130,10 @@ class TranslationExchangeDiff(
                 for (file in userFiles) {
                     diff.add(file)
                 }
-                progressCallback.onComplete(DIFF_ID)
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                progressCallback.onComplete(DIFF_ID)
             }
         }
         diff.start()

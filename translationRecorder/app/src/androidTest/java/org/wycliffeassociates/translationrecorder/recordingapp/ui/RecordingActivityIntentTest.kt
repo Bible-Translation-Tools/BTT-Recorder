@@ -30,7 +30,6 @@ import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.components.Language
-import org.wycliffeassociates.translationrecorder.project.components.User
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkText
 import java.io.IOException
@@ -67,8 +66,7 @@ class RecordingActivityIntentTest {
         uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         uiDevice.wait(Until.hasObject(By.pkg(context.packageName).depth(0)), 3000)
 
-        val tempFile = directoryProvider.createTempFile("fake", "")
-        db.addUser(User(tempFile, "fake", 1))
+        TestUtils.createTestUser(directoryProvider, db)
     }
 
     @Test
