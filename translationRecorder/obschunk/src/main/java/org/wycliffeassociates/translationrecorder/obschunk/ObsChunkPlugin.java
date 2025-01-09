@@ -46,7 +46,6 @@ public class ObsChunkPlugin extends ChunkPlugin {
         InputStreamReader isr = new InputStreamReader(chunkFile);
         try (JsonReader json = new JsonReader(isr)) {
             mParsedChunks = gson.fromJson(json, type);
-            json.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -20,7 +20,7 @@ class ParseJSON(
     private var mBooks: MutableList<Book> = arrayListOf()
 
     private var _booksMap: HashMap<String, Book> = hashMapOf()
-    val booksMap: HashMap<String, Book>
+    private val booksMap: HashMap<String, Book>
         get() {
             try {
                 pullBookInfo()
@@ -94,8 +94,8 @@ class ParseJSON(
         for (b in sortedBooks) {
             _booksMap[b.slug] = b
         }
-        for ((i, b) in sortedBooks.withIndex()) {
-            _booksList[i] = b.slug + " - " + b.name
+        for (b in sortedBooks) {
+            _booksList.add(b.slug + " - " + b.name)
         }
         mBooks.addAll(sortedBooks)
     }

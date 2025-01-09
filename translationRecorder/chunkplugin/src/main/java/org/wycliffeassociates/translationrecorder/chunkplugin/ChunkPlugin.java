@@ -72,12 +72,7 @@ public abstract class ChunkPlugin {
     }
 
     public String[] getChapterDisplayLabels() {
-        Collections.sort(mChapters, new Comparator<Chapter>() {
-            @Override
-            public int compare(Chapter c1, Chapter c2) {
-                return Integer.compare(c1.getNumber(), c2.getNumber());
-            }
-        });
+        Collections.sort(mChapters, (c1, c2) -> Integer.compare(c1.getNumber(), c2.getNumber()));
         String[] labels = new String[mChapters.size()];
         for(int i = 0; i < mChapters.size(); i++) {
             labels[i] = mChapters.get(i).getName();
@@ -87,12 +82,7 @@ public abstract class ChunkPlugin {
 
     public String[] getChunkDisplayLabels() {
         List<Chunk> chunks = mIter.getChapter().getChunks();
-        Collections.sort(chunks, new Comparator<Chunk>() {
-            @Override
-            public int compare(Chunk c1, Chunk c2) {
-                return Integer.compare(c1.getStartVerse(), c2.getStartVerse());
-            }
-        });
+        Collections.sort(chunks, (c1, c2) -> Integer.compare(c1.getStartVerse(), c2.getStartVerse()));
         String[] labels = new String[chunks.size()];
         for(int i = 0; i < chunks.size(); i++) {
             labels[i] = chunks.get(i).getLabel();

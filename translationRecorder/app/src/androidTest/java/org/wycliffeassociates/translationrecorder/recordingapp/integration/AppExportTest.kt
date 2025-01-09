@@ -25,7 +25,6 @@ import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelpe
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
-import java.io.File
 import javax.inject.Inject
 
 @HiltAndroidTest
