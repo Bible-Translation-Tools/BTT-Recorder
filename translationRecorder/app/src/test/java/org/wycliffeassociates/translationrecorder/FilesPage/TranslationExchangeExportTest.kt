@@ -16,7 +16,7 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFragment
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -47,7 +47,7 @@ class TranslationExchangeExportTest {
             tempFolder.newFolder(name)
         }
 
-        every { prefs.getDefaultPref(Settings.KEY_PREF_UPLOAD_SERVER, any<String>()) }
+        every { prefs.getDefaultPref(SettingsActivity.KEY_PREF_UPLOAD_SERVER, any<String>()) }
             .returns(server.url("").toString())
     }
 

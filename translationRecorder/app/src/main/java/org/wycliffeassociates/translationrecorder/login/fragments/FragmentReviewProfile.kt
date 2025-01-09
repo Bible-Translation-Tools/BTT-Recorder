@@ -24,7 +24,7 @@ import org.wycliffeassociates.translationrecorder.AudioVisualization.WavVisualiz
 import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
 import org.wycliffeassociates.translationrecorder.Playback.overlays.WaveformLayer
 import org.wycliffeassociates.translationrecorder.Playback.player.WavPlayer
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.FragmentReviewProfileBinding
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -141,7 +141,7 @@ class FragmentReviewProfile : Fragment(), WaveformLayer.WaveformDrawDelegator {
                 audio = newAudio
                 val user = User(audio, hash)
                 db.addUser(user)
-                prefs.setDefaultPref(Settings.KEY_PROFILE, user.id)
+                prefs.setDefaultPref(SettingsActivity.KEY_PROFILE, user.id)
                 val mainActivityIntent = Intent(activity, MainMenu::class.java)
                 requireActivity().startActivity(mainActivityIntent)
                 requireActivity().finish()

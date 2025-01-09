@@ -5,7 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -39,8 +39,8 @@ class SelectSourceDirectory : AppCompatActivity() {
             if (requestCode == SRC_LOC) {
                 resultData?.data?.let { uri ->
                     Utils.copySourceAudio(this, directoryProvider, uri)?.let { target ->
-                        prefs.setDefaultPref(Settings.KEY_PREF_GLOBAL_SOURCE_LOC, target.absolutePath)
-                        prefs.setDefaultPref(Settings.KEY_SDK_LEVEL, Build.VERSION.SDK_INT)
+                        prefs.setDefaultPref(SettingsActivity.KEY_PREF_GLOBAL_SOURCE_LOC, target.absolutePath)
+                        prefs.setDefaultPref(SettingsActivity.KEY_SDK_LEVEL, Build.VERSION.SDK_INT)
                         intent.putExtra(SOURCE_LOCATION, target.absolutePath)
                         intent.putExtra(SDK_LEVEL, Build.VERSION.SDK_INT)
                     }

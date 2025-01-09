@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.TYPE
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -106,7 +106,7 @@ class Project(
     ) {
         if (db.projectExists(this)) {
             val projectId: Int = db.getProjectId(this)
-            prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, projectId)
+            prefs.setDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, projectId)
         }
     }
 
@@ -182,7 +182,7 @@ class Project(
             db: IProjectDatabaseHelper,
             prefs: IPreferenceRepository
         ): Project? {
-            val projectId: Int = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
+            val projectId: Int = prefs.getDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
             val project: Project? = db.getProject(projectId)
             return project
         }

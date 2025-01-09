@@ -53,8 +53,7 @@ import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity.Companion.getInsertIntent
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity.Companion.getRerecordIntent
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.WavFileLoader
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -176,7 +175,7 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
             throw RuntimeException(e)
         }
         Logger.w(this.toString(), "onCreate")
-        val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+        val userId = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1)
         mUser = db.getUser(userId)!!
     }
 

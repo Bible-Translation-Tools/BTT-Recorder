@@ -21,11 +21,13 @@ import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasItem
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.wycliffeassociates.translationrecorder.DocumentationActivity
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport.ShareZipToApps
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport.StorageAccess
 import org.wycliffeassociates.translationrecorder.InitializeApp
@@ -33,10 +35,12 @@ import org.wycliffeassociates.translationrecorder.ProjectManager.activities.Acti
 import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
+import org.wycliffeassociates.translationrecorder.SplashScreen
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkDialogContainsText
@@ -75,11 +79,11 @@ class ActivityProjectManagerTest {
 
         server.start()
         prefs.setDefaultPref(
-            Settings.KEY_PREF_UPLOAD_SERVER,
+            SettingsActivity.KEY_PREF_UPLOAD_SERVER,
             server.url("").toString()
         )
 
-        TestUtils.createTestUser(directoryProvider, db)
+        TestUtils.createTestUser(directoryProvider, db, prefs)
     }
 
     @After
@@ -100,6 +104,23 @@ class ActivityProjectManagerTest {
     fun createNewProject() {
         ActivityScenario.launch(ActivityProjectManager::class.java).use {
             onView(withText(R.string.new_project)).tryPerform(click())
+            onView(withText("aaa")).tryPerform(click())
+            onView(withText("nt")).tryPerform(click())
+            onView(withText("mrk")).tryPerform(click())
+            onView(withText("reg")).tryPerform(click())
+            onView(withText("verse")).tryPerform(click())
+            onView(withText(R.string.label_skip)).tryPerform(click())
+
+            Intents.intended(hasComponent(RecordingActivity::class.java.name))
+        }
+    }
+
+    @Test
+    fun createNewProjectWhenHasProject() {
+        TestUtils.createBibleProject(db)
+
+        ActivityScenario.launch(ActivityProjectManager::class.java).use {
+            onView(withId(R.id.new_project_fab)).tryPerform(click())
             onView(withText("aaa")).tryPerform(click())
             onView(withText("nt")).tryPerform(click())
             onView(withText("mrk")).tryPerform(click())
@@ -257,6 +278,42 @@ class ActivityProjectManagerTest {
             onView(withId(R.id.other_button)).tryPerform(click())
 
             Intents.intended(hasComponent(ShareZipToApps::class.java.name))
+        }
+    }
+
+    @Test
+    fun openSettings() {
+        ActivityScenario.launch(ActivityProjectManager::class.java).use {
+            onView(withId(R.id.action_more)).tryPerform(click())
+            onView(withText(R.string.settings_menu)).tryPerform(click())
+
+            Intents.intended(hasComponent(SettingsActivity::class.java.name))
+        }
+    }
+
+    @Test
+    fun openHelp() {
+        ActivityScenario.launch(ActivityProjectManager::class.java).use {
+            onView(withId(R.id.action_more)).tryPerform(click())
+            onView(withText(R.string.help_menu)).tryPerform(click())
+
+            Intents.intended(hasComponent(DocumentationActivity::class.java.name))
+        }
+    }
+
+    @Test
+    fun logout() {
+        ActivityScenario.launch(ActivityProjectManager::class.java).use {
+            val userIdBefore = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
+            assertEquals(1, userIdBefore)
+
+            onView(withId(R.id.action_more)).tryPerform(click())
+            onView(withText(R.string.logout_menu)).tryPerform(click())
+
+            Intents.intended(hasComponent(SplashScreen::class.java.name))
+
+            val userIdAfter = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
+            assertEquals(-1, userIdAfter)
         }
     }
 

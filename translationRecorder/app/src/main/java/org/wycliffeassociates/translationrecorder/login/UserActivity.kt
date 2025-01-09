@@ -14,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import jdenticon.Jdenticon
 import org.wycliffeassociates.translationrecorder.MainMenu
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityUserBinding
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -72,7 +72,7 @@ class UserActivity : AppCompatActivity() {
 
     private fun onItemClick(user: User, position: Int) {
         Toast.makeText(this, "Identicon $position", Toast.LENGTH_LONG).show()
-        prefs.setDefaultPref(Settings.KEY_PROFILE, user.id)
+        prefs.setDefaultPref(SettingsActivity.KEY_PROFILE, user.id)
         val mainActivityIntent = Intent(this, MainMenu::class.java)
         startActivity(mainActivityIntent)
         finish()

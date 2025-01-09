@@ -16,7 +16,7 @@ import net.gotev.uploadservice.observer.request.RequestObserverDelegate
 import net.gotev.uploadservice.protocols.binary.BinaryUploadRequest
 import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
@@ -100,13 +100,13 @@ class TranslationExchangeExport(
             this.onStart(EXPORT_UPLOAD_ID)
 
             val uploadServer = prefs.getDefaultPref(
-                Settings.KEY_PREF_UPLOAD_SERVER,
+                SettingsActivity.KEY_PREF_UPLOAD_SERVER,
                 "http://opentranslationtools.org"
             )
 
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
             val filePath = file.absolutePath
-            val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+            val userId = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1)
             val user = db.getUser(userId)!!
             val hash = user.hash!!
 

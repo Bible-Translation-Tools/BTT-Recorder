@@ -2,12 +2,11 @@ package org.wycliffeassociates.translationrecorder.SettingsPage
 
 import android.app.Dialog
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.DialogLanguagesUrlBinding
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
@@ -22,39 +21,34 @@ class LanguagesUrlDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity())
-        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_languages_url, null)
+        val binding = DialogLanguagesUrlBinding.inflate(layoutInflater)
 
         val currentServerName = pref.getDefaultPref(
-            Settings.KEY_PREF_LANGUAGES_URL,
+            SettingsActivity.KEY_PREF_LANGUAGES_URL,
             getString(R.string.pref_languages_url)
         )
 
-        val url = view.findViewById<EditText>(R.id.url)
-        val saveButton = view.findViewById<Button>(R.id.save_button)
-        val restoreButton = view.findViewById<Button>(R.id.restore_default)
-        val cancelButton = view.findViewById<Button>(R.id.close_button)
+        binding.url.setText(currentServerName)
 
-        url.setText(currentServerName)
-
-        saveButton.setOnClickListener {
-            val name = url.text.toString()
+        binding.saveButton.setOnClickListener {
+            val name = binding.url.text.toString()
             if (name.isNotEmpty()) {
-                pref.setDefaultPref(Settings.KEY_PREF_LANGUAGES_URL, name)
+                pref.setDefaultPref(SettingsActivity.KEY_PREF_LANGUAGES_URL, name)
                 dismiss()
             }
         }
 
-        restoreButton.setOnClickListener {
+        binding.restoreDefault.setOnClickListener {
             pref.setDefaultPref(
-                Settings.KEY_PREF_LANGUAGES_URL,
+                SettingsActivity.KEY_PREF_LANGUAGES_URL,
                 getString(R.string.pref_languages_url)
             )
             dismiss()
         }
 
-        cancelButton.setOnClickListener { dismiss() }
+        binding.closeButton.setOnClickListener { dismiss() }
 
-        builder.setView(view)
+        builder.setView(binding.root)
         return builder.create()
     }
 }

@@ -3,7 +3,7 @@ package org.wycliffeassociates.translationrecorder
 import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.databinding.ActivitySplashBinding
 import org.wycliffeassociates.translationrecorder.login.UserActivity
 import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
@@ -37,7 +37,7 @@ class SplashScreen : PermissionActivity() {
             try {
                 initializeApp.run()
 
-                val profile = prefs.getDefaultPref(Settings.KEY_PROFILE, -1)
+                val profile = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
                 if (profile == -1) {
                     val intent = Intent(this@SplashScreen, UserActivity::class.java)
                     startActivity(intent)

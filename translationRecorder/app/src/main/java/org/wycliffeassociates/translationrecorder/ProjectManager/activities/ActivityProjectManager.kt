@@ -31,7 +31,7 @@ import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ExportSou
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.SplashScreen
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -185,7 +185,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                 return true
             }
             R.id.action_settings -> {
-                val intent = Intent(this, Settings::class.java)
+                val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
                 return true
             }
@@ -212,7 +212,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     //Returns the project that was initialized
     private fun initializeRecentProject(): Project? {
         var project: Project? = null
-        val projectId = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
+        val projectId = prefs.getDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
         if (projectId != -1) {
             project = db.getProject(projectId)
             Logger.w(
@@ -236,7 +236,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     }
 
     private fun initializeIdenticon() {
-        val userId = prefs.getDefaultPref(Settings.KEY_PROFILE, 1)
+        val userId = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1)
         val user = db.getUser(userId)!!
         val svg = Jdenticon.toSvg(user.hash!!, 512, 0f)
         binding.identicon?.background = Sharp.loadString(svg).drawable
@@ -254,7 +254,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     }
 
     private fun removeProjectFromPreferences() {
-        prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
+        prefs.setDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
     }
 
     private fun populateProjectList(recent: Project?) {
@@ -284,7 +284,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
 
     //sets the profile in the preferences to "" then returns to the splash screen
     private fun logout() {
-        prefs.setDefaultPref<Int>(Settings.KEY_PROFILE, null)
+        prefs.setDefaultPref<Int>(SettingsActivity.KEY_PROFILE, null)
         finishAffinity()
         val intent = Intent(this, SplashScreen::class.java)
         startActivity(intent)
@@ -305,7 +305,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
             )
         }
         val projectId = db.getProjectId(project)
-        prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, projectId)
+        prefs.setDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, projectId)
     }
 
     private fun addProjectToDatabase(project: Project): Boolean {

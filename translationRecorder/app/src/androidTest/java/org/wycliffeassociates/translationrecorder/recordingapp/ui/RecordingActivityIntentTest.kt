@@ -27,6 +27,7 @@ import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.components.Language
@@ -58,6 +59,7 @@ class RecordingActivityIntentTest {
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var assetsProvider: AssetsProvider
     @Inject lateinit var initializeApp: InitializeApp
+    @Inject lateinit var prefs: IPreferenceRepository
 
     @Before
     fun setup() {
@@ -66,7 +68,7 @@ class RecordingActivityIntentTest {
         uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         uiDevice.wait(Until.hasObject(By.pkg(context.packageName).depth(0)), 3000)
 
-        TestUtils.createTestUser(directoryProvider, db)
+        TestUtils.createTestUser(directoryProvider, db, prefs)
     }
 
     @Test

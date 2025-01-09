@@ -1,7 +1,10 @@
 package org.wycliffeassociates.translationrecorder.recordingapp
 
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.components.User
 import java.lang.reflect.Field
@@ -46,11 +49,13 @@ object TestUtils {
 
     fun createTestUser(
         directoryProvider: IDirectoryProvider,
-        db: IProjectDatabaseHelper
+        db: IProjectDatabaseHelper,
+        prefs: IPreferenceRepository
     ): User {
         val tempFile = directoryProvider.createTempFile("fake", "")
         val user = User(tempFile, "ff8adece0631821959f443c9d956fc39", 1)
         db.addUser(user)
+        prefs.setDefaultPref(SettingsActivity.KEY_PROFILE, user.id)
         return user
     }
 

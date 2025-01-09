@@ -2,13 +2,10 @@ package org.wycliffeassociates.translationrecorder.SettingsPage
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.databinding.DialogUploadServerBinding
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
@@ -23,36 +20,31 @@ class UploadServerDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity())
-        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_upload_server, null)
+        val binding = DialogUploadServerBinding.inflate(layoutInflater)
 
         val currentServerName = pref.getDefaultPref(
-            Settings.KEY_PREF_UPLOAD_SERVER,
+            SettingsActivity.KEY_PREF_UPLOAD_SERVER,
             "opentranslationtools.org"
         )
 
-        val serverName = view.findViewById<View>(R.id.server_name) as EditText
-        val saveButton = view.findViewById<View>(R.id.save_button) as Button
-        val restoreButton = view.findViewById<View>(R.id.restore_default) as Button
-        val cancelButton = view.findViewById<View>(R.id.close_button) as Button
+        binding.serverName.setText(currentServerName)
 
-        serverName.setText(currentServerName)
-
-        saveButton.setOnClickListener {
-            val name = serverName.text.toString()
+        binding.saveButton.setOnClickListener {
+            val name = binding.serverName.text.toString()
             if (name.isNotEmpty()) {
-                pref.setDefaultPref(Settings.KEY_PREF_UPLOAD_SERVER, name)
+                pref.setDefaultPref(SettingsActivity.KEY_PREF_UPLOAD_SERVER, name)
                 dismiss()
             }
         }
 
-        restoreButton.setOnClickListener {
-            pref.setDefaultPref(Settings.KEY_PREF_UPLOAD_SERVER, "opentranslationtools.org")
+        binding.restoreDefault.setOnClickListener {
+            pref.setDefaultPref(SettingsActivity.KEY_PREF_UPLOAD_SERVER, "opentranslationtools.org")
             dismiss()
         }
 
-        cancelButton.setOnClickListener { dismiss() }
+        binding.closeButton.setOnClickListener { dismiss() }
 
-        builder.setView(view)
+        builder.setView(binding.root)
         return builder.create()
     }
 }

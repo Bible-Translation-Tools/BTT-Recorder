@@ -23,6 +23,7 @@ import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.tryPerform
@@ -38,6 +39,7 @@ class MainMenuTest {
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var initializeApp: InitializeApp
+    @Inject lateinit var prefs: IPreferenceRepository
 
     @Before
     fun setup() {
@@ -47,7 +49,7 @@ class MainMenuTest {
 
         Intents.init()
 
-        TestUtils.createTestUser(directoryProvider, db)
+        TestUtils.createTestUser(directoryProvider, db, prefs)
     }
 
     @After

@@ -3,14 +3,11 @@ package org.wycliffeassociates.translationrecorder.SettingsPage
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.databinding.DialogAddTempLanguageBinding
 import javax.inject.Inject
 
 /**
@@ -23,32 +20,25 @@ class AddTargetLanguageDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity())
-        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_add_temp_language, null)
 
-        val languageCode = view.findViewById<View>(R.id.language_code) as EditText
-        val languageName = view.findViewById<View>(R.id.language_name) as EditText
-        val errorCodeExists = view.findViewById<View>(R.id.error_code_exists) as TextView
-        val errorCodeTooShort = view.findViewById<View>(R.id.error_code_too_short) as TextView
+        val binding = DialogAddTempLanguageBinding.inflate(layoutInflater)
 
-        val addButton = view.findViewById<View>(R.id.ok_button) as Button
-        val cancelButton = view.findViewById<View>(R.id.close_button) as Button
-
-        addButton.setOnClickListener {
-            var code = languageCode.text.toString()
-            val name = languageName.text.toString()
+        binding.okButton.setOnClickListener {
+            var code = binding.languageCode.text.toString()
+            val name = binding.languageName.text.toString()
             var error = false
             if (code.length < LANGUAGE_CODE_SIZE) {
-                errorCodeTooShort.visibility = View.VISIBLE
+                binding.errorCodeTooShort.visibility = View.VISIBLE
                 error = true
             } else {
-                errorCodeTooShort.visibility = View.GONE
+                binding.errorCodeTooShort.visibility = View.GONE
             }
             code = "qaa-x-tR$code"
             if (db.languageExists(code)) {
-                errorCodeExists.visibility = View.VISIBLE
+                binding.errorCodeExists.visibility = View.VISIBLE
                 error = true
             } else {
-                errorCodeExists.visibility = View.GONE
+                binding.errorCodeExists.visibility = View.GONE
             }
             if (!error) {
                 db.addLanguage(code, name)
@@ -56,9 +46,9 @@ class AddTargetLanguageDialog : DialogFragment() {
             }
         }
 
-        cancelButton.setOnClickListener { dismiss() }
+        binding.closeButton.setOnClickListener { dismiss() }
 
-        builder.setView(view)
+        builder.setView(binding.root)
         return builder.create()
     }
 

@@ -24,7 +24,7 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFra
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
 import org.wycliffeassociates.translationrecorder.InitializeApp
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -58,7 +58,7 @@ class TranslationExchangeExportTest {
         server.start()
 
         prefs.setDefaultPref(
-            Settings.KEY_PREF_UPLOAD_SERVER,
+            SettingsActivity.KEY_PREF_UPLOAD_SERVER,
             server.url("").toString()
         )
     }

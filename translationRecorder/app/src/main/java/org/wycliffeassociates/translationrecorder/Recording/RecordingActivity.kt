@@ -24,7 +24,7 @@ import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRe
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform.Companion.newInstance
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentSourceAudio
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentVolumeBar
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ActivityRecordingScreenBinding
@@ -91,7 +91,7 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
     private lateinit var binding: ActivityRecordingScreenBinding
 
     private val currentUser: String
-        get() = prefs.getDefaultPref(Settings.KEY_PROFILE, 1).toString()
+        get() = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1).toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,9 +176,9 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
     }
 
     private fun initializeFromSettings() {
-        mInitialChapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
-        mInitialUnit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
-        val userId = prefs.getDefaultPref(Settings.KEY_USER, 1)
+        mInitialChapter = prefs.getDefaultPref(SettingsActivity.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        mInitialUnit = prefs.getDefaultPref(SettingsActivity.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
+        val userId = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1)
         mUser = db.getUser(userId)!!
     }
 
@@ -363,8 +363,8 @@ class RecordingActivity : PermissionActivity(), RecordingControlCallback, Insert
     }
 
     private fun saveLocationToPreferences() {
-        prefs.setDefaultPref(Settings.KEY_PREF_CHAPTER, mFragmentRecordingFileBar.chapter)
-        prefs.setDefaultPref(Settings.KEY_PREF_CHUNK, mFragmentRecordingFileBar.unit)
+        prefs.setDefaultPref(SettingsActivity.KEY_PREF_CHAPTER, mFragmentRecordingFileBar.chapter)
+        prefs.setDefaultPref(SettingsActivity.KEY_PREF_CHUNK, mFragmentRecordingFileBar.unit)
     }
 
     private fun addTakeToDb(newRecording: WavFile) {

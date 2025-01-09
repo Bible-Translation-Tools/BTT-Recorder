@@ -10,7 +10,7 @@ import org.wycliffeassociates.io.ArchiveOfHolding
 import org.wycliffeassociates.io.ChapterVerseSection
 import org.wycliffeassociates.io.LanguageLevel
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.databinding.SourceAudioBinding
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -151,8 +151,8 @@ class SourceAudio @JvmOverloads constructor (
     private fun loadAudioFile(prefs: IPreferenceRepository, directoryProvider: IDirectoryProvider) {
         val projectSourceLocation = mProject.sourceAudioPath
         val projectSourceLanguage = mProject.sourceLanguageSlug
-        val globalSourceLocation = prefs.getDefaultPref(Settings.KEY_PREF_GLOBAL_SOURCE_LOC, "")
-        val globalSourceLanguage = prefs.getDefaultPref(Settings.KEY_PREF_GLOBAL_LANG_SRC, "")
+        val globalSourceLocation = prefs.getDefaultPref(SettingsActivity.KEY_PREF_GLOBAL_SOURCE_LOC, "")
+        val globalSourceLanguage = prefs.getDefaultPref(SettingsActivity.KEY_PREF_GLOBAL_LANG_SRC, "")
 
         val projectFile = getFileFromString(projectSourceLanguage, projectSourceLocation)
         val globalFile = getFileFromString(globalSourceLanguage, globalSourceLocation)

@@ -14,7 +14,7 @@ import org.apache.commons.io.FileUtils
 import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
 import org.wycliffeassociates.translationrecorder.Reporting.BugReportDialog
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.MainBinding
@@ -76,7 +76,7 @@ class MainMenu : AppCompatActivity() {
     }
 
     private fun emptyPreferences(): Boolean {
-        return prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1) == -1
+        return prefs.getDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1) == -1
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -115,8 +115,8 @@ class MainMenu : AppCompatActivity() {
 
     private fun startRecordingScreen() {
         val project = Project.getProjectFromPreferences(db, prefs)!!
-        val chapter = prefs.getDefaultPref(Settings.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
-        val unit = prefs.getDefaultPref(Settings.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
+        val chapter = prefs.getDefaultPref(SettingsActivity.KEY_PREF_CHAPTER, ChunkPlugin.DEFAULT_CHAPTER)
+        val unit = prefs.getDefaultPref(SettingsActivity.KEY_PREF_CHUNK, ChunkPlugin.DEFAULT_UNIT)
         val intent = RecordingActivity.getNewRecordingIntent(
             this,
             project,
@@ -141,7 +141,7 @@ class MainMenu : AppCompatActivity() {
         prefs.setDefaultPref("resume", "resume")
 
         if (db.projectExists(project)) {
-            prefs.setDefaultPref(Settings.KEY_RECENT_PROJECT_ID, db.getProjectId(project))
+            prefs.setDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, db.getProjectId(project))
         } else {
             Logger.e(
                 this.toString(),
@@ -199,7 +199,7 @@ class MainMenu : AppCompatActivity() {
     }
 
     private fun initViews() {
-        val projectId = prefs.getDefaultPref(Settings.KEY_RECENT_PROJECT_ID, -1)
+        val projectId = prefs.getDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
         if (projectId != -1) {
             val project = db.getProject(projectId)
             var language = project!!.targetLanguageSlug

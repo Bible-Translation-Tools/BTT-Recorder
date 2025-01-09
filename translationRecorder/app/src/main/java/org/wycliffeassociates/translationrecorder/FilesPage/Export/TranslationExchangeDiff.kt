@@ -8,7 +8,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
-import org.wycliffeassociates.translationrecorder.SettingsPage.Settings
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
@@ -47,7 +47,7 @@ class TranslationExchangeDiff(
         try {
             val query = constructProjectQueryParameters(project)
             val server = prefs.getDefaultPref(
-                Settings.KEY_PREF_UPLOAD_SERVER,
+                SettingsActivity.KEY_PREF_UPLOAD_SERVER,
                 "http://opentranslationtools.org"
             )
 

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -29,15 +28,11 @@ class BackupRestoreDialog : DialogFragment() {
         const val RESTORE_BACKUP_FILE = 2
     }
 
-    private var _binding: DialogBackupRestoreBinding? = null
-    private val binding get() = _binding!!
-
     private var listener: BackupRestoreDialogListener? = null
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogBackupRestoreBinding.inflate(layoutInflater)
-
+        val binding = DialogBackupRestoreBinding.inflate(layoutInflater)
         val builder = AlertDialog.Builder(requireActivity())
 
         with(binding) {

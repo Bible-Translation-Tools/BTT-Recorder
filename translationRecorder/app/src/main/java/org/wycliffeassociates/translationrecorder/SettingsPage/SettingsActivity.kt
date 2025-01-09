@@ -3,7 +3,6 @@ package org.wycliffeassociates.translationrecorder.SettingsPage
 import android.app.SearchManager
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +31,7 @@ import kotlin.system.exitProcess
  *
  */
 @AndroidEntryPoint
-class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnItemClickListener,
+class SettingsActivity : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnItemClickListener,
     LanguageSelector {
 
     @Inject lateinit var db: IProjectDatabaseHelper
@@ -182,7 +181,6 @@ class Settings : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnI
         const val KEY_PREF_CHUNK: String = "pref_chunk"
         const val KEY_SDK_LEVEL: String = "pref_sdk_level"
         const val KEY_PROFILE: String = "pref_profile"
-        const val KEY_USER: String = "pref_profile"
 
         const val KEY_PREF_GLOBAL_SOURCE_LOC: String = "pref_global_src_loc"
         const val KEY_PREF_GLOBAL_LANG_SRC: String = "pref_global_lang_src"

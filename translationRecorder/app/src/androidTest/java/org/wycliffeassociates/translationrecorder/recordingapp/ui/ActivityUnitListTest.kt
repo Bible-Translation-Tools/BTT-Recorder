@@ -30,6 +30,7 @@ import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
@@ -54,13 +55,14 @@ class ActivityUnitListTest {
     @Inject lateinit var assetProvider: AssetsProvider
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var initializeApp: InitializeApp
+    @Inject lateinit var prefs: IPreferenceRepository
 
     @Before
     fun setup() {
         hiltRule.inject()
         initializeApp.run()
 
-        TestUtils.createTestUser(directoryProvider, db)
+        TestUtils.createTestUser(directoryProvider, db, prefs)
     }
 
     @Test

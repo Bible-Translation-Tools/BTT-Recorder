@@ -47,7 +47,7 @@
             android:name="org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity" />
 
         <activity
-            android:name="org.wycliffeassociates.translationrecorder.SettingsPage.Settings"
+            android:name="org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity"
             android:theme="@style/TR" />
 
         <activity
