@@ -30,13 +30,12 @@ import java.io.File
  * Created by sarabiaj on 11/16/2017.
  */
 class TranslationExchangeExport(
-    projectToExport: File,
     project: Project,
     private val db: IProjectDatabaseHelper,
     private val directoryProvider: IDirectoryProvider,
     private val prefs: IPreferenceRepository,
     private val assetsProvider: AssetsProvider,
-) : Export(projectToExport, project, directoryProvider), RequestObserverDelegate {
+) : Export(project, directoryProvider), RequestObserverDelegate {
 
     private var differ: TranslationExchangeDiff? = null
 

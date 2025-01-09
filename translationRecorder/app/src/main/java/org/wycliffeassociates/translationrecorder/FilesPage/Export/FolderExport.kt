@@ -14,10 +14,9 @@ import java.io.IOException
  * Created by sarabiaj on 12/10/2015.
  */
 class FolderExport(
-    projectToExport: File,
     project: Project,
     directoryProvider: IDirectoryProvider
-) : Export(projectToExport, project, directoryProvider) {
+) : Export(project, directoryProvider) {
     override fun handleUserInput() {
         val i = Intent(fragment.activity, StorageAccess::class.java)
         try {

@@ -20,7 +20,6 @@ import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.project.Project
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity
 import org.wycliffeassociates.translationrecorder.project.components.Language
 import java.io.File
@@ -111,18 +110,13 @@ class ProjectInfoDialog : DialogFragment() {
         }
 
         binding.folderButton.setOnClickListener {
-            export = FolderExport(
-                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
-                project,
-                directoryProvider
-            ).apply {
+            export = FolderExport(project, directoryProvider).apply {
                 exportDelegator?.delegateExport(this)
             }
         }
 
         binding.publishButton.setOnClickListener {
             export = TranslationExchangeExport(
-                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
                 project,
                 db,
                 directoryProvider,
@@ -134,11 +128,7 @@ class ProjectInfoDialog : DialogFragment() {
         }
 
         binding.otherButton.setOnClickListener {
-            export = AppExport(
-                ProjectFileUtils.getProjectDirectory(project, directoryProvider),
-                project,
-                directoryProvider
-            ).apply {
+            export = AppExport(project, directoryProvider).apply {
                 exportDelegator?.delegateExport(this)
             }
         }

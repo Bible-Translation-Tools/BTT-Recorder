@@ -41,7 +41,6 @@ class AppExportTest {
 
     @Test
     fun `test app export`() {
-        val projectDir = directoryProvider.createTempDir("project")
         val project: Project = mockk(relaxed = true) {
             every { targetLanguageSlug }.returns("aa")
             every { anthologySlug }.returns("nt")
@@ -64,7 +63,7 @@ class AppExportTest {
             }
         }
 
-        val appExport = AppExport(projectDir, project, directoryProvider).apply {
+        val appExport = AppExport(project, directoryProvider).apply {
             exportDelegator.delegateExport(this)
         }
 

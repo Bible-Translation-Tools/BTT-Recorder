@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import org.apache.commons.lang3.StringUtils
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import java.io.File
 import kotlin.concurrent.Volatile
 
@@ -51,14 +52,13 @@ abstract class Export : SimpleProgressCallback {
     var zipFile: File? = null
 
     constructor(
-        directoryToExport: File,
         project: Project,
         directoryProvider: IDirectoryProvider
     ) {
         this.project = project
         this.directoryProvider = directoryProvider
 
-        directoryToZip = directoryToExport
+        directoryToZip = ProjectFileUtils.getProjectDirectory(project, directoryProvider)
         filesToZip = null
         handler = Handler(Looper.getMainLooper())
     }

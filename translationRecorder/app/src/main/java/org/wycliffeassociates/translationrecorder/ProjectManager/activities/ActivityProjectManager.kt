@@ -49,7 +49,6 @@ import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
-import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -88,14 +87,6 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     private var mExportTaskFragment: ExportTaskFragment? = null
     private var mTaskFragment: TaskFragment? = null
 
-    private val TAG_EXPORT_TASK_FRAGMENT = "export_task_fragment"
-    private val TAG_TASK_FRAGMENT = "task_fragment"
-    private val STATE_EXPORTING = "was_exporting"
-    private val STATE_ZIPPING = "was_zipping"
-    private val STATE_RESYNC = "db_resync"
-
-    private val STATE_PROGRESS = "upload_progress"
-    private val STATE_PROGRESS_TITLE = "upload_progress_title"
     private var mDbResyncing = false
     private var mSourceAudioFile: File? = null
     private var mProjectToExport: Project? = null
@@ -378,7 +369,6 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                     }
                 }
             }
-            else -> {}
         }
     }
 
@@ -451,7 +441,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         dialog.show()
     }
 
-    fun exportProgress(progress: Int, title: String?) {
+    private fun exportProgress(progress: Int, title: String?) {
         mPd = ProgressDialog(this)
         mPd!!.setTitle(title ?: getString(R.string.uploading))
         mPd!!.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
@@ -460,7 +450,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         mPd!!.show()
     }
 
-    fun zipProgress(progress: Int, title: String?) {
+    private fun zipProgress(progress: Int, title: String?) {
         mPd = ProgressDialog(this).apply {
             setTitle(title ?: getString(R.string.packaging_files))
             setMessage(getString(R.string.please_wait))
@@ -571,6 +561,15 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         val SOURCE_AUDIO_TASK: Int = Task.FIRST_TASK
         private val DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1
         val EXPORT_TASK: Int = Task.FIRST_TASK + 2
+
+        private const val TAG_EXPORT_TASK_FRAGMENT = "export_task_fragment"
+        private const val TAG_TASK_FRAGMENT = "task_fragment"
+        private const val STATE_EXPORTING = "was_exporting"
+        private const val STATE_ZIPPING = "was_zipping"
+        private const val STATE_RESYNC = "db_resync"
+
+        private const val STATE_PROGRESS = "upload_progress"
+        private const val STATE_PROGRESS_TITLE = "upload_progress_title"
 
         const val PROJECT_WIZARD_REQUEST: Int = RESULT_FIRST_USER
         const val SAVE_SOURCE_AUDIO_REQUEST: Int = RESULT_FIRST_USER + 1

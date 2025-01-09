@@ -12,10 +12,9 @@ import java.io.File
  * Created by sarabiaj on 12/10/2015.
  */
 class AppExport(
-    exportProject: File,
     project: Project,
     directoryProvider: IDirectoryProvider
-) : Export(exportProject, project, directoryProvider) {
+) : Export(project, directoryProvider) {
 
     override fun handleUserInput() {
         exportZipApplications(zipFile!!)

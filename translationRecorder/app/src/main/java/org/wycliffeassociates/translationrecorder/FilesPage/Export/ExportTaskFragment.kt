@@ -22,9 +22,7 @@ class ExportTaskFragment : Fragment(), ProgressUpdateCallback {
     }
 
     fun delegateExport(exp: Export?) {
-        mExp = exp?.apply {
-            export()
-        }
+        mExp = exp?.apply { export() }
     }
 
     override fun showProgress(mode: Boolean) {

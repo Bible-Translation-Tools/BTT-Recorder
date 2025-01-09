@@ -62,7 +62,6 @@ class TranslationExchangeExportTest {
         server.enqueue(MockResponse().setBody("[]").setResponseCode(200))
         server.enqueue(MockResponse().setResponseCode(200))
 
-        val projectDir = directoryProvider.createTempDir("project")
         val project: Project = mockk(relaxed = true) {
             every { targetLanguageSlug }.returns("aa")
             every { anthologySlug }.returns("nt")
@@ -86,7 +85,6 @@ class TranslationExchangeExportTest {
         }
 
         val appExport = TranslationExchangeExport(
-            projectDir,
             project,
             db,
             directoryProvider,
