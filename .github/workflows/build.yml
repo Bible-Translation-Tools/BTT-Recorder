@@ -24,7 +24,7 @@ jobs:
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks
 
       - name: Build Docker image
-        run: docker build -t ./translation-recorder/translation-recorder-build .
+        run: docker build -t translation-recorder ./translation-recorder-build
 
       - name: Run build in container
         run: |
