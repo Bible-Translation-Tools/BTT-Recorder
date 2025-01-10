@@ -11,9 +11,8 @@ RUN apt-get update && apt-get install -y \
 
 # Set working directory
 WORKDIR /project/translationRecorder
-RUN ls -la
-RUN pwd
-
+RUN ls 
+RUN ls /
 # NO copy here bc we are just going to mount whole repo in a vol. 
 
 # Rebuild chunks and move them to the proper location
