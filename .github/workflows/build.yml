@@ -21,7 +21,7 @@ jobs:
 
       - name: decode b64 to files
         run: |
-          printf "%s" "$TR_KEY_BASE64" | base64 --decode > /TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
+          printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
 
       - name: Build Docker image
         run: docker build -t translation-recorder ./translationRecorder
@@ -30,7 +30,7 @@ jobs:
         run: |
           docker run --rm -i \
           -v $(pwd):/project \
-          -v /TRKey.jks:/key/translationRecorderKey.jks \
+          -v $(pwd)/TRKey.jks:/key/translationRecorderKey.jks \
           -v door43.xml:/xml/door43.xml \
           -v github.xml:/xml/github.xml \
           -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
