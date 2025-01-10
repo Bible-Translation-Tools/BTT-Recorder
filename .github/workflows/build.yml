@@ -31,8 +31,8 @@ jobs:
           docker run --rm -i \
           -v $(pwd):/project \
           -v $(pwd)/TRKey.jks:/key/translationRecorderKey.jks \
-          -v door43.xml:/xml/door43.xml \
-          -v github.xml:/xml/github.xml \
+          -v ${{github.workspace}}/door43.xml:/xml/door43.xml \
+          -v ${{github.workspace}}/github.xml:/xml/github.xml \
           -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
           -e KEY_PASSWORD=${{ env.KEY_PASSWORD }} \
           translation-recorder
