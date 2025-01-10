@@ -21,7 +21,7 @@ jobs:
 
       - name: decode b64 to files
         run: |
-          printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks
+          printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
 
       - name: Build Docker image
         run: docker build -t translation-recorder ./translationRecorder
@@ -29,12 +29,12 @@ jobs:
       - name: Run build in container
         run: |
           docker run --rm -i \
-          -v ${{ github.workspace }}:/project \
+          -v $(pwd):/project \
           -v TRKey.jks:/key/translationRecorderKey.jks \
+          -v door43.xml:/xml/door43.xml \
+          -v github.xml:/xml/github.xml \
           -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
           -e KEY_PASSWORD=${{ env.KEY_PASSWORD }} \
-          -e DOOR43_XML=${{ env.DOOR43_XML }} \
-          -e GITHUB_XML=${{ env.GITHUB_XML }} \
           translation-recorder-build
 
       - name: Upload APK artifact
