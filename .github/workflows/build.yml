@@ -21,7 +21,7 @@ jobs:
 
       - name: decode b64 to files
         run: |
-          echo -n $TR_KEY_BASE64 | base64 --decode > TRKey.jks
+          printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks
 
       - name: Build Docker image
         run: docker build -t ./translation-recorder/translation-recorder-build .
