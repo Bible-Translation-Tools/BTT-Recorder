@@ -11,9 +11,8 @@ RUN apt-get update && apt-get install -y \
 
 # Set working directory
 WORKDIR /project
-RUN ls 
-RUN ls /project
-# NO copy here bc we are just going to mount whole repo in a vol. 
+
+COPY . .
 
 # Rebuild chunks and move them to the proper location
 RUN python3 app/src/scripts/download_chunks.py
