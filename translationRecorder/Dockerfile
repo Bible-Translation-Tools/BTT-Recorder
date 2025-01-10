@@ -10,9 +10,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-WORKDIR /project/translationRecorder
+WORKDIR /project
 RUN ls 
-RUN ls /
+RUN ls /project
 # NO copy here bc we are just going to mount whole repo in a vol. 
 
 # Rebuild chunks and move them to the proper location
