@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-WORKDIR /project
+WORKDIR /project/translationRecorder
 
 # NO copy here bc we are just going to mount whole repo in a vol. 
 
