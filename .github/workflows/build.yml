@@ -1,0 +1,44 @@
+name: Build APK
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Source Build secret
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          TR_KEY_BASE64: "op://DevOps/btt-android-keystore-key/text-details/base64-encoded-jks"
+          STORE_PASSWORD: "op://DevOps/btt-android-keystore-key/text-details/storePassword"
+          KEY_PASSWORD: "op://DevOps/btt-android-keystore-key/text-details/keyPassword"
+          DOOR43_XML: "op://Shared-IT-Development/tR_XML_Files/attachments/door43.xml"
+          GITHUB_XML: "op://Shared-IT-Development/tR_XML_Files/attachments/github.xml"
+
+      - name: decode b64 to files
+        run: |
+          echo $TR_KEY_BASE64 | base64 --decode > TRKey.jks
+
+      - name: Build Docker image
+        run: docker build -t ./translation-recorder/translation-recorder-build .
+
+      - name: Run build in container
+        run: |
+          docker run --rm -i \
+          -v ${{ github.workspace }}:/project \
+          -v TRKey.jks:/key/translationRecorderKey.jks \
+          -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
+          -e KEY_PASSWORD=${{ env.KEY_PASSWORD }} \
+          -e DOOR43_XML=${{ env.DOOR43_XML }} \
+          -e GITHUB_XML=${{ env.GITHUB_XML }} \
+          translation-recorder-build
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: translationRecorder-release-apk
+          path: translationRecorder/app/build/outputs/apk/release/*.apk
