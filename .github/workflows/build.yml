@@ -16,8 +16,8 @@ jobs:
           TR_KEY_BASE64: "op://DevOps/btt-android-keystore-key/text-details/base64-encoded-jks"
           STORE_PASSWORD: "op://DevOps/btt-android-keystore-key/text-details/storePassword"
           KEY_PASSWORD: "op://DevOps/btt-android-keystore-key/text-details/keyPassword"
-          DOOR43_XML: "op://Shared-IT-Development/tR_XML_Files/attachments/door43.xml"
-          GITHUB_XML: "op://Shared-IT-Development/tR_XML_Files/attachments/github.xml"
+          DOOR43_XML: "op://DevOps/tR_XML_Files/attachments/door43.xml"
+          GITHUB_XML: "op://DevOps/tR_XML_Files/attachments/github.xml"
 
       - name: decode b64 to files
         run: |
