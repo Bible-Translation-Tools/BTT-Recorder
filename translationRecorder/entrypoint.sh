@@ -1,5 +1,9 @@
 #!/bin/bash
 
+ls -la
+ls -la /
+pwd
+
 # Mount points from the volumes
 DOOR43_XML_PATH="/xml/door43.xml"
 GITHUB_XML_PATH="/xml/github.xml"
