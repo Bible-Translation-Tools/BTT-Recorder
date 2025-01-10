@@ -35,7 +35,7 @@ jobs:
           -v github.xml:/xml/github.xml \
           -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
           -e KEY_PASSWORD=${{ env.KEY_PASSWORD }} \
-          translation-recorder-build
+          translation-recorder
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
