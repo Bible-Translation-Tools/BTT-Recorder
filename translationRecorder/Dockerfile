@@ -42,3 +42,4 @@ RUN ./gradlew -PkeystorePath=/key/translationRecorderKey.jks \
               -PstorePass="$STORE_PASSWORD" \
               -PkeyPass="$KEY_PASSWORD" \
               assembleRelease
+
