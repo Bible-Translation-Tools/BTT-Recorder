@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     wget \
-    unzip \
-    && sudo rm -rf /var/lib/apt/lists/*
+    unzip
 
 # Set working directory
 WORKDIR /project/translationRecorder
