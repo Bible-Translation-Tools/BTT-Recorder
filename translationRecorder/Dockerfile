@@ -1,5 +1,5 @@
 # Base image with Android SDK installed
-FROM runmymind/docker-android-sdk:ubuntu-standalone
+FROM budtmo/docker-android:emulator_14.0
 
 # Install Python and other necessary tools
 RUN apt-get update && apt-get install -y \
