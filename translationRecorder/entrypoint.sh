@@ -32,6 +32,7 @@ mv ./app/src/main/assets/btt-recorder.readthedocs.io/_static/ ./app/src/main/ass
     sed -i 's/_static/static/g' ./app/src/main/assets/btt-recorder.readthedocs.io/index.html && \
     sed -i 's/_images/images/g' ./app/src/main/assets/btt-recorder.readthedocs.io/index.html
 
+./gradlew test && ./gradlew cAT
 
 ./gradlew -PkeystorePath=/key/translationRecorderKey.jks \
               -PstorePass="$STORE_PASSWORD" \
