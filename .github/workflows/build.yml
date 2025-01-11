@@ -28,7 +28,7 @@ jobs:
 
       - name: Run build in container
         run : |
-          docker run --rm -i \
+          docker run -u 0 --rm -i \
           -e EMULATOR_DEVICE="Nexus 7" \
           --device /dev/kvm \
           -v $(pwd):/project \
