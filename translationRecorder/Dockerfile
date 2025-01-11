@@ -12,7 +12,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
 WORKDIR /project/translationRecorder
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sudo chmod +x /entrypoint.sh
 
 # Make entrypoint.sh the default entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
