@@ -2,7 +2,7 @@
 FROM budtmo/docker-android:emulator_14.0
 
 # Install Python and other necessary tools
-RUN sudo apt-get update && apt-get install -y \
+RUN sudo apt-get update && sudo apt-get install -y \
     python3 \
     python3-pip \
     wget \
