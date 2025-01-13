@@ -94,7 +94,7 @@ jobs:
           heap-size: 512M
           profile: pixel_c
           target: google_apis
-          script: ./translationRecorder/gradlew integrationTests --stacktrace
+          script: cd translationRecorder && gradlew integrationTests --stacktrace
 
       - name: Upload results
         if: ${{ always() }}
