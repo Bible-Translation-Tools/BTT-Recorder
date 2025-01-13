@@ -87,7 +87,7 @@ jobs:
 
       - name: Prepare debug files
         run: |
-          cp translationRecorder/debug.xml app/src/main/res/values/
+          cp translationRecorder/debug.xml translationRecorder/app/src/main/res/values/
 
       - name: Run connected tests
         uses: reactivecircus/android-emulator-runner@v2
