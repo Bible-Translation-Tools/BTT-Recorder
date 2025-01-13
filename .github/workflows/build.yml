@@ -39,8 +39,8 @@ jobs:
           python3 app/src/scripts/get_tq.py
           rm -r app/src/main/assets/chunks/
           mv app/src/scripts/chunks/ app/src/main/assets/
-          cp "$DOOR43_XML_PATH" app/src/main/res/values/
-          cp "$GITHUB_XML_PATH" app/src/main/res/values/
+          cp "$DOOR43_XML" app/src/main/res/values/
+          cp "$GITHUB_XML" app/src/main/res/values/
 #          wget -O docs.zip https://readthedocs.org/projects/btt-recorder/downloads/htmlzip/latest/ && \
 #            unzip docs.zip && \
 #            rm -r app/src/main/assets/btt-recorder.readthedocs.io && \
@@ -84,6 +84,10 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0777", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
+      - name: Prepare debug files
+        run: |
+          cp translationRecorder/debug.xml app/src/main/res/values/
 
       - name: Run connected tests
         uses: reactivecircus/android-emulator-runner@v2
