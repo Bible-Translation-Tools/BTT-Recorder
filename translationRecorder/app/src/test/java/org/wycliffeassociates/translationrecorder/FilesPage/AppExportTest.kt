@@ -32,6 +32,7 @@ class AppExportTest {
             val name = firstArg<String>()
             tempFolder.newFolder(name)
         }
+        every { directoryProvider.translationsDir }.returns(tempFolder.newFolder("translations"))
     }
 
     @After

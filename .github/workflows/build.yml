@@ -39,8 +39,8 @@ jobs:
           python3 app/src/scripts/get_tq.py
           rm -r app/src/main/assets/chunks/
           mv app/src/scripts/chunks/ app/src/main/assets/
-          cp "$DOOR43_XML" app/src/main/res/values/
-          cp "$GITHUB_XML" app/src/main/res/values/
+          cp door43.xml app/src/main/res/values/
+          cp github.xml app/src/main/res/values/
 #          wget -O docs.zip https://readthedocs.org/projects/btt-recorder/downloads/htmlzip/latest/ && \
 #            unzip docs.zip && \
 #            rm -r app/src/main/assets/btt-recorder.readthedocs.io && \
@@ -98,7 +98,7 @@ jobs:
           heap-size: 512M
           profile: pixel_c
           target: google_apis
-          script: cd translationRecorder && ./gradlew cAT --stacktrace
+          script: cd translationRecorder && ./gradlew :app:cAT --stacktrace
 
       - name: Upload results
         if: ${{ always() }}

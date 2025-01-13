@@ -46,6 +46,7 @@ class TranslationExchangeExportTest {
             val name = firstArg<String>()
             tempFolder.newFolder(name)
         }
+        every { directoryProvider.translationsDir }.returns(tempFolder.newFolder("translations"))
 
         every { prefs.getDefaultPref(SettingsActivity.KEY_PREF_UPLOAD_SERVER, any<String>()) }
             .returns(server.url("").toString())
