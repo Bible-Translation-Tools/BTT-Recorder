@@ -55,7 +55,7 @@ jobs:
 
       - name: Assemble with Gradle
         run: |
-          ./gradlew -PkeystorePath=TRKey.jks \
+          ./gradlew -PkeystorePath=../TRKey.jks \
           -PstorePass="$STORE_PASSWORD" \
           -PkeyPass="$KEY_PASSWORD" \
           assembleRelease
