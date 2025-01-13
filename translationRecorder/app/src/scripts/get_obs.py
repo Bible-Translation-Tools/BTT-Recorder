@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Script to generate a json file containing book name, number of chapters, number of chunks
 

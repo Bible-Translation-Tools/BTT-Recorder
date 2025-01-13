@@ -36,8 +36,5 @@ for x in range(0, 67):
 
     chunks_url = BASE_URL + slug + "/" + EN + "/ulb/chunks.json"
     outpath = os.path.join(ROOT_DIR, "chunks", anth, slug, "chunks.json")
-    print(outpath)
     os.makedirs(os.path.dirname(outpath), exist_ok=True)
-    print("+++++++++++++")
     urllib.request.urlretrieve(chunks_url, outpath)
-    print("-------------")
