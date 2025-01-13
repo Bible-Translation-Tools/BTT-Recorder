@@ -3,9 +3,18 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: translationRecorder
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: gradle
 
       - name: Source Build secret
         uses: 1password/load-secrets-action@v2
@@ -23,24 +32,76 @@ jobs:
         run: |
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
 
-      - name: Build Docker image
-        run: docker build -t translation-recorder ./translationRecorder
+      - name: Prepare resources
+        run: |
+          python3 app/src/scripts/download_chunks.py
+          python3 app/src/scripts/get_obs.py
+          python3 app/src/scripts/get_tq.py
+          rm -r app/src/main/assets/chunks/
+          mv app/src/scripts/chunks/ app/src/main/assets/
+          cp "$DOOR43_XML_PATH" app/src/main/res/values/
+          cp "$GITHUB_XML_PATH" app/src/main/res/values/
+#          wget -O docs.zip https://readthedocs.org/projects/btt-recorder/downloads/htmlzip/latest/ && \
+#            unzip docs.zip && \
+#            rm -r app/src/main/assets/btt-recorder.readthedocs.io && \
+#            mv btt-recorder-latest app/src/main/assets/btt-recorder.readthedocs.io
+#          mv app/src/main/assets/btt-recorder.readthedocs.io/_static/ app/src/main/assets/btt-recorder.readthedocs.io/static/ && \
+#          mv app/src/main/assets/btt-recorder.readthedocs.io/_images/ app/src/main/assets/btt-recorder.readthedocs.io/images/ && \
+#          sed -i 's/_static/static/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html && \
+#          sed -i 's/_images/images/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html
+          
+      - name: Test with Gradle
+        run: ./gradlew test --stacktrace
 
-      - name: Run build in container
-        run : |
-          docker run --rm -i \
-          -e EMULATOR_DEVICE="Nexus 7" \
-          --device /dev/kvm \
-          -v $(pwd):/project \
-          -v $(pwd)/TRKey.jks:/key/translationRecorderKey.jks \
-          -v ${{github.workspace}}/door43.xml:/xml/door43.xml \
-          -v ${{github.workspace}}/github.xml:/xml/github.xml \
-          -e STORE_PASSWORD=${{ env.STORE_PASSWORD }} \
-          -e KEY_PASSWORD=${{ env.KEY_PASSWORD }} \
-          translation-recorder
+      - name: Assemble with Gradle
+        run: |
+          ./gradlew -PkeystorePath=TRKey.jks \
+          -PstorePass="$STORE_PASSWORD" \
+          -PkeyPass="$KEY_PASSWORD" \
+          assembleRelease
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: translationRecorder-release-apk
           path: translationRecorder/app/build/outputs/apk/release/*.apk
+
+  connected-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: translationRecorder
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          cache: 'gradle'
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0777", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run connected tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          ram-size: 8192M
+          heap-size: 512M
+          profile: pixel_c
+          target: google_apis
+          script: ./gradlew integrationTests --stacktrace
+
+      - name: Upload results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumentation-test-results 34
+          path: ./**/build/reports/androidTests/connected/**
