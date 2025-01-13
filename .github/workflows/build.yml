@@ -68,11 +68,8 @@ jobs:
 
   connected-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: translationRecorder
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -97,11 +94,11 @@ jobs:
           heap-size: 512M
           profile: pixel_c
           target: google_apis
-          script: ./gradlew integrationTests --stacktrace
+          script: ./translationRecorder/gradlew integrationTests --stacktrace
 
       - name: Upload results
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: instrumentation-test-results 34
-          path: ./**/build/reports/androidTests/connected/**
+          path: translationRecorder/**/build/reports/androidTests/connected/**

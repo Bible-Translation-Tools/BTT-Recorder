@@ -7,6 +7,7 @@ import re
 import os
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+print(ROOT_DIR)
 
 # with open("catalog.json") as file:
 #     DATA = json.load(file)
