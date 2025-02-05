@@ -4,6 +4,8 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pixplicity.sharp.Sharp
 import dagger.hilt.android.AndroidEntryPoint
 import jdenticon.Jdenticon
+import org.wycliffeassociates.translationrecorder.DocumentationActivity
 import org.wycliffeassociates.translationrecorder.MainMenu
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
@@ -39,6 +42,11 @@ class UserActivity : AppCompatActivity() {
         binding = ActivityUserBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setSupportActionBar(binding.toolbar)
+        if (supportActionBar != null) {
+            supportActionBar!!.setDisplayShowTitleEnabled(false)
+        }
+
         val orientation = resources.configuration.orientation
         var layoutManager = GridLayoutManager(this, 4) as RecyclerView.LayoutManager
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -50,6 +58,29 @@ class UserActivity : AppCompatActivity() {
             recycler.itemAnimator = DefaultItemAnimator()
             val adapter = UserAdapter(userList(), ::onItemClick)
             recycler.adapter = adapter
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.user_page_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        when (item.itemId) {
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+                return true
+            }
+            R.id.action_help -> {
+                val help = Intent(this, DocumentationActivity::class.java)
+                startActivity(help)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 

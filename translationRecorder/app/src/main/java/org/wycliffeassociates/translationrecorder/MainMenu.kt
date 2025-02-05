@@ -202,17 +202,23 @@ class MainMenu : AppCompatActivity() {
         val projectId = prefs.getDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
         if (projectId != -1) {
             val project = db.getProject(projectId)
-            var language = project!!.targetLanguageSlug
-            if (language.compareTo("") != 0) {
-                language = db.getLanguageName(language)
-            }
-            binding.languageView.text = language
+            if (project != null) {
+                var language = project.targetLanguageSlug
+                if (language.compareTo("") != 0) {
+                    language = db.getLanguageName(language)
+                }
+                binding.languageView.text = language
 
-            var book = project.bookSlug
-            if (book.compareTo("") != 0) {
-                book = project.bookName
+                var book = project.bookSlug
+                if (book.compareTo("") != 0) {
+                    book = project.bookName
+                }
+                binding.bookView.text = book
+            } else {
+                prefs.setDefaultPref(SettingsActivity.KEY_RECENT_PROJECT_ID, -1)
+                binding.languageView.text = ""
+                binding.bookView.text = ""
             }
-            binding.bookView.text = book
         } else {
             binding.languageView.text = ""
             binding.bookView.text = ""
@@ -220,7 +226,7 @@ class MainMenu : AppCompatActivity() {
     }
 
     private fun initApp() {
-        prefs.setDefaultPref("version", BuildConfig.VERSION_NAME)
+        prefs.setDefaultPref("version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
 
         //configure logger
         val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)

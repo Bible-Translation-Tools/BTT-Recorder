@@ -2415,7 +2415,7 @@ class ProjectDatabaseHelper(
     }
 
     companion object {
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
         private const val DATABASE_NAME = "translation_projects"
     }
 }

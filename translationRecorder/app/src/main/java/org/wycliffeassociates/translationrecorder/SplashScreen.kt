@@ -35,7 +35,7 @@ class SplashScreen : PermissionActivity() {
     override fun onPermissionsAccepted() {
         val initApp = Thread {
             try {
-                initializeApp.run()
+                initializeApp()
 
                 val profile = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
                 if (profile == -1) {

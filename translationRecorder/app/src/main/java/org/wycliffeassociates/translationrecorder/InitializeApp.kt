@@ -8,9 +8,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.json.JSONException
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.project.ParseJSON
 import org.wycliffeassociates.translationrecorder.project.ProjectPlugin
 import org.wycliffeassociates.translationrecorder.project.components.User
@@ -24,10 +28,11 @@ class InitializeApp @Inject constructor(
     @ApplicationContext private val context: Context,
     private val directoryProvider: IDirectoryProvider,
     private val assetsProvider: AssetsProvider,
+    private val prefs: IPreferenceRepository,
     private val db: IProjectDatabaseHelper
 ) {
 
-    fun run() {
+    operator fun invoke() {
         initializePlugins()
         initializeDatabase()
     }
@@ -168,12 +173,17 @@ class InitializeApp @Inject constructor(
     }
 
     private fun deleteDanglingProfiles() {
+        val prefUser = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
         val profiles = db.allUsers
         for (profile in profiles) {
             val file = profile.audio
             if (!file!!.exists()) {
                 db.deleteUser(profile.hash!!)
             }
+        }
+        val prefUserInDb = db.allUsers.any { it.id == prefUser }
+        if (!prefUserInDb) {
+            prefs.setDefaultPref(SettingsActivity.KEY_PROFILE, -1)
         }
     }
 
