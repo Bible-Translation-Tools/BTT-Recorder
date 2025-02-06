@@ -327,13 +327,6 @@ class MainMenu : AppCompatActivity() {
         const val PREF_DEFAULT_LOGGING_LEVEL: String = "1"
         const val STACKTRACE_DIR: String = "stacktrace"
 
-        const val FIRST_REQUEST: Int = 1
-        const val LANGUAGE_REQUEST: Int = FIRST_REQUEST
-        const val PROJECT_REQUEST: Int = FIRST_REQUEST + 1
-        const val BOOK_REQUEST: Int = FIRST_REQUEST + 2
-        const val MODE_REQUEST: Int = FIRST_REQUEST + 3
-        const val SOURCE_TEXT_REQUEST: Int = FIRST_REQUEST + 4
-        const val SOURCE_REQUEST: Int = FIRST_REQUEST + 5
-        const val PROJECT_WIZARD_REQUEST: Int = FIRST_REQUEST + 6
+        const val PROJECT_WIZARD_REQUEST: Int = 1
     }
 }
