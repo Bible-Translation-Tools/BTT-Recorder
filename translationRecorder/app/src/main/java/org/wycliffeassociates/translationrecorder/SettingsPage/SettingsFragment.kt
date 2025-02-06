@@ -9,10 +9,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.CreateBackupTask
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.MigrateAppFolderTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.RestoreBackupTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncLanguageNamesTask
 import org.wycliffeassociates.translationrecorder.R
@@ -23,10 +26,12 @@ import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_GLOBAL_LANG_SRC
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_GLOBAL_SOURCE_LOC
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_LANGUAGES_URL
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_MIGRATE_OLD_APP
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES_URL
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPLOAD_SERVER
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.MIGRATE_TASK_TAG
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.RESTORE_TASK_TAG
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.RESYNC_LANGUAGE_NAMES_TASK_TAG
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -34,6 +39,7 @@ import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.usecases.MigrateOldApp
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import java.io.File
 import javax.inject.Inject
@@ -49,9 +55,12 @@ class SettingsFragment : PreferenceFragmentCompat(),
     @Inject lateinit var prefs: IPreferenceRepository
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var assetsProvider: AssetsProvider
+    @Inject lateinit var migrateOldApp: MigrateOldApp
 
     private var parent: LanguageSelector? = null
     private lateinit var taskFragment: TaskFragment
+
+    private lateinit var openDirectory: ActivityResultLauncher<Uri?>
 
     interface LanguageSelector {
         fun sourceLanguageSelected()
@@ -64,6 +73,11 @@ class SettingsFragment : PreferenceFragmentCompat(),
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         view.fitsSystemWindows = true
+
+        openDirectory = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+            it?.let(::migrate)
+        }
+
         return view
     }
 
@@ -80,12 +94,8 @@ class SettingsFragment : PreferenceFragmentCompat(),
         }
 
         updateSummaryText(KEY_PREF_GLOBAL_LANG_SRC)
-        updateSummaryText(KEY_PREF_ADD_LANGUAGE)
-        updateSummaryText(KEY_PREF_UPDATE_LANGUAGES)
-        updateSummaryText(KEY_PREF_UPDATE_LANGUAGES_FROM_FILE)
         updateSummaryText(KEY_PREF_LANGUAGES_URL)
         updateSummaryText(KEY_PREF_UPLOAD_SERVER)
-        updateSummaryText(KEY_PREF_BACKUP_RESTORE)
 
         val globalLanguagePref: Preference? = findPreference(KEY_PREF_GLOBAL_LANG_SRC)
         globalLanguagePref?.setOnPreferenceClickListener {
@@ -144,6 +154,12 @@ class SettingsFragment : PreferenceFragmentCompat(),
             true
         }
 
+        val migratePref: Preference? = findPreference(KEY_PREF_MIGRATE_OLD_APP)
+        migratePref?.setOnPreferenceClickListener {
+            openDirectory.launch(null)
+            true
+        }
+
         val backupRestorePref: Preference? = findPreference(KEY_PREF_BACKUP_RESTORE)
         backupRestorePref?.setOnPreferenceClickListener {
             val dialog = BackupRestoreDialog()
@@ -151,6 +167,15 @@ class SettingsFragment : PreferenceFragmentCompat(),
             dialog.show(parentFragmentManager, "backup")
             true
         }
+    }
+
+    private fun migrate(uri: Uri) {
+        taskFragment.executeRunnable(
+            MigrateAppFolderTask(MIGRATE_TASK_TAG, uri, migrateOldApp),
+            getString(R.string.migrating_old_app),
+            getString(R.string.please_wait),
+            true
+        )
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -213,31 +238,31 @@ class SettingsFragment : PreferenceFragmentCompat(),
         )
     }
 
-    private fun updateSummariesSetViaActivities() {
-        var fileString = prefs.getDefaultPref(
-            KEY_PREF_GLOBAL_SOURCE_LOC,
-            ""
-        )
-        val pref = findPreference(KEY_PREF_GLOBAL_SOURCE_LOC) as? Preference
-        val file = File(fileString)
-        if (file.exists()) {
-            fileString = file.name
-            pref?.summary = fileString
-        } else {
-            pref?.summary = prefs.getDefaultPref(
-                KEY_PREF_GLOBAL_SOURCE_LOC,
-                ""
-            )
-        }
-    }
-
     private fun updateSummaryText(key: String) {
         try {
-            updateSummariesSetViaActivities()
-            val text = prefs.getDefaultPref(key, "")
+            var summary = prefs.getDefaultPref(key, "")
             val pref = findPreference(key) as? Preference
-            pref?.summary = text
-        } catch (err: ClassCastException) {
+
+            when (key) {
+                KEY_PREF_GLOBAL_SOURCE_LOC -> {
+                    val file = File(summary)
+                    if (file.exists()) {
+                        summary = file.name
+                    }
+                }
+                KEY_PREF_LANGUAGES_URL -> {
+                    if (summary.isEmpty()) {
+                        summary = getString(R.string.pref_languages_url)
+                    }
+                }
+                KEY_PREF_UPLOAD_SERVER -> {
+                    if (summary.isEmpty()) {
+                        summary = getString(R.string.pref_upload_server)
+                    }
+                }
+            }
+            pref?.summary = summary
+        } catch (e: ClassCastException) {
             println("IGNORING SUMMARY UPDATE FOR $key")
         }
     }

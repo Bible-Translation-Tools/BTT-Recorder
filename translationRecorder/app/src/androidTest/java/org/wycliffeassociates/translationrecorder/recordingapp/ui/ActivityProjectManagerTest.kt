@@ -74,7 +74,7 @@ class ActivityProjectManagerTest {
     @Before
     fun setup() {
         hiltRule.inject()
-        initializeApp.run()
+        initializeApp()
         Intents.init()
 
         server.start()

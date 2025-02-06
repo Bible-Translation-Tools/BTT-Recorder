@@ -449,57 +449,56 @@ class ProjectDatabaseHelper(
     @Throws(IllegalArgumentException::class)
     override fun getLanguageId(languageSlug: String): Int {
         val db = readableDatabase
-        val languageIdQuery =
-            "SELECT " + ProjectContract.LanguageEntry._ID + " FROM " + ProjectContract.LanguageEntry.TABLE_LANGUAGE + " WHERE " + ProjectContract.LanguageEntry.LANGUAGE_CODE + "=?"
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(db, languageIdQuery, arrayOf(languageSlug)).toInt()
+        val languageIdQuery = "SELECT " + ProjectContract.LanguageEntry._ID +
+                " FROM " + ProjectContract.LanguageEntry.TABLE_LANGUAGE +
+                " WHERE " + ProjectContract.LanguageEntry.LANGUAGE_CODE + "=?"
+        return try {
+            DatabaseUtils.longForQuery(db, languageIdQuery, arrayOf(languageSlug)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Language slug: $languageSlug is not in the database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
     override fun getVersionId(versionSlug: String): Int {
         val db = readableDatabase
         val versionIdQuery =
-            "SELECT " + ProjectContract.VersionEntry._ID + " FROM " + ProjectContract.VersionEntry.TABLE_VERSION + " WHERE " + ProjectContract.VersionEntry.VERSION_SLUG + "=?"
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(db, versionIdQuery, arrayOf(versionSlug)).toInt()
+            "SELECT " + ProjectContract.VersionEntry._ID +
+                    " FROM " + ProjectContract.VersionEntry.TABLE_VERSION +
+                    " WHERE " + ProjectContract.VersionEntry.VERSION_SLUG + "=?"
+        return try {
+            DatabaseUtils.longForQuery(db, versionIdQuery, arrayOf(versionSlug)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Version slug: $versionSlug is not in the database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
     override fun getAnthologyId(anthologySlug: String): Int {
         val db = readableDatabase
         val anthologyIdQuery =
-            "SELECT " + ProjectContract.AnthologyEntry._ID + " FROM " + ProjectContract.AnthologyEntry.TABLE_ANTHOLOGY + " WHERE " + ProjectContract.AnthologyEntry.ANTHOLOGY_SLUG + "=?"
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(db, anthologyIdQuery, arrayOf(anthologySlug)).toInt()
+            "SELECT " + ProjectContract.AnthologyEntry._ID +
+                    " FROM " + ProjectContract.AnthologyEntry.TABLE_ANTHOLOGY +
+                    " WHERE " + ProjectContract.AnthologyEntry.ANTHOLOGY_SLUG + "=?"
+        return try {
+            DatabaseUtils.longForQuery(db, anthologyIdQuery, arrayOf(anthologySlug)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Anthology slug: $anthologySlug is not in the database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
     override fun getBookId(bookSlug: String): Int {
         val db = readableDatabase
         val bookIdQuery =
-            "SELECT " + ProjectContract.BookEntry._ID + " FROM " + ProjectContract.BookEntry.TABLE_BOOK + " WHERE " + ProjectContract.BookEntry.BOOK_SLUG + "=?"
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(db, bookIdQuery, arrayOf(bookSlug)).toInt()
+            "SELECT " + ProjectContract.BookEntry._ID +
+                    " FROM " + ProjectContract.BookEntry.TABLE_BOOK +
+                    " WHERE " + ProjectContract.BookEntry.BOOK_SLUG + "=?"
+        return try {
+            DatabaseUtils.longForQuery(db, bookIdQuery, arrayOf(bookSlug)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Book slug: $bookSlug is not in the database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
@@ -509,7 +508,6 @@ class ProjectDatabaseHelper(
 
     @Throws(IllegalArgumentException::class)
     override fun getProjectId(languageSlug: String, bookSlug: String, versionSlug: String): Int {
-//        Logger.w(this.toString(), "Trying to get project Id for " + languageSlug + " " + bookSlug + " " + versionSlug);
         val languageId = getLanguageId(languageSlug).toString()
         val bookId = getBookId(bookSlug).toString()
         val versionId = getVersionId(versionSlug).toString()
@@ -522,9 +520,8 @@ class ProjectDatabaseHelper(
             ProjectContract.ProjectEntry.PROJECT_BOOK_FK,
             ProjectContract.ProjectEntry.PROJECT_VERSION_FK
         )
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(
+        return try {
+            DatabaseUtils.longForQuery(
                 db,
                 projectIdQuery,
                 arrayOf(languageId, bookId, versionId)
@@ -532,7 +529,6 @@ class ProjectDatabaseHelper(
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Project not found in database")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
@@ -551,7 +547,6 @@ class ProjectDatabaseHelper(
         versionSlug: String,
         chapter: Int
     ): Int {
-//        Logger.w(this.toString(), "trying to get chapter id for chapter " + chapter);
         val projectId = getProjectId(languageSlug, bookSlug, versionSlug).toString()
         val db = readableDatabase
         val chapterIdQuery = String.format(
@@ -561,9 +556,8 @@ class ProjectDatabaseHelper(
             ProjectContract.ChapterEntry.CHAPTER_PROJECT_FK,
             ProjectContract.ChapterEntry.CHAPTER_NUMBER
         )
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(
+        return try {
+            DatabaseUtils.longForQuery(
                 db,
                 chapterIdQuery,
                 arrayOf(projectId, chapter.toString())
@@ -571,7 +565,6 @@ class ProjectDatabaseHelper(
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Chapter not found in database")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
@@ -593,7 +586,6 @@ class ProjectDatabaseHelper(
         chapter: Int,
         startVerse: Int
     ): Int {
-//        Logger.w(this.toString(), "Trying to get unit Id for start verse " + startVerse);
         val projectId = getProjectId(languageSlug, bookSlug, versionSlug).toString()
         val chapterId = getChapterId(languageSlug, bookSlug, versionSlug, chapter).toString()
         val db = readableDatabase
@@ -605,9 +597,8 @@ class ProjectDatabaseHelper(
             ProjectContract.UnitEntry.UNIT_CHAPTER_FK,
             ProjectContract.UnitEntry.UNIT_START_VERSE
         )
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(
+        return try {
+            DatabaseUtils.longForQuery(
                 db,
                 unitIdQuery,
                 arrayOf(projectId, chapterId, startVerse.toString())
@@ -615,7 +606,6 @@ class ProjectDatabaseHelper(
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Unit not found in database")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
@@ -640,9 +630,8 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_UNIT_FK,
             ProjectContract.TakeEntry.TAKE_NUMBER
         )
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(
+        return try {
+            DatabaseUtils.longForQuery(
                 db,
                 takeIdQuery,
                 arrayOf(unitId, takeInfo.take.toString())
@@ -650,7 +639,6 @@ class ProjectDatabaseHelper(
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Take not found in database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
@@ -663,9 +651,8 @@ class ProjectDatabaseHelper(
             ProjectContract.ModeEntry.MODE_SLUG,
             ProjectContract.ModeEntry.MODE_ANTHOLOGY_FK
         )
-        var id = -1
-        try {
-            id = DatabaseUtils.longForQuery(
+        return try {
+            DatabaseUtils.longForQuery(
                 db,
                 takeIdQuery,
                 arrayOf(modeSlug, getAnthologyId(anthologySlug).toString())
@@ -673,12 +660,10 @@ class ProjectDatabaseHelper(
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Mode not found in database.")
         }
-        return id
     }
 
     @Throws(IllegalArgumentException::class)
     override fun getTakeCount(unitId: Int): Int {
-        var count = -1
         val stringifiedId = unitId.toString()
         val db = readableDatabase
         val query = String.format(
@@ -686,12 +671,11 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TABLE_TAKE,
             ProjectContract.TakeEntry.TAKE_UNIT_FK
         )
-        try {
-            count = DatabaseUtils.longForQuery(db, query, arrayOf(stringifiedId)).toInt()
+        return try {
+            DatabaseUtils.longForQuery(db, query, arrayOf(stringifiedId)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Take count cannot be retrieved for unitId: $stringifiedId")
         }
-        return count
     }
 
     @Throws(IllegalArgumentException::class)
@@ -703,13 +687,11 @@ class ProjectDatabaseHelper(
             ProjectContract.LanguageEntry.TABLE_LANGUAGE,
             ProjectContract.LanguageEntry.LANGUAGE_CODE
         )
-        val name: String
-        try {
-            name = DatabaseUtils.stringForQuery(db, languageNameQuery, arrayOf(languageSlug))
+        return try {
+            DatabaseUtils.stringForQuery(db, languageNameQuery, arrayOf(languageSlug))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Language: $languageSlug not found.")
         }
-        return name
     }
 
     @Throws(IllegalArgumentException::class)
@@ -721,13 +703,11 @@ class ProjectDatabaseHelper(
             ProjectContract.LanguageEntry.TABLE_LANGUAGE,
             ProjectContract.LanguageEntry._ID
         )
-        val code: String
-        try {
-            code = DatabaseUtils.stringForQuery(db, languageSlugQuery, arrayOf(id.toString()))
+        return try {
+            DatabaseUtils.stringForQuery(db, languageSlugQuery, arrayOf(id.toString()))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Language id not found in database.")
         }
-        return code
     }
 
     @Throws(IllegalArgumentException::class)
@@ -740,17 +720,15 @@ class ProjectDatabaseHelper(
             id.toString()
         )
         val cursor = db.rawQuery(query, null)
-        val language: Language
-        if (cursor.moveToFirst()) {
+        return if (cursor.moveToFirst()) {
             val languageSlug =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_CODE))
             val languageName =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_NAME))
-            language = Language(languageSlug, languageName)
+            Language(languageSlug, languageName)
         } else {
             throw IllegalArgumentException("Language id not found in database.")
         }
-        return language
     }
 
     @Throws(IllegalArgumentException::class)
@@ -806,13 +784,11 @@ class ProjectDatabaseHelper(
             ProjectContract.BookEntry.TABLE_BOOK,
             ProjectContract.BookEntry.BOOK_SLUG
         )
-        val name: String
-        try {
-            name = DatabaseUtils.stringForQuery(db, bookNameQuery, arrayOf(bookSlug))
+        return try {
+            DatabaseUtils.stringForQuery(db, bookNameQuery, arrayOf(bookSlug))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Book slug: $bookSlug not found in database.")
         }
-        return name
     }
 
     @Throws(IllegalArgumentException::class)
@@ -824,13 +800,11 @@ class ProjectDatabaseHelper(
             ProjectContract.BookEntry.TABLE_BOOK,
             ProjectContract.BookEntry._ID
         )
-        val slug: String
-        try {
-            slug = DatabaseUtils.stringForQuery(db, bookSlugQuery, arrayOf(id.toString()))
+        return try {
+            DatabaseUtils.stringForQuery(db, bookSlugQuery, arrayOf(id.toString()))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Book id not found in database.")
         }
-        return slug
     }
 
     @Throws(IllegalArgumentException::class)
@@ -843,8 +817,7 @@ class ProjectDatabaseHelper(
             id.toString()
         )
         val cursor = db.rawQuery(query, null)
-        val mode: Mode
-        if (cursor.moveToFirst()) {
+        return if (cursor.moveToFirst()) {
             val modeSlug =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_SLUG))
             val modeName =
@@ -852,11 +825,10 @@ class ProjectDatabaseHelper(
             val modeType =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_TYPE))
 
-            mode = Mode(modeSlug, modeName, modeType)
+            Mode(modeSlug, modeName, modeType)
         } else {
-            throw IllegalArgumentException("Book id not found in database.")
+            throw IllegalArgumentException("Mode id not found in database.")
         }
-        return mode
     }
 
     @Throws(IllegalArgumentException::class)
@@ -869,8 +841,7 @@ class ProjectDatabaseHelper(
             id.toString()
         )
         val cursor = db.rawQuery(query, null)
-        val book: Book
-        if (cursor.moveToFirst()) {
+        return if (cursor.moveToFirst()) {
             val bookSlug =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_SLUG))
             val bookName =
@@ -881,11 +852,10 @@ class ProjectDatabaseHelper(
                 getAnthologySlug(cursor.getInt(cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)))
 
             val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthology)
-            book = Book(bookSlug, localizedBookName, anthology, bookNumber)
+            Book(bookSlug, localizedBookName, anthology, bookNumber)
         } else {
             throw IllegalArgumentException("Book id not found in database.")
         }
-        return book
     }
 
     @Throws(IllegalArgumentException::class)
@@ -897,13 +867,11 @@ class ProjectDatabaseHelper(
             ProjectContract.VersionEntry.TABLE_VERSION,
             ProjectContract.VersionEntry._ID
         )
-        val name: String
-        try {
-            name = DatabaseUtils.stringForQuery(db, versionSlugQuery, arrayOf(id.toString()))
+        return try {
+            DatabaseUtils.stringForQuery(db, versionSlugQuery, arrayOf(id.toString()))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Version id not found in database.")
         }
-        return name
     }
 
     @Throws(IllegalArgumentException::class)
@@ -915,13 +883,11 @@ class ProjectDatabaseHelper(
             ProjectContract.VersionEntry.TABLE_VERSION,
             ProjectContract.VersionEntry._ID
         )
-        val slug: String
-        try {
-            slug = DatabaseUtils.stringForQuery(db, versionSlugQuery, arrayOf(id.toString()))
+        return try {
+            DatabaseUtils.stringForQuery(db, versionSlugQuery, arrayOf(id.toString()))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Version id not found in database.")
         }
-        return slug
     }
 
     @Throws(IllegalArgumentException::class)
@@ -957,13 +923,11 @@ class ProjectDatabaseHelper(
             ProjectContract.AnthologyEntry.TABLE_ANTHOLOGY,
             ProjectContract.AnthologyEntry._ID
         )
-        val slug: String
-        try {
-            slug = DatabaseUtils.stringForQuery(db, anthologySlugQuery, arrayOf(id.toString()))
+        return try {
+            DatabaseUtils.stringForQuery(db, anthologySlugQuery, arrayOf(id.toString()))
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Anthology id not found in database.")
         }
-        return slug
     }
 
     //TODO
@@ -990,8 +954,7 @@ class ProjectDatabaseHelper(
             id.toString()
         )
         val cursor = db.rawQuery(query, null)
-        val anthology: Anthology
-        if (cursor.moveToFirst()) {
+        return if (cursor.moveToFirst()) {
             val anthologySlug =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_SLUG))
             val anthologyName =
@@ -1010,7 +973,7 @@ class ProjectDatabaseHelper(
                 cursor.getString(cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_CLASS))
             val pluginJarName =
                 cursor.getString(cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_JAR))
-            anthology = Anthology(
+            Anthology(
                 anthologySlug,
                 anthologyName,
                 resourceSlug,
@@ -1024,7 +987,6 @@ class ProjectDatabaseHelper(
         } else {
             throw IllegalArgumentException("Anthology id $id not found in database.")
         }
-        return anthology
     }
 
     @Throws(IllegalArgumentException::class)
@@ -1036,13 +998,11 @@ class ProjectDatabaseHelper(
             ProjectContract.BookEntry.TABLE_BOOK,
             ProjectContract.BookEntry.BOOK_SLUG
         )
-        var number = -1
-        try {
-            number = DatabaseUtils.longForQuery(db, bookNameQuery, arrayOf(bookSlug)).toInt()
+        return try {
+            DatabaseUtils.longForQuery(db, bookNameQuery, arrayOf(bookSlug)).toInt()
         } catch (e: SQLiteDoneException) {
             throw IllegalArgumentException("Book slug: $bookSlug not found in database.")
         }
-        return number
     }
 
     override fun addLanguage(languageSlug: String?, name: String?) {
@@ -1050,7 +1010,7 @@ class ProjectDatabaseHelper(
         val cv = ContentValues()
         cv.put(ProjectContract.LanguageEntry.LANGUAGE_CODE, languageSlug)
         cv.put(ProjectContract.LanguageEntry.LANGUAGE_NAME, name)
-        val result = db.insertWithOnConflict(
+        db.insertWithOnConflict(
             ProjectContract.LanguageEntry.TABLE_LANGUAGE,
             null,
             cv,
@@ -1086,7 +1046,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.AnthologyEntry.ANTHOLOGY_MASK, mask)
         cv.put(ProjectContract.AnthologyEntry.PLUGIN_JAR, jarName)
         cv.put(ProjectContract.AnthologyEntry.PLUGIN_CLASS, className)
-        val result = db.insertWithOnConflict(
+        db.insertWithOnConflict(
             ProjectContract.AnthologyEntry.TABLE_ANTHOLOGY,
             null,
             cv,
@@ -1102,7 +1062,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.BookEntry.BOOK_NAME, bookName)
         cv.put(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK, anthologyId)
         cv.put(ProjectContract.BookEntry.BOOK_NUMBER, bookNumber)
-        val result = db.insertWithOnConflict(
+        db.insertWithOnConflict(
             ProjectContract.BookEntry.TABLE_BOOK,
             null,
             cv,
@@ -1131,7 +1091,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.ModeEntry.MODE_NAME, name)
         cv.put(ProjectContract.ModeEntry.MODE_TYPE, type)
         cv.put(ProjectContract.ModeEntry.MODE_ANTHOLOGY_FK, anthId)
-        val result = db.insertWithOnConflict(
+        db.insertWithOnConflict(
             ProjectContract.ModeEntry.TABLE_MODE,
             null,
             cv,
@@ -1152,20 +1112,18 @@ class ProjectDatabaseHelper(
         }
     }
 
-
     override fun addVersion(versionSlug: String?, versionName: String?) {
         val db = writableDatabase
         val cv = ContentValues()
         cv.put(ProjectContract.VersionEntry.VERSION_SLUG, versionSlug)
         cv.put(ProjectContract.VersionEntry.VERSION_NAME, versionName)
-        val result = db.insertWithOnConflict(
+        db.insertWithOnConflict(
             ProjectContract.VersionEntry.TABLE_VERSION,
             null,
             cv,
             SQLiteDatabase.CONFLICT_IGNORE
         )
     }
-
 
     override fun addVersions(versions: List<Version>) {
         val db = writableDatabase
@@ -1199,7 +1157,7 @@ class ProjectDatabaseHelper(
             val cv = ContentValues()
             cv.put(ProjectContract.VersionRelationshipEntry.ANTHOLOGY_FK, anthId)
             cv.put(ProjectContract.VersionRelationshipEntry.VERSION_FK, versionId)
-            val result = db.insertWithOnConflict(
+            db.insertWithOnConflict(
                 ProjectContract.VersionRelationshipEntry.TABLE_VERSION_RELATIONSHIP,
                 null,
                 cv,
@@ -1212,7 +1170,7 @@ class ProjectDatabaseHelper(
     override fun addProject(p: Project) {
         val targetLanguageId = getLanguageId(p.targetLanguageSlug)
         var sourceLanguageId: Int? = null
-        if (p.sourceLanguageSlug != null && p.sourceLanguageSlug != "") {
+        if (p.sourceLanguageSlug != "") {
             sourceLanguageId = getLanguageId(p.sourceLanguageSlug)
         }
         val bookId = getBookId(p.bookSlug)
@@ -1233,7 +1191,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.ProjectEntry.PROJECT_NOTES, "")
         cv.put(ProjectContract.ProjectEntry.PROJECT_PROGRESS, 0)
 
-        val result = db.insert(ProjectContract.ProjectEntry.TABLE_PROJECT, null, cv)
+        db.insert(ProjectContract.ProjectEntry.TABLE_PROJECT, null, cv)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -1253,7 +1211,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.ProjectEntry.PROJECT_NOTES, "")
         cv.put(ProjectContract.ProjectEntry.PROJECT_PROGRESS, 0)
 
-        val result = db.insert(ProjectContract.ProjectEntry.TABLE_PROJECT, null, cv)
+        db.insert(ProjectContract.ProjectEntry.TABLE_PROJECT, null, cv)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -1269,7 +1227,7 @@ class ProjectDatabaseHelper(
         val cv = ContentValues()
         cv.put(ProjectContract.ChapterEntry.CHAPTER_PROJECT_FK, projectId)
         cv.put(ProjectContract.ChapterEntry.CHAPTER_NUMBER, chapter)
-        val result = db.insert(ProjectContract.ChapterEntry.TABLE_CHAPTER, null, cv)
+        db.insert(ProjectContract.ChapterEntry.TABLE_CHAPTER, null, cv)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -1299,7 +1257,7 @@ class ProjectDatabaseHelper(
         cv.put(ProjectContract.UnitEntry.UNIT_PROJECT_FK, projectId)
         cv.put(ProjectContract.UnitEntry.UNIT_CHAPTER_FK, chapterId)
         cv.put(ProjectContract.UnitEntry.UNIT_START_VERSE, startVerse)
-        val result = db.insert(ProjectContract.UnitEntry.TABLE_UNIT, null, cv)
+        db.insert(ProjectContract.UnitEntry.TABLE_UNIT, null, cv)
     }
 
     override fun addTake(
@@ -1470,7 +1428,6 @@ class ProjectDatabaseHelper(
             ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK,
             ProjectContract.UnitEntry.TABLE_UNIT, ProjectContract.UnitEntry._ID
         )
-        //int take = (int)DatabaseUtils.longForQuery(db, getTake, new String[]{unitId});
         val cursor = db.rawQuery(getTake, arrayOf(unitId.toString()))
         val takeIdCol = cursor.getColumnIndex(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
         if (cursor.moveToFirst()) {

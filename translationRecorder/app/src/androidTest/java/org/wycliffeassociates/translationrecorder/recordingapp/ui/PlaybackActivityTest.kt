@@ -57,7 +57,7 @@ class PlaybackActivityTest {
     @Before
     fun setup() {
         hiltRule.inject()
-        initializeApp.run()
+        initializeApp()
 
         TestUtils.createTestUser(directoryProvider, db, prefs)
         project = TestUtils.createBibleProject(db)

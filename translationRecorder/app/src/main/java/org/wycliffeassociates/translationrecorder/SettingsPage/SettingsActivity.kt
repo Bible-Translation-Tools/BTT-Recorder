@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -170,6 +171,13 @@ class SettingsActivity : AppCompatActivity(), OnTaskComplete, ScrollableListFrag
                     this.finishAffinity()
                     exitProcess(0)
                 }
+                MIGRATE_TASK_TAG -> {
+                    AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.migrate_old_app)
+                        .setMessage(R.string.migrating_complete)
+                        .setPositiveButton(R.string.label_ok, null)
+                        .show()
+                }
             }
         }
     }
@@ -192,10 +200,12 @@ class SettingsActivity : AppCompatActivity(), OnTaskComplete, ScrollableListFrag
         const val KEY_PREF_UPLOAD_SERVER: String = "pref_upload_server"
         const val KEY_PREF_LANGUAGES_URL: String = "pref_languages_url"
 
+        const val KEY_PREF_MIGRATE_OLD_APP: String = "pref_migrate_old_app"
         const val KEY_PREF_BACKUP_RESTORE: String = "pref_backup_restore"
 
         const val RESYNC_LANGUAGE_NAMES_TASK_TAG: Int = 1
         const val BACKUP_TASK_TAG: Int = 2
         const val RESTORE_TASK_TAG: Int = 3
+        const val MIGRATE_TASK_TAG: Int = 4
     }
 }

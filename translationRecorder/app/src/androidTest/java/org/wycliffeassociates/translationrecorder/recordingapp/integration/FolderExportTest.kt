@@ -42,7 +42,7 @@ class FolderExportTest {
     fun setUp() {
         hiltRule.inject()
 
-        initializeApp.run()
+        initializeApp()
     }
 
     @After

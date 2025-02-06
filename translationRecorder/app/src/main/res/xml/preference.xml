@@ -63,7 +63,15 @@
         <Preference
             android:key="pref_backup_restore"
             android:layout="@layout/custom_pref"
-            android:title="@string/backup_restore">
+            android:title="@string/backup_restore"
+            android:summary="@string/backup_restore_hint">
+        </Preference>
+
+        <Preference
+            android:key="pref_migrate_old_app"
+            android:title="@string/migrate_old_app"
+            android:layout="@layout/custom_pref"
+            android:summary="@string/migrate_old_app_hint">
         </Preference>
 
     </PreferenceCategory>

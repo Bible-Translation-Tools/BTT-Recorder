@@ -64,7 +64,7 @@ class RecordingActivityIntentTest {
     @Before
     fun setup() {
         hiltRule.inject()
-        initializeApp.run()
+        initializeApp()
         uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         uiDevice.wait(Until.hasObject(By.pkg(context.packageName).depth(0)), 3000)
 

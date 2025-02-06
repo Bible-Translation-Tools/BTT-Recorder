@@ -63,6 +63,7 @@ class SettingsActivityTest {
             checkText(R.string.update_language_from_file, true)
             checkText(R.string.change_languages_url, true)
             checkText(R.string.change_upload_server, true)
+            checkText(R.string.migrate_old_app, true)
             checkText(R.string.backup_restore, true)
         }
     }
@@ -139,6 +140,17 @@ class SettingsActivityTest {
             checkDialogText(R.string.label_close, true)
             checkDialogText(R.string.restore_defaults, true)
             checkDialogText(R.string.save, true)
+        }
+    }
+
+    @Test
+    fun migrateOldApp() {
+        ActivityScenario.launch(SettingsActivity::class.java).use {
+            onView(withText(R.string.migrate_old_app)).tryPerform(click())
+
+            Intents.intended(allOf(
+                hasAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            ))
         }
     }
 

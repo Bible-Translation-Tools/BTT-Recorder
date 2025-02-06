@@ -50,7 +50,7 @@ class MetadataTest {
     fun setUp() {
         hiltRule.inject()
 
-        initializeApp.run()
+        initializeApp()
 
         try {
             testFile = directoryProvider.createTempFile("test", ".wav")

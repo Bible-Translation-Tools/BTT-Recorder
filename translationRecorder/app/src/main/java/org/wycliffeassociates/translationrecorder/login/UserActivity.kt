@@ -61,6 +61,12 @@ class UserActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val adapter = binding.recycler.adapter as? UserAdapter
+        adapter?.setUsers(userList())
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.user_page_menu, menu)
@@ -108,6 +114,5 @@ class UserActivity : AppCompatActivity() {
         startActivity(mainActivityIntent)
         finish()
     }
-
 }
 

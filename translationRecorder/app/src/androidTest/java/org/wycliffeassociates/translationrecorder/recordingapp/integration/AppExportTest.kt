@@ -42,7 +42,7 @@ class AppExportTest {
     fun setUp() {
         hiltRule.inject()
 
-        initializeApp.run()
+        initializeApp()
     }
 
     @After

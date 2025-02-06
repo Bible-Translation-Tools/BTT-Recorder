@@ -45,7 +45,7 @@ class MainMenuTest {
     fun setup() {
         hiltRule.inject()
 
-        initializeApp.run()
+        initializeApp()
 
         Intents.init()
 

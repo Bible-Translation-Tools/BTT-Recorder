@@ -54,7 +54,7 @@ class TranslationExchangeExportTest {
     fun setUp() {
         hiltRule.inject()
 
-        initializeApp.run()
+        initializeApp()
         server.start()
 
         prefs.setDefaultPref(

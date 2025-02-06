@@ -24,6 +24,13 @@ class UserAdapter(
 
     private var playing = false
 
+    fun setUsers(users: List<Pair<User, Drawable>>) {
+        this.users as MutableList
+        this.users.clear()
+        this.users.addAll(users)
+        notifyDataSetChanged()
+    }
+
     override fun getItemCount(): Int {
         return users.size
     }
