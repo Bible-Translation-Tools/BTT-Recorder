@@ -1,6 +1,5 @@
 name: Build APK
-on: [push]
-#on: [ push, pull_request, workflow_dispatch ]
+on: [ push, pull_request, workflow_dispatch ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,8 +52,8 @@ jobs:
 #          sed -i 's/_static/static/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html && \
 #          sed -i 's/_images/images/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html
           
-#      - name: Test with Gradle
-#        run: ./gradlew test --stacktrace
+      - name: Test with Gradle
+        run: ./gradlew test --stacktrace
 
       - name: Assemble with Gradle
         run: |
@@ -68,7 +67,7 @@ jobs:
           mkdir release && \
           mv app/build/outputs/apk/release/app-release.apk release/btt-recorder.apk
 
-      - name: Set s3 destination_dir for release
+      - name: Set s3 destination directory for release
         run: echo "CURRENT_S3_DESTINATION=$CI_REPOSITORY_OWNER/$CI_REPOSITORY_NAME/$CI_REF_NAME_SLUG/$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
 
       - name: Tag release on master
@@ -98,49 +97,43 @@ jobs:
           prerelease: false
           files: release/*.*
 
-#      - name: Upload APK artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: translationRecorder-release-apk
-#          path: translationRecorder/app/build/outputs/apk/release/*.apk
+  connected-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-#  connected-tests:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout repo
-#        uses: actions/checkout@v4
-#
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: 17
-#          distribution: 'zulu'
-#          cache: 'gradle'
-#
-#      - name: Enable KVM group perms
-#        run: |
-#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0777", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-#          sudo udevadm control --reload-rules
-#          sudo udevadm trigger --name-match=kvm
-#
-#      - name: Prepare debug files
-#        run: |
-#          cp translationRecorder/debug.xml translationRecorder/app/src/main/res/values/
-#
-#      - name: Run connected tests
-#        uses: reactivecircus/android-emulator-runner@v2
-#        with:
-#          api-level: 33
-#          arch: x86_64
-#          ram-size: 8192M
-#          heap-size: 512M
-#          profile: pixel_c
-#          target: google_apis
-#          script: cd translationRecorder && ./gradlew :app:cVAT --stacktrace
-#
-#      - name: Upload results
-#        if: ${{ always() }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: instrumentation-test-results 34
-#          path: translationRecorder/**/build/reports/androidTests/connected/**
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          cache: 'gradle'
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0777", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Prepare debug files
+        run: |
+          cp translationRecorder/debug.xml translationRecorder/app/src/main/res/values/
+
+      - name: Run connected tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          ram-size: 8192M
+          heap-size: 512M
+          profile: pixel_c
+          target: google_apis
+          script: cd translationRecorder && ./gradlew :app:cVAT --stacktrace
+
+      - name: Upload results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumentation-test-results 34
+          path: translationRecorder/**/build/reports/androidTests/connected/**
