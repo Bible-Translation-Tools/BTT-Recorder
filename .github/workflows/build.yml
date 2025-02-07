@@ -35,6 +35,9 @@ jobs:
         run: |
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
 
+      - name: Echo var
+        run: echo "${{ secrets.AWS_BUCKET }}"
+
       - name: Prepare resources
         run: |
           python3 app/src/scripts/download_chunks.py
@@ -65,9 +68,8 @@ jobs:
 
       - name: Move apk
         run: |
-          mkdir ./release && \
-          mv ./app/build/outputs/apk/release/app-release.apk \
-          ./release/btt-recorder.apk
+          mkdir release && \
+          mv app/build/outputs/apk/release/app-release.apk release/btt-recorder.apk
 
       - name: Set s3 destination_dir for release
         run: echo "CURRENT_S3_DESTINATION=$CI_REPOSITORY_OWNER/$CI_REPOSITORY_NAME/$CI_REF_NAME_SLUG/$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
@@ -77,8 +79,8 @@ jobs:
         run: |
           for aapt_path in ${ANDROID_HOME}/build-tools/*/; do break; done \
           && export PATH="$PATH:${aapt_path}" \
-          && versionName=`aapt dump badging ./release/btt-recorder.apk | grep versionName | awk '{print $4}' | sed s/versionName=//g | sed s/\'//g` \
-          && versionCode=`aapt dump badging ./release/btt-recorder.apk | grep versionCode | awk '{print $3}' | sed s/versionCode=//g | sed s/\'//g`
+          && versionName=`aapt dump badging release/btt-recorder.apk | grep versionName | awk '{print $4}' | sed s/versionName=//g | sed s/\'//g` \
+          && versionCode=`aapt dump badging release/btt-recorder.apk | grep versionCode | awk '{print $3}' | sed s/versionCode=//g | sed s/\'//g`
           echo "GIT_RELEASE_TAG=v$versionName+$versionCode" >> $GITHUB_ENV
 
       - name: Upload file to bucket
@@ -87,7 +89,7 @@ jobs:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: ./release
+          source_dir: release
           destination_dir: ${{ env.CURRENT_S3_DESTINATION }}
 
       - name: Upload artifacts to github releases on tags
