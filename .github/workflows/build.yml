@@ -35,9 +35,6 @@ jobs:
         run: |
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
 
-      - name: Echo var
-        run: echo "${{ secrets.AWS_BUCKET }}"
-
       - name: Prepare resources
         run: |
           python3 app/src/scripts/download_chunks.py
@@ -89,7 +86,7 @@ jobs:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: release
+          source_dir: translationRecorder/release
           destination_dir: ${{ env.CURRENT_S3_DESTINATION }}
 
       - name: Upload artifacts to github releases on tags
