@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.databinding.DialogUploadServerBinding
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
@@ -24,7 +25,7 @@ class UploadServerDialog : DialogFragment() {
 
         val currentServerName = pref.getDefaultPref(
             SettingsActivity.KEY_PREF_UPLOAD_SERVER,
-            "opentranslationtools.org"
+            getString(R.string.pref_upload_server)
         )
 
         binding.serverName.setText(currentServerName)
@@ -38,7 +39,10 @@ class UploadServerDialog : DialogFragment() {
         }
 
         binding.restoreDefault.setOnClickListener {
-            pref.setDefaultPref(SettingsActivity.KEY_PREF_UPLOAD_SERVER, "opentranslationtools.org")
+            pref.setDefaultPref(
+                SettingsActivity.KEY_PREF_UPLOAD_SERVER,
+                getString(R.string.pref_upload_server)
+            )
             dismiss()
         }
 

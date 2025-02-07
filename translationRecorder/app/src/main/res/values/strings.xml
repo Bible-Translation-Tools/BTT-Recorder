@@ -99,7 +99,7 @@
     <!-- SETTINGS (Values) -->
     <string name="folder_name" translatable="false">BTTRecorder</string>
     <string name="pref_default_lang" translatable="false">en</string>
-    <string name="pref_upload_server" translatable="false">opentranslationtools.org</string>
+    <string name="pref_upload_server" translatable="false">https://opentranslationtools.org</string>
     <string name="pref_languages_url" translatable="false">https://langnames.bibleineverylanguage.org/langnames.json</string>
     <string name="action_search" translatable="false">Search</string>
     <string name="menu_update" translatable="false">Update</string>

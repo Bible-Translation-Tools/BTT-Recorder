@@ -1,5 +1,6 @@
 package org.wycliffeassociates.translationrecorder.FilesPage.Export
 
+import android.content.Context
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import okhttp3.OkHttpClient
@@ -8,6 +9,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
@@ -29,7 +31,8 @@ class TranslationExchangeDiff(
     private val db: IProjectDatabaseHelper,
     private val directoryProvider: IDirectoryProvider,
     private val assetsProvider: AssetsProvider,
-    private val prefs: IPreferenceRepository
+    private val prefs: IPreferenceRepository,
+    private val context: Context
 ) {
     val diff: MutableList<File> = arrayListOf()
 
@@ -48,7 +51,7 @@ class TranslationExchangeDiff(
             val query = constructProjectQueryParameters(project)
             val server = prefs.getDefaultPref(
                 SettingsActivity.KEY_PREF_UPLOAD_SERVER,
-                "http://opentranslationtools.org"
+                context.getString(R.string.pref_upload_server)
             )
 
             val client = OkHttpClient()

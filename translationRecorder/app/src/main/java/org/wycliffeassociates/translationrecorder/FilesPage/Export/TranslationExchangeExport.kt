@@ -49,7 +49,8 @@ class TranslationExchangeExport(
             db,
             directoryProvider,
             assetsProvider,
-            prefs
+            prefs,
+            fragment.requireContext()
         ).apply {
             outputFile()
             computeDiff(this@TranslationExchangeExport)
@@ -101,7 +102,7 @@ class TranslationExchangeExport(
 
             val uploadServer = prefs.getDefaultPref(
                 SettingsActivity.KEY_PREF_UPLOAD_SERVER,
-                "http://opentranslationtools.org"
+                fragment.getString(R.string.pref_upload_server)
             )
 
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
@@ -123,6 +124,8 @@ class TranslationExchangeExport(
             }
         } catch (exc: Exception) {
             Log.e("AndroidUploadService", exc.message, exc)
+            val uploadInfo = UploadInfo("error")
+            this.onError(fragment.requireContext(), uploadInfo, exc)
         }
     }
 
