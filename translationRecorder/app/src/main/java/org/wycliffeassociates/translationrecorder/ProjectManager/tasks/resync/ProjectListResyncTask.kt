@@ -55,45 +55,34 @@ class ProjectListResyncTask(
                                         continue
                                     }
                                     //get the project from the database if it exists
-                                    var project = db.getProject(
-                                        lang.name,
-                                        version.name,
-                                        bookDir.name
-                                    )
+                                    var project = db.getProject(lang.name, version.name, bookDir.name)
                                     if (project != null) {
                                         projectDirectories[project] = bookDir
                                     } else { //otherwise derive the project from the filename
-                                        val chapters =
-                                            bookDir.listFiles()
-                                        var mode: Mode? =
-                                            null
+                                        val chapters = bookDir.listFiles()
+                                        var mode: Mode? = null
+                                        var sampleFile: File? = null
+
                                         if (chapters != null) {
                                             for (chapter in chapters) {
                                                 if (!chapter.isDirectory) {
                                                     continue
                                                 }
-                                                val c =
-                                                    chapter.listFiles()
+                                                val c = chapter.listFiles()
                                                 if (c != null) {
                                                     for (i in c.indices) {
                                                         try {
                                                             val wav = WavFile(c[i])
-                                                            mode = db.getMode(
-                                                                db.getModeId(
-                                                                    wav.metadata
-                                                                        .modeSlug,
-                                                                    wav.metadata
-                                                                        .anthology
-                                                                )
+                                                            val modeId = db.getModeId(
+                                                                wav.metadata.modeSlug,
+                                                                wav.metadata.anthology
                                                             )
+                                                            mode = db.getMode(modeId)
+                                                            sampleFile = c[i]
                                                         } catch (e: IllegalArgumentException) {
                                                             //don't worry about the corrupt file dialog here;
                                                             // the database resync will pick it up.
-                                                            Logger.e(
-                                                                toString(),
-                                                                c[i].name,
-                                                                e
-                                                            )
+                                                            Logger.e(toString(), c[i].name, e)
                                                             continue
                                                         }
                                                         break
@@ -102,21 +91,34 @@ class ProjectListResyncTask(
                                             }
                                         }
                                         if (chapters != null && mode != null) {
-                                            val languageId = db.getLanguageId(lang.name)
-                                            val bookId = db.getBookId(bookDir.name)
-                                            val book =
-                                                db.getBook(bookId)
-                                            val anthologyId =
-                                                db.getAnthologyId(book.anthology)
-                                            val versionId = db.getVersionId(version.name)
-                                            project = Project(
-                                                db.getLanguage(languageId),
-                                                db.getAnthology(anthologyId),
-                                                book,
-                                                db.getVersion(versionId),
-                                                mode
-                                            )
-                                            projectDirectories[project] = bookDir
+                                            try {
+                                                val languageId = db.getLanguageId(lang.name)
+                                                val bookId = db.getBookId(bookDir.name)
+                                                val book = db.getBook(bookId)
+                                                val anthologyId = db.getAnthologyId(book.anthology)
+                                                val versionId = db.getVersionId(version.name)
+
+                                                project = Project(
+                                                    db.getLanguage(languageId),
+                                                    db.getAnthology(anthologyId),
+                                                    book,
+                                                    db.getVersion(versionId),
+                                                    mode
+                                                )
+
+                                                if (sampleFile != null) {
+                                                    val projectId = db.getProjectId(sampleFile.name)
+                                                    if (projectId >= 0) {
+                                                        // update project because it could have wrong FKs
+                                                        db.updateProject(projectId, project)
+                                                    }
+                                                }
+
+                                                projectDirectories[project] = bookDir
+                                            } catch (e: Exception) {
+                                                val projectId = "${lang.name}_${version.name}_${bookDir.name}"
+                                                Logger.e(this::javaClass.name, "Error syncing project $projectId", e)
+                                            }
                                         }
                                     }
                                 }
@@ -166,8 +168,10 @@ class ProjectListResyncTask(
     private fun fullResync(directoriesOnFs: Map<Project, File>) {
         val projects: List<Project> = db.allProjects
         val directoriesFromDb = getProjectDirectories(projects)
-        val directoriesMissingFromFs =
-            getDirectoriesMissingFromDb(directoriesOnFs, directoriesFromDb)
+        val directoriesMissingFromFs = getDirectoriesMissingFromDb(
+            directoriesOnFs,
+            directoriesFromDb
+        )
 
         //get directories of projects
         //check which directories are not in the list

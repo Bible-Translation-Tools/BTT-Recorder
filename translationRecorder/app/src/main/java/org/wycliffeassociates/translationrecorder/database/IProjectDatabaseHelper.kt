@@ -80,6 +80,8 @@ interface IProjectDatabaseHelper {
 
     fun getChapterId(project: Project, chapter: Int): Int
 
+    fun getProjectId(fileName: String): Int
+
     fun getChapterId(
         languageSlug: String,
         bookSlug: String,
@@ -96,6 +98,8 @@ interface IProjectDatabaseHelper {
         chapter: Int,
         startVerse: Int
     ): Int
+
+    fun getUnitId(fileName: String): Int
 
     fun getTakeId(takeInfo: TakeInfo): Int
 
@@ -291,5 +295,5 @@ interface IProjectDatabaseHelper {
 
     fun getModes(anthologySlug: String): List<Mode>
 
-
+    fun updateProject(projectId: Int, project: Project)
 }
