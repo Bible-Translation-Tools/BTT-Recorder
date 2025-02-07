@@ -9,6 +9,7 @@ import org.wycliffeassociates.translationrecorder.login.UserActivity
 import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import java.io.IOException
 import javax.inject.Inject
 
@@ -36,6 +37,8 @@ class SplashScreen : PermissionActivity() {
         val initApp = Thread {
             try {
                 initializeApp()
+
+                prefs.setDefaultPref("version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
 
                 val profile = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, -1)
                 if (profile == -1) {

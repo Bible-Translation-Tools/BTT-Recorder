@@ -226,8 +226,6 @@ class MainMenu : AppCompatActivity() {
     }
 
     private fun initApp() {
-        prefs.setDefaultPref("version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-
         //configure logger
         val dir = File(directoryProvider.externalCacheDir, STACKTRACE_DIR)
         dir.mkdirs()
