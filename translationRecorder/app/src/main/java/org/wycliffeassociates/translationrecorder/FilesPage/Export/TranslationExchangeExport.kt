@@ -35,6 +35,7 @@ class TranslationExchangeExport(
     private val directoryProvider: IDirectoryProvider,
     private val prefs: IPreferenceRepository,
     private val assetsProvider: AssetsProvider,
+    private val server: String
 ) : Export(project, directoryProvider), RequestObserverDelegate {
 
     private var differ: TranslationExchangeDiff? = null
@@ -49,8 +50,7 @@ class TranslationExchangeExport(
             db,
             directoryProvider,
             assetsProvider,
-            prefs,
-            fragment.requireContext()
+            server
         ).apply {
             outputFile()
             computeDiff(this@TranslationExchangeExport)
@@ -100,18 +100,13 @@ class TranslationExchangeExport(
         try {
             this.onStart(EXPORT_UPLOAD_ID)
 
-            val uploadServer = prefs.getDefaultPref(
-                SettingsActivity.KEY_PREF_UPLOAD_SERVER,
-                fragment.getString(R.string.pref_upload_server)
-            )
-
             // starting from 3.1+, you can also use content:// URI string instead of absolute file
             val filePath = file.absolutePath
             val userId = prefs.getDefaultPref(SettingsActivity.KEY_PROFILE, 1)
             val user = db.getUser(userId)!!
             val hash = user.hash!!
 
-            val request = BinaryUploadRequest(context, "$uploadServer/api/upload/zip")
+            val request = BinaryUploadRequest(context, "$server/api/upload/zip")
                 .addHeader("tr-user-hash", hash)
                 .addHeader("tr-file-name", file.name)
                 .setFileToUpload(filePath)
@@ -124,8 +119,10 @@ class TranslationExchangeExport(
             }
         } catch (exc: Exception) {
             Log.e("AndroidUploadService", exc.message, exc)
-            val uploadInfo = UploadInfo("error")
-            this.onError(fragment.requireContext(), uploadInfo, exc)
+            Handler(Looper.getMainLooper()).post {
+                val uploadInfo = UploadInfo("error")
+                this.onError(fragment.requireContext(), uploadInfo, exc)
+            }
         }
     }
 

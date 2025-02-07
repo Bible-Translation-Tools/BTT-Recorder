@@ -13,12 +13,15 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeExport
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Screen
+import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.databinding.ProjectLayoutDialogBinding
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
+import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.SourceAudioActivity
 import org.wycliffeassociates.translationrecorder.project.components.Language
@@ -116,12 +119,17 @@ class ProjectInfoDialog : DialogFragment() {
         }
 
         binding.publishButton.setOnClickListener {
+            val server = prefs.getDefaultPref(
+                SettingsActivity.KEY_PREF_UPLOAD_SERVER,
+                getString(R.string.pref_upload_server)
+            )
             export = TranslationExchangeExport(
                 project,
                 db,
                 directoryProvider,
                 prefs,
-                assetsProvider
+                assetsProvider,
+                server
             ).apply {
                 exportDelegator?.delegateExport(this)
             }
@@ -184,7 +192,5 @@ class ProjectInfoDialog : DialogFragment() {
 
     companion object {
         private const val SOURCE_AUDIO_REQUEST = 223
-
-        const val PROJECT_FRAGMENT_TAG: String = "project_tag"
     }
 }

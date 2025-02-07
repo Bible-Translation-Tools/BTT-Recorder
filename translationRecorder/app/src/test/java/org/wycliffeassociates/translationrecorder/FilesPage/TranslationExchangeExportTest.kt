@@ -75,6 +75,9 @@ class TranslationExchangeExportTest {
                 val exp: Export = firstArg()
                 exp.export()
             }
+            every { requireContext() }.returns(mockk {
+                every { getString(any()) }.returns("server")
+            })
         }
 
         val exportDelegator: ProjectInfoDialog.ExportDelegator = mockk {
@@ -90,7 +93,8 @@ class TranslationExchangeExportTest {
             db,
             directoryProvider,
             prefs,
-            assetsProvider
+            assetsProvider,
+            "server"
         )
         exportDelegator.delegateExport(appExport)
 
