@@ -1,8 +1,9 @@
 package org.wycliffeassociates.translationrecorder
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.graphics.Point
+import android.view.Display
 import android.view.Surface
 
 /*
@@ -28,21 +29,33 @@ object Screen {
      *
      * @param activity an `Activity` reference
      */
-    @SuppressLint("NewApi")
     fun lockOrientation(activity: Activity, forceLandscape: Boolean = false) {
+        val isNewApi = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R
+
         if (forceLandscape) {
             activity.requestedOrientation = Orientation.LANDSCAPE
             return
         }
 
-        val display = activity.display
+        val display: Display
+        val width: Int
+        val height: Int
+
+        if (isNewApi) {
+            display = activity.display
+            val metrics = activity.windowManager.currentWindowMetrics
+            val bounds = metrics.bounds
+            width = bounds.width()
+            height = bounds.height()
+        } else {
+            display = activity.windowManager.defaultDisplay
+            val size = Point()
+            display.getSize(size)
+            width = size.x
+            height = size.y
+        }
+
         val rotation = display.rotation
-
-        val metrics = activity.windowManager.currentWindowMetrics
-        val bounds = metrics.bounds
-
-        val width = bounds.width()
-        val height = bounds.height()
 
         when (rotation) {
             Surface.ROTATION_90 -> if (width > height) {
