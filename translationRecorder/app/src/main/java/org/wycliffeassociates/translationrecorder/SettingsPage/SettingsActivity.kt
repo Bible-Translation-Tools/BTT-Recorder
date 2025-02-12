@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsFragment.LanguageSelector
 import org.wycliffeassociates.translationrecorder.SplashScreen
@@ -32,8 +32,8 @@ import kotlin.system.exitProcess
  *
  */
 @AndroidEntryPoint
-class SettingsActivity : AppCompatActivity(), OnTaskComplete, ScrollableListFragment.OnItemClickListener,
-    LanguageSelector {
+class SettingsActivity : AppCompatActivity(), ScrollableListFragment.OnItemClickListener,
+    LanguageSelector, OnTaskComplete {
 
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var prefs: IPreferenceRepository
@@ -168,15 +168,17 @@ class SettingsActivity : AppCompatActivity(), OnTaskComplete, ScrollableListFrag
                 RESTORE_TASK_TAG -> {
                     val intent = Intent(this, SplashScreen::class.java)
                     startActivity(intent)
-                    this.finishAffinity()
+                    finishAffinity()
                     exitProcess(0)
                 }
                 MIGRATE_TASK_TAG -> {
-                    AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                        .setTitle(R.string.migrate_old_app)
-                        .setMessage(R.string.migrating_complete)
-                        .setPositiveButton(R.string.label_ok, null)
-                        .show()
+                    val fd = FeedbackDialog.newInstance(
+                        getString(R.string.migrate_old_app),
+                        getString(R.string.migrating_complete)
+                    )
+                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
+
+                    (fragment as? SettingsFragment)?.resyncProjectList()
                 }
             }
         }

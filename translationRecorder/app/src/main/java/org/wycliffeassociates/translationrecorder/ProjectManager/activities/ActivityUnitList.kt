@@ -206,9 +206,7 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
     }
 
     override fun onTakeDeleted() {
-        if (projectProgress != null) {
-            projectProgress!!.updateProjectProgress()
-        }
+        projectProgress?.updateProjectProgress()
     }
 
     override fun onRated(name: String, currentTakeRating: Int) {

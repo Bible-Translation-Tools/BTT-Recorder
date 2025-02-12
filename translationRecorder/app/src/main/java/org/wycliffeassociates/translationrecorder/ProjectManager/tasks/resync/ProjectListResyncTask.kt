@@ -28,11 +28,12 @@ class ProjectListResyncTask(
     private val mFragmentManager: FragmentManager,
     private val db: IProjectDatabaseHelper,
     private val directoryProvider: IDirectoryProvider,
-    private val chunkPluginLoader: ChunkPluginLoader
+    private val chunkPluginLoader: ChunkPluginLoader,
+    private val forceResync: Boolean = false
 ) : Task(taskId), OnLanguageNotFound,
     OnCorruptFile {
 
-        private val projectDirectoriesOnFileSystem: Map<Project, File>
+    private val projectDirectoriesOnFileSystem: Map<Project, File>
         get() {
             val projectDirectories: MutableMap<Project, File> = HashMap()
             val root = directoryProvider.translationsDir
@@ -153,15 +154,17 @@ class ProjectListResyncTask(
 
     override fun run() {
         val directoriesOnFs = projectDirectoriesOnFileSystem
-        //if the number of projects doesn't match up between the filesystem and the db, OR,
-        //the projects themselves don't match an id in the db, then resync everything (only resyncing
+        // if the number of projects doesn't match up between the filesystem and the db, OR,
+        // the projects themselves don't match an id in the db, then resync everything (only resyncing
         // projects missing won't remove dangling take references in the db)
-        //NOTE: removing a project only removes dangling takes, not the project itself from the db
+        // NOTE: removing a project only removes dangling takes, not the project itself from the db
         val projectCountDiffers = directoriesOnFs.size != db.numProjects
         val projectsNeedResync = db.projectsNeedingResync(directoriesOnFs.keys).isNotEmpty()
-        if (projectCountDiffers || projectsNeedResync) {
+
+        if (projectCountDiffers || projectsNeedResync || forceResync) {
             fullResync(directoriesOnFs)
         }
+
         onTaskCompleteDelegator()
     }
 
@@ -173,10 +176,10 @@ class ProjectListResyncTask(
             directoriesFromDb
         )
 
-        //get directories of projects
-        //check which directories are not in the list
-        //for projects with directories, get their files and re-sync
-        //for directories not in the list, try to find which pattern match succeeds
+        // get directories of projects
+        // check which directories are not in the list
+        // for projects with directories, get their files and re-sync
+        // for directories not in the list, try to find which pattern match succeeds
         for ((project, value) in directoriesOnFs) {
             val chapters = value.listFiles()
             if (chapters != null) {

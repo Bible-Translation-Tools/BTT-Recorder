@@ -14,9 +14,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager.Companion.DATABASE_RESYNC_TASK
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.CreateBackupTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.MigrateAppFolderTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.RestoreBackupTask
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ResyncLanguageNamesTask
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.SettingsPage.BackupRestoreDialog.BackupRestoreDialogListener
@@ -39,6 +41,7 @@ import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
+import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
 import org.wycliffeassociates.translationrecorder.usecases.MigrateOldApp
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import java.io.File
@@ -265,6 +268,23 @@ class SettingsFragment : PreferenceFragmentCompat(),
         } catch (e: ClassCastException) {
             println("IGNORING SUMMARY UPDATE FOR $key")
         }
+    }
+
+    fun resyncProjectList() {
+        val task = ProjectListResyncTask(
+            DATABASE_RESYNC_TASK,
+            parentFragmentManager,
+            db,
+            directoryProvider,
+            ChunkPluginLoader(directoryProvider, assetsProvider),
+            true
+        )
+        taskFragment.executeRunnable(
+            task,
+            getString(R.string.resyncing_database),
+            getString(R.string.please_wait),
+            true
+        )
     }
 
     private companion object {

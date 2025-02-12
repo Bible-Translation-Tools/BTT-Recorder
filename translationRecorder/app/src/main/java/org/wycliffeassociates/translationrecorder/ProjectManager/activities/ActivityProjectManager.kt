@@ -149,22 +149,11 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
             fm.beginTransaction().add(mTaskFragment!!, TAG_TASK_FRAGMENT).commit()
             fm.executePendingTransactions()
         }
-        //still need to track whether a db re-sync was issued so as to not issue them in the middle of another
+        // still need to track whether a db re-sync was issued
+        // so as to not issue them in the middle of another
         if (!mDbResyncing) {
             mDbResyncing = true
-            val task = ProjectListResyncTask(
-                DATABASE_RESYNC_TASK,
-                supportFragmentManager,
-                db,
-                directoryProvider,
-                ChunkPluginLoader(directoryProvider, assetsProvider)
-            )
-            mTaskFragment?.executeRunnable(
-                task,
-                getString(R.string.resyncing_database),
-                getString(R.string.please_wait),
-                true
-            )
+            resyncProjectList()
         }
 
         openProject = registerForActivityResult(
@@ -548,6 +537,23 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         }
     }
 
+    private fun resyncProjectList(forceResync: Boolean = false) {
+        val task = ProjectListResyncTask(
+            DATABASE_RESYNC_TASK,
+            supportFragmentManager,
+            db,
+            directoryProvider,
+            ChunkPluginLoader(directoryProvider, assetsProvider),
+            forceResync
+        )
+        mTaskFragment?.executeRunnable(
+            task,
+            getString(R.string.resyncing_database),
+            getString(R.string.please_wait),
+            true
+        )
+    }
+
     override fun delegateExport(exp: Export) {
         mExportTaskFragment?.let { fragment ->
             exp.setFragmentContext(fragment)
@@ -586,7 +592,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                     fd.show(supportFragmentManager, "SOURCE_AUDIO")
                 }
                 IMPORT_TASK -> {
-                    populateProjectList(null)
+                    resyncProjectList(true)
                     val fd = FeedbackDialog.newInstance(
                         getString(R.string.import_project),
                         getString(R.string.project_import_complete)
@@ -616,7 +622,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
 
     companion object {
         val SOURCE_AUDIO_TASK: Int = Task.FIRST_TASK
-        private val DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1
+        val DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1
         private val EXPORT_TASK: Int = Task.FIRST_TASK + 2
         private val IMPORT_TASK: Int = Task.FIRST_TASK + 3
 

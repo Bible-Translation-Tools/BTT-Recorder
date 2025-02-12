@@ -1,74 +1,53 @@
-package org.wycliffeassociates.translationrecorder.FilesPage;
+package org.wycliffeassociates.translationrecorder.FilesPage
+
+import android.app.Dialog
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import org.wycliffeassociates.translationrecorder.databinding.DialogFeedbackBinding
 
 
-import android.app.Dialog;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+class FeedbackDialog : DialogFragment() {
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+    private var _binding: DialogFeedbackBinding? = null
+    private val binding get() = _binding!!
 
-import com.door43.tools.reporting.Logger;
-import org.wycliffeassociates.translationrecorder.R;
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val mTitle = requireArguments().getString(DIALOG_TITLE)
+        val mMessage = requireArguments().getString(DIALOG_MESSAGE)
 
-public class FeedbackDialog extends DialogFragment implements View.OnClickListener {
-    public static final String DIALOG_TITLE = "dialogTitle";
-    public static final String DIALOG_MESSAGE = "dialogMessage";
+        _binding = DialogFeedbackBinding.inflate(layoutInflater)
 
-    public static FeedbackDialog newInstance(String title, String message){
-        FeedbackDialog dialog = new FeedbackDialog();
+        val builder = AlertDialog.Builder(requireActivity())
 
-        Bundle args = new Bundle();
-        args.putString(DIALOG_TITLE, title);
-        args.putString(DIALOG_MESSAGE, message);
-        dialog.setArguments(args);
+        binding.okButton.setOnClickListener { dismiss() }
+        binding.title.text = mTitle
+        binding.message.text = mMessage
 
-        return dialog;
+        builder.setView(binding.root)
+        return builder.create()
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        String mTitle = getArguments().getString(DIALOG_TITLE);
-        String mMessage = getArguments().getString(DIALOG_MESSAGE);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_feedback, null);
-
-        final Button btnOk = (Button) view.findViewById(R.id.ok_button);
-        btnOk.setOnClickListener(this);
-
-        final TextView mTitleText = (TextView) view.findViewById(R.id.title);
-        mTitleText.setText(mTitle);
-
-        final TextView mMessageText = (TextView) view.findViewById(R.id.message);
-        mMessageText.setText(mMessage);
-
-        builder.setView(view);
-        return builder.create();
+    override fun show(manager: FragmentManager, tag: String?) {
+        val ft = manager.beginTransaction()
+        ft.add(this, tag)
+        ft.commitAllowingStateLoss()
     }
 
-    @Override
-    public void show(FragmentManager manager, String tag) {
-        FragmentTransaction ft = manager.beginTransaction();
-        ft.add(this, tag);
-        ft.commitAllowingStateLoss();
-    }
+    companion object {
+        const val DIALOG_TITLE: String = "dialogTitle"
+        const val DIALOG_MESSAGE: String = "dialogMessage"
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.ok_button: {
-                dismiss();
-                break;
-            }
-            default:{
-                Logger.e(this.toString(), "Feedback dialog hit the default statement.");
-                break;
-            }
+        fun newInstance(title: String, message: String): FeedbackDialog {
+            val dialog = FeedbackDialog()
+
+            val args = Bundle()
+            args.putString(DIALOG_TITLE, title)
+            args.putString(DIALOG_MESSAGE, message)
+            dialog.arguments = args
+
+            return dialog
         }
     }
 }
