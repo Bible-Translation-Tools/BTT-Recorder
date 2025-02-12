@@ -15,10 +15,18 @@
         <menu>
 
             <item
+                android:id="@+id/action_import"
+                android:title="@string/import_menu"
+                android:icon="@drawable/ic_import_black_24dp"
+                android:orderInCategory="100"
+                app:showAsAction="never"
+                />
+
+            <item
                 android:id="@+id/action_settings"
                 android:title="@string/settings_menu"
                 android:icon="@drawable/ic_settings_black_24dp"
-                android:orderInCategory="100"
+                android:orderInCategory="200"
                 app:showAsAction="never"
                 />
 
@@ -26,7 +34,7 @@
                 android:id="@+id/action_logout"
                 android:title="@string/logout_menu"
                 android:icon="@drawable/ic_logout_variant_black_24dp"
-                android:orderInCategory="200"
+                android:orderInCategory="300"
                 app:showAsAction="never"
                 />
 
@@ -34,7 +42,7 @@
                 android:id="@+id/action_help"
                 android:title="@string/help_menu"
                 android:icon="@drawable/ic_help_black_24dp"
-                android:orderInCategory="300"
+                android:orderInCategory="400"
                 app:showAsAction="never"
                 />
 

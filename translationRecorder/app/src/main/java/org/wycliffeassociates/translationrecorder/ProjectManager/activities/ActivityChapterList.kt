@@ -204,7 +204,7 @@ class ActivityChapterList : AppCompatActivity(), CheckingDialog.DialogListener,
             mProject,
             directoryProvider
         )
-        mTaskFragment!!.executeRunnable(
+        mTaskFragment?.executeRunnable(
             task,
             getString(R.string.compiling_chapter),
             getString(R.string.please_wait),

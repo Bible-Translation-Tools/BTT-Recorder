@@ -7,11 +7,14 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnCompletionListener
 import android.media.MediaPlayer.OnPreparedListener
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ListAdapter
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.door43.tools.reporting.Logger
 import com.pixplicity.sharp.Sharp
@@ -28,6 +31,7 @@ import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.Project
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog.InfoDialogCallback
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog.SourceAudioDelegator
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ExportSourceAudioTask
+import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.ImportProjectTask
 import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.resync.ProjectListResyncTask
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
@@ -46,6 +50,7 @@ import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.Project.Companion.getProjectFromPreferences
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.project.ProjectWizardActivity
+import org.wycliffeassociates.translationrecorder.usecases.ImportProject
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
@@ -66,6 +71,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     @Inject lateinit var prefs: IPreferenceRepository
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var assetsProvider: AssetsProvider
+    @Inject lateinit var importProject: ImportProject
 
     private lateinit var binding: ActivityProjectManagementBinding
 
@@ -91,6 +97,8 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     private var mSourceAudioFile: File? = null
     private var mProjectToExport: Project? = null
     private var isIdenticonPlaying = false
+
+    private lateinit var openProject: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,6 +166,12 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
                 true
             )
         }
+
+        openProject = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            uri?.let(::importProject)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -180,6 +194,10 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
         when (item.itemId) {
+            R.id.action_import -> {
+                import()
+                return true
+            }
             R.id.action_logout -> {
                 logout()
                 return true
@@ -288,6 +306,26 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         finishAffinity()
         val intent = Intent(this, SplashScreen::class.java)
         startActivity(intent)
+    }
+
+    private fun import() {
+        openProject.launch("application/zip")
+    }
+
+    private fun importProject(uri: Uri) {
+        val task = ImportProjectTask(
+            IMPORT_TASK,
+            this,
+            uri,
+            directoryProvider,
+            importProject
+        )
+        mTaskFragment?.executeRunnable(
+            task,
+            getString(R.string.importing_project),
+            getString(R.string.please_wait),
+            false
+        )
     }
 
     private fun createNewProject() {
@@ -534,25 +572,44 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
 
     override fun onTaskComplete(taskTag: Int, resultCode: Int) {
         if (resultCode == TaskFragment.STATUS_OK) {
-            if (taskTag == DATABASE_RESYNC_TASK) {
-                mNumProjects = db.numProjects
-                mDbResyncing = false
-                initializeViews()
-            } else if (taskTag == SOURCE_AUDIO_TASK) {
-                val fd = FeedbackDialog.newInstance(
-                    getString(R.string.source_audio),
-                    getString(R.string.source_generation_complete)
-                )
-                fd.show(supportFragmentManager, "SOURCE_AUDIO")
+            when (taskTag) {
+                DATABASE_RESYNC_TASK -> {
+                    mNumProjects = db.numProjects
+                    mDbResyncing = false
+                    initializeViews()
+                }
+                SOURCE_AUDIO_TASK -> {
+                    val fd = FeedbackDialog.newInstance(
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_complete)
+                    )
+                    fd.show(supportFragmentManager, "SOURCE_AUDIO")
+                }
+                IMPORT_TASK -> {
+                    populateProjectList(null)
+                    val fd = FeedbackDialog.newInstance(
+                        getString(R.string.import_project),
+                        getString(R.string.project_import_complete)
+                    )
+                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
+                }
             }
         } else if (resultCode == TaskFragment.STATUS_ERROR) {
-            if (taskTag == SOURCE_AUDIO_TASK) {
-                val fd = FeedbackDialog.newInstance(
-                    getString(R.string.source_audio),
-                    getString(R.string.source_generation_failed)
-
-                )
-                fd.show(supportFragmentManager, "SOURCE_AUDIO")
+            when (taskTag) {
+                SOURCE_AUDIO_TASK -> {
+                    val fd = FeedbackDialog.newInstance(
+                        getString(R.string.source_audio),
+                        getString(R.string.source_generation_failed)
+                    )
+                    fd.show(supportFragmentManager, "SOURCE_AUDIO")
+                }
+                IMPORT_TASK -> {
+                    val fd = FeedbackDialog.newInstance(
+                        getString(R.string.import_project),
+                        getString(R.string.project_import_failed)
+                    )
+                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
+                }
             }
         }
     }
@@ -560,7 +617,8 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
     companion object {
         val SOURCE_AUDIO_TASK: Int = Task.FIRST_TASK
         private val DATABASE_RESYNC_TASK = Task.FIRST_TASK + 1
-        val EXPORT_TASK: Int = Task.FIRST_TASK + 2
+        private val EXPORT_TASK: Int = Task.FIRST_TASK + 2
+        private val IMPORT_TASK: Int = Task.FIRST_TASK + 3
 
         private const val TAG_EXPORT_TASK_FRAGMENT = "export_task_fragment"
         private const val TAG_TASK_FRAGMENT = "task_fragment"

@@ -1,5 +1,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">BTT Recorder</string>
+    <string name="import_menu">Import</string>
     <string name="settings_menu">Settings</string>
     <string name="logout_menu">Logout</string>
     <string name="help_menu">Help</string>
@@ -38,6 +39,7 @@
     <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
     <string name="recompile_chapters_message">Re-compiling a chapter will over-write the current audio and reset the checking level.</string>
     <string name="compiling_chapter">Compiling Chapter</string>
+    <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">Delete Chapter Recording?</string>
 
     <string name="source_audio">Source Audio</string>
@@ -130,6 +132,9 @@
     <string name="exporting_source_audio">Exporting Source Audio</string>
     <string name="source_generation_complete">Source Audio generation complete.</string>
     <string name="source_generation_failed">Source Audio generation failed.</string>
+
+    <string name="project_import_complete">Project successfully imported.</string>
+    <string name="project_import_failed">Project import failed.</string>
 
     <string name="label_ok">OK</string>
     <string name="label_close">Close</string>
