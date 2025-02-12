@@ -33,8 +33,8 @@ android {
         compileSdk 35
         minSdk 22
         targetSdk 35
-        versionCode 44
-        versionName "1.4.23"
+        versionCode 45
+        versionName "1.4.24"
 
         multiDexEnabled true
         testBuildType "verify"
@@ -152,7 +152,8 @@ dependencies {
 
     androidTestUtil 'androidx.test:orchestrator:1.5.1'
 
-    implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.3'
+    implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.4'
+    implementation 'com.arthenica:ffmpeg-kit-audio:6.0-2.LTS'
     implementation files('src/main/lib/jdenticon-kotlin.jar')
 
     implementation project(':widgets')

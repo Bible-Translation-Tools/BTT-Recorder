@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import com.door43.tools.reporting.Logger
 import org.wycliffeassociates.io.ArchiveOfHolding
+import org.wycliffeassociates.io.ArchiveOfHoldingEntry
 import org.wycliffeassociates.io.ChapterVerseSection
 import org.wycliffeassociates.io.LanguageLevel
 import org.wycliffeassociates.translationrecorder.R
@@ -104,40 +105,96 @@ class SourceAudio @JvmOverloads constructor (
             file.inputStream().use { inputStream ->
                 val ll = LanguageLevel()
                 val aoh = ArchiveOfHolding(inputStream, ll)
-                //The archive of holding entry requires the path to look for the file, so that part of the name can be ignored
-                //chapter and verse information is all that is necessary to be identifiable at this point.
+                // The archive of holding entry requires the path to look for the file,
+                // so that part of the name can be ignored
+                // chapter and verse information is all that is necessary
+                // to be identifiable at this point.
                 val chapterVerseSection = ChapterVerseSection(mFileName)
 
-                val entry = aoh.getEntry(
+                val entries = arrayListOf<ArchiveOfHoldingEntry>()
+
+                // Add default entry if found
+                aoh.getEntry(
                     chapterVerseSection,
                     sourceLanguage,
                     ll.getVersionSlug(sourceLanguage),
                     mProject.bookSlug,
-                    chapterIntToString(
-                        mProject, mChapter
-                    )
-                )
-                if (entry == null) {
+                    chapterIntToString(mProject, mChapter)
+                )?.let(entries::add)
+
+                if (entries.isEmpty()) {
+                    // Search for entries based on verses
+                    try {
+                        val chapter = chapterVerseSection.chapter
+                        val firstVerse = chapterVerseSection.firstVerse.toInt()
+                        val lastVerse = chapterVerseSection.lastVerse.toInt()
+
+                        if (firstVerse > 0 && lastVerse > 0) {
+                            for (verse in firstVerse..lastVerse) {
+                                aoh.getEntry(
+                                    ChapterVerseSection(chapter, verse.toString(), null),
+                                    sourceLanguage,
+                                    ll.getVersionSlug(sourceLanguage),
+                                    mProject.bookSlug,
+                                    chapterIntToString(mProject, mChapter)
+                                )?.let { entry ->
+                                    entries.add(entry)
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Logger.e("SourceAudio", "Error getting values from chapterVerseSection", e)
+                    }
+                }
+
+                if (entries.isEmpty()) {
                     return false
                 }
-                val extension = getExtensionIfValid(entry.name)
-                entry.inputStream.use { file ->
-                    BufferedInputStream(file).use { bis ->
-                        mTemp = File(directoryProvider.externalCacheDir, "temp.$extension").apply {
-                            delete()
-                            createNewFile()
-                            FileOutputStream(this).use { fos ->
+
+                val extension = getExtensionIfValid(entries.first().name)
+                val tempFiles = arrayListOf<File>()
+
+                entries.forEachIndexed { index, entry ->
+                    val tempFile = File(
+                        directoryProvider.externalCacheDir,
+                        "temp${System.currentTimeMillis()}.$extension"
+                    )
+                    // if there are multiple entries, then skip to position only for the first entry
+                    // consecutive entries will be skipped automatically when reading
+                    val skip = if (index == 0) entry.start else 0
+                    entry.getInputStream(skip).use { file ->
+                        BufferedInputStream(file).use { bis ->
+                            FileOutputStream(tempFile).use { fos ->
                                 BufferedOutputStream(fos).use { bos ->
                                     val buffer = ByteArray(1024)
                                     var len: Int
+                                    var totalRead = 0
                                     while ((bis.read(buffer).also { len = it }) != -1) {
                                         bos.write(buffer, 0, len)
+                                        totalRead += len
                                     }
-                                    bos.flush()
                                 }
                             }
                         }
                     }
+                    tempFiles.add(tempFile)
+                }
+
+                mTemp?.delete()
+
+                // We don't need to merge/convert if there is only one entry
+                if (tempFiles.size == 1) {
+                    val first = tempFiles.first()
+                    val renamed = File(first.parentFile, "temp.$extension")
+                    first.renameTo(renamed)
+                    mTemp = renamed
+                } else {
+                    mTemp = File(directoryProvider.externalCacheDir, "temp.mp3")
+                    if (!AudioMerger.merge(tempFiles, mTemp!!)) {
+                        mTemp?.delete()
+                        mTemp = null
+                    }
+                    tempFiles.forEach(File::delete)
                 }
             }
             return true
@@ -243,7 +300,7 @@ class SourceAudio @JvmOverloads constructor (
         }
     }
 
-    fun showNoSource(noSource: Boolean) {
+    private fun showNoSource(noSource: Boolean) {
         if (noSource) {
             binding.seekBar.visibility = GONE
             binding.timeProgress.visibility = GONE
