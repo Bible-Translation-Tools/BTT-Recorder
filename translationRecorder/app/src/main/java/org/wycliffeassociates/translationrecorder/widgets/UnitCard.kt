@@ -10,7 +10,6 @@ import org.wycliffeassociates.translationrecorder.Playback.PlaybackActivity
 import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.UnitCardAdapter
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingActivity
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
@@ -181,12 +180,11 @@ class UnitCard(
     }
 
     private fun refreshTakes() {
-        //if the soft reference still has the takes, cool, if not, repopulate them
-        val takes: List<File> = takeList
-        refreshTakeCountText(takes)
-        refreshTakeText(takes)
-        if (takes.isNotEmpty()) {
-            val take: File = takes[takeIndex]
+        populateTakeList()
+        refreshTakeCountText(takeList)
+        refreshTakeText(takeList)
+        if (takeList.isNotEmpty()) {
+            val take: File = takeList[takeIndex]
             refreshTakeRating(take)
             refreshSelectedTake(take)
         }
@@ -242,7 +240,6 @@ class UnitCard(
         if (!this::viewHolder.isInitialized) {
             return
         }
-
         viewHolder.unitCard?.refreshTakeCount()
         viewHolder.binding.takeCount.text = takes.size.toString()
     }
@@ -279,7 +276,7 @@ class UnitCard(
         isEmpty = true
     }
 
-    fun refreshTakeCount() {
+    private fun refreshTakeCount() {
         takeCount = databaseAccessor.takeCount(project, chapter, startVerse)
     }
 

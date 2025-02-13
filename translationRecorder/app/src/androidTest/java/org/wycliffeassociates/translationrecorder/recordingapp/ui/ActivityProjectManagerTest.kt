@@ -282,6 +282,18 @@ class ActivityProjectManagerTest {
     }
 
     @Test
+    fun openImport() {
+        ActivityScenario.launch(ActivityProjectManager::class.java).use {
+            onView(withId(R.id.action_more)).tryPerform(click())
+            onView(withText(R.string.import_menu)).tryPerform(click())
+
+            Intents.intended(hasAction(Intent.ACTION_GET_CONTENT))
+            Intents.intended(hasCategories(hasItem(equalTo(Intent.CATEGORY_OPENABLE))))
+            Intents.intended(hasType("application/zip"))
+        }
+    }
+
+    @Test
     fun openSettings() {
         ActivityScenario.launch(ActivityProjectManager::class.java).use {
             onView(withId(R.id.action_more)).tryPerform(click())

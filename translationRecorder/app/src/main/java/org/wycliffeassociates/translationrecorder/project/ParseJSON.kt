@@ -55,12 +55,12 @@ class ParseJSON(
     private fun loadJSONFromAsset(filename: String): String? {
         val json: String?
         try {
-            val `is` = assetsProvider.open(filename)
-            val size = `is`.available()
-            val buffer = ByteArray(size)
-            `is`.read(buffer)
-            `is`.close()
-            json = String(buffer, charset("UTF-8"))
+            assetsProvider.open(filename).use { stream ->
+                val size = stream.available()
+                val buffer = ByteArray(size)
+                stream.read(buffer)
+                json = String(buffer, charset("UTF-8"))
+            }
         } catch (ex: IOException) {
             ex.printStackTrace()
             return null

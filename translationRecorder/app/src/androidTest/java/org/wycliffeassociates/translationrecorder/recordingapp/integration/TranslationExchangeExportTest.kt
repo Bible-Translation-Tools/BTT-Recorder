@@ -9,6 +9,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
@@ -80,8 +81,8 @@ class TranslationExchangeExportTest {
         val projectDir = ProjectFileUtils.getProjectDirectory(project, directoryProvider)
         projectDir.mkdirs()
 
-        mockkStatic(FeedbackDialog::class)
-        every { FeedbackDialog.newInstance(any(), any()) }.returns(mockk {
+        mockkObject(FeedbackDialog)
+        every { FeedbackDialog.newInstance(any<String>(), any<String>()) }.returns(mockk {
             justRun { show(any<FragmentManager>(), any()) }
         })
 
@@ -136,6 +137,10 @@ class TranslationExchangeExportTest {
         assertTrue(exportedFile.length() > 0)
 
         verify { exportTaskFragment.getString(any()) }
+        verify { exportTaskFragment.setUploadProgress(any()) }
+        verify { exportTaskFragment.delegateExport(any()) }
+        verify { exportTaskFragment.setZipping(true) }
+        verify { exportTaskFragment.showProgress(true) }
         verify { exportTaskFragment.requireActivity() }
     }
 }

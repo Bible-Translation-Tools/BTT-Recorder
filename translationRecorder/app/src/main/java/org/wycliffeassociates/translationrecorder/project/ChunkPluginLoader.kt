@@ -55,8 +55,10 @@ class ChunkPluginLoader(
             )
             e.printStackTrace()
         }
-        chunks!!.parseChunks(chunksInputStream(anthology, book))
-        return chunks
+        chunksInputStream(anthology, book)?.use {
+            chunks!!.parseChunks(it)
+        }
+        return chunks!!
     }
 
     override fun chunksInputStream(anthology: Anthology, book: Book): InputStream? {

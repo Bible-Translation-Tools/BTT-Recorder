@@ -73,7 +73,7 @@ class UnitCardAdapter (
     }
 
     override fun onCardExpanded(position: Int) {
-        recyclerView!!.layoutManager!!.scrollToPosition(position)
+        recyclerView?.layoutManager?.scrollToPosition(position)
     }
 
     inner class ViewHolder(
@@ -101,16 +101,15 @@ class UnitCardAdapter (
             // Capture the UnitCard object
             unitCard = uc
             uc.setViewHolder(holder)
-            // Set card views based on the UnitCard object
-            binding.unitTitle.text = uc.title
-            uc.refreshTakeCount()
-            binding.takeCount.text = uc.takeCount.toString()
             // Expand card if it's already expanded before
             if (uc.isExpanded) {
                 uc.expand()
             } else {
                 uc.collapse()
             }
+            // Set card views based on the UnitCard object
+            binding.unitTitle.text = uc.title
+            binding.takeCount.text = uc.takeCount.toString()
             // Raise card, and show appropriate visual cue, if it's already selected
             if (multiSelector.isSelected(position, 0)) {
                 mSelectedCards.add(this)
@@ -125,7 +124,6 @@ class UnitCardAdapter (
             } else {
                 binding.unitExpandBtn.visibility = View.VISIBLE
             }
-
             setListeners(uc, this)
         }
 
@@ -173,7 +171,7 @@ class UnitCardAdapter (
         }
 
     private fun setListeners(unitCard: UnitCard, holder: ViewHolder) {
-        val position = holder.adapterPosition
+        val position = holder.bindingAdapterPosition
         holder.binding.unitRecordBtn.setOnClickListener(
             unitCard.getUnitRecordOnClick(context, db, prefs)
         )
@@ -187,7 +185,8 @@ class UnitCardAdapter (
         holder.binding.deleteTakeBtn.setOnClickListener(
             unitCard.getTakeDeleteOnClick(
                 context,
-                this, position,
+                this,
+                position,
                 this
             )
         )

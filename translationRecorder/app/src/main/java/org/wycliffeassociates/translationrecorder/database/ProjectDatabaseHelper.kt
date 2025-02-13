@@ -746,22 +746,25 @@ class ProjectDatabaseHelper(
             ProjectContract.LanguageEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        return if (cursor.moveToFirst()) {
-            val languageSlugId = cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_CODE)
-            val languageSlug = cursor.getString(languageSlugId)
+        db.rawQuery(query, null).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                val languageSlugId = cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_CODE)
+                val languageSlug = cursor.getString(languageSlugId)
 
-            val languageNameId = cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_NAME)
-            val languageName = cursor.getString(languageNameId)
+                val languageNameId = cursor.getColumnIndex(ProjectContract.LanguageEntry.LANGUAGE_NAME)
+                val languageName = cursor.getString(languageNameId)
 
-            Language(languageSlug, languageName)
-        } else {
-            throw IllegalArgumentException("Language id: $id not found in database.")
+                Language(languageSlug, languageName)
+            } else {
+                throw IllegalArgumentException("Language id: $id not found in database.")
+            }
         }
     }
 
     @Throws(IllegalArgumentException::class)
     override fun getUser(id: Int): User? {
+        var user: User? = null
+
         val db = readableDatabase
         val query = String.format(
             "SELECT * FROM %s WHERE %s=%s",
@@ -769,21 +772,21 @@ class ProjectDatabaseHelper(
             ProjectContract.UserEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        var user: User? = null
-        if (cursor.moveToFirst()) {
-            val userIdIndex = cursor.getColumnIndex(ProjectContract.UserEntry._ID)
-            val userId = cursor.getInt(userIdIndex)
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                val userIdIndex = cursor.getColumnIndex(ProjectContract.UserEntry._ID)
+                val userId = cursor.getInt(userIdIndex)
 
-            val audioId = cursor.getColumnIndex(ProjectContract.UserEntry.USER_AUDIO)
-            val audio = File(cursor.getString(audioId))
+                val audioId = cursor.getColumnIndex(ProjectContract.UserEntry.USER_AUDIO)
+                val audio = File(cursor.getString(audioId))
 
-            val hashId = cursor.getColumnIndex(ProjectContract.UserEntry.USER_HASH)
-            val hash = cursor.getString(hashId)
+                val hashId = cursor.getColumnIndex(ProjectContract.UserEntry.USER_HASH)
+                val hash = cursor.getString(hashId)
 
-            user = User(audio, hash, userId)
-        } else {
-            Logger.e("ProjectDatabaseHelper.getUser", "User id not found in database.")
+                user = User(audio, hash, userId)
+            } else {
+                Logger.e("ProjectDatabaseHelper.getUser", "User id not found in database.")
+            }
         }
         return user
     }
@@ -850,20 +853,21 @@ class ProjectDatabaseHelper(
             ProjectContract.ModeEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        return if (cursor.moveToFirst()) {
-            val modeSlugId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_SLUG)
-            val modeSlug = cursor.getString(modeSlugId)
+        db.rawQuery(query, null).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                val modeSlugId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_SLUG)
+                val modeSlug = cursor.getString(modeSlugId)
 
-            val modeNameId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_NAME)
-            val modeName = cursor.getString(modeNameId)
+                val modeNameId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_NAME)
+                val modeName = cursor.getString(modeNameId)
 
-            val modeTypeId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_TYPE)
-            val modeType = cursor.getString(modeTypeId)
+                val modeTypeId = cursor.getColumnIndex(ProjectContract.ModeEntry.MODE_TYPE)
+                val modeType = cursor.getString(modeTypeId)
 
-            Mode(modeSlug, modeName, modeType)
-        } else {
-            throw IllegalArgumentException("Mode id not found in database.")
+                Mode(modeSlug, modeName, modeType)
+            } else {
+                throw IllegalArgumentException("Mode id not found in database.")
+            }
         }
     }
 
@@ -876,24 +880,25 @@ class ProjectDatabaseHelper(
             ProjectContract.BookEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        return if (cursor.moveToFirst()) {
-            val bookSlugIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_SLUG)
-            val bookSlug = cursor.getString(bookSlugIndex)
+        db.rawQuery(query, null).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                val bookSlugIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_SLUG)
+                val bookSlug = cursor.getString(bookSlugIndex)
 
-            val bookNameIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NAME)
-            val bookName = cursor.getString(bookNameIndex)
+                val bookNameIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NAME)
+                val bookName = cursor.getString(bookNameIndex)
 
-            val bookNumberIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER)
-            val bookNumber = cursor.getInt(bookNumberIndex)
+                val bookNumberIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER)
+                val bookNumber = cursor.getInt(bookNumberIndex)
 
-            val anthologyIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)
-            val anthology = getAnthologySlug(cursor.getInt(anthologyIndex))
+                val anthologyIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)
+                val anthology = getAnthologySlug(cursor.getInt(anthologyIndex))
 
-            val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthology)
-            Book(bookSlug, localizedBookName, anthology, bookNumber)
-        } else {
-            throw IllegalArgumentException("Book id not found in database.")
+                val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthology)
+                Book(bookSlug, localizedBookName, anthology, bookNumber)
+            } else {
+                throw IllegalArgumentException("Book id not found in database.")
+            }
         }
     }
 
@@ -931,6 +936,7 @@ class ProjectDatabaseHelper(
 
     @Throws(IllegalArgumentException::class)
     override fun getVersion(id: Int): Version {
+        val version: Version
         val db = readableDatabase
         val query = String.format(
             "SELECT * FROM %s WHERE %s=%s",
@@ -938,20 +944,19 @@ class ProjectDatabaseHelper(
             ProjectContract.VersionEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        val version: Version
-        if (cursor.moveToFirst()) {
-            val versionSlugIndex = cursor.getColumnIndex(ProjectContract.VersionEntry.VERSION_SLUG)
-            val versionSlug = cursor.getString(versionSlugIndex)
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                val versionSlugIndex = cursor.getColumnIndex(ProjectContract.VersionEntry.VERSION_SLUG)
+                val versionSlug = cursor.getString(versionSlugIndex)
 
-            val versionNameIndex = cursor.getColumnIndex(ProjectContract.VersionEntry.VERSION_NAME)
-            val versionName = cursor.getString(versionNameIndex)
+                val versionNameIndex = cursor.getColumnIndex(ProjectContract.VersionEntry.VERSION_NAME)
+                val versionName = cursor.getString(versionNameIndex)
 
-            version = Version(versionSlug, versionName)
-        } else {
-            throw IllegalArgumentException("Version id not found in database.")
+                version = Version(versionSlug, versionName)
+            } else {
+                throw IllegalArgumentException("Version id not found in database.")
+            }
         }
-        cursor.close()
         return version
     }
 
@@ -994,48 +999,49 @@ class ProjectDatabaseHelper(
             ProjectContract.AnthologyEntry._ID,
             id.toString()
         )
-        val cursor = db.rawQuery(query, null)
-        return if (cursor.moveToFirst()) {
-            val anthologySlugIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_SLUG)
-            val anthologySlug = cursor.getString(anthologySlugIndex)
+        db.rawQuery(query, null).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                val anthologySlugIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_SLUG)
+                val anthologySlug = cursor.getString(anthologySlugIndex)
 
-            val anthologyNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_NAME)
-            val anthologyName = cursor.getString(anthologyNameIndex)
+                val anthologyNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_NAME)
+                val anthologyName = cursor.getString(anthologyNameIndex)
 
-            val resourceSlugIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_RESOURCE)
-            val resourceSlug = cursor.getString(resourceSlugIndex)
+                val resourceSlugIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_RESOURCE)
+                val resourceSlug = cursor.getString(resourceSlugIndex)
 
-            val sortIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_SORT)
-            val sort = cursor.getInt(sortIndex)
+                val sortIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_SORT)
+                val sort = cursor.getInt(sortIndex)
 
-            val regexIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_REGEX)
-            val regex = cursor.getString(regexIndex)
+                val regexIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_REGEX)
+                val regex = cursor.getString(regexIndex)
 
-            val groupsIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_GROUPS)
-            val groups = cursor.getString(groupsIndex)
+                val groupsIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_GROUPS)
+                val groups = cursor.getString(groupsIndex)
 
-            val maskIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_MASK)
-            val mask = cursor.getString(maskIndex)
+                val maskIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.ANTHOLOGY_MASK)
+                val mask = cursor.getString(maskIndex)
 
-            val pluginClassNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_CLASS)
-            val pluginClassName = cursor.getString(pluginClassNameIndex)
+                val pluginClassNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_CLASS)
+                val pluginClassName = cursor.getString(pluginClassNameIndex)
 
-            val pluginJarNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_JAR)
-            val pluginJarName = cursor.getString(pluginJarNameIndex)
+                val pluginJarNameIndex = cursor.getColumnIndex(ProjectContract.AnthologyEntry.PLUGIN_JAR)
+                val pluginJarName = cursor.getString(pluginJarNameIndex)
 
-            Anthology(
-                anthologySlug,
-                anthologyName,
-                resourceSlug,
-                sort,
-                regex,
-                groups,
-                mask,
-                pluginJarName,
-                pluginClassName
-            )
-        } else {
-            throw IllegalArgumentException("Anthology id $id not found in database.")
+                Anthology(
+                    anthologySlug,
+                    anthologyName,
+                    resourceSlug,
+                    sort,
+                    regex,
+                    groups,
+                    mask,
+                    pluginJarName,
+                    pluginClassName
+                )
+            } else {
+                throw IllegalArgumentException("Anthology id $id not found in database.")
+            }
         }
     }
 
@@ -1199,6 +1205,7 @@ class ProjectDatabaseHelper(
     //            long result = db.insertWithOnConflict(ProjectContract.ModeRelationshipEntry.TABLE_MODE_RELATIONSHIP, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     //        }
     //    }
+
     override fun addVersionRelationships(anthologySlug: String, versions: List<Version>) {
         val anthId = getAnthologyId(anthologySlug)
         val db = writableDatabase
@@ -1356,54 +1363,56 @@ class ProjectDatabaseHelper(
         if (result > 0) {
             autoSelectTake(unitId)
         }
+
+        println("---------------- Take added $takeFilename ------------------")
     }
 
     override fun getProject(projectId: Int): Project? {
+        var project: Project? = null
+
         val query = "SELECT * FROM " + ProjectContract.ProjectEntry.TABLE_PROJECT +
                 " WHERE " + ProjectContract.ProjectEntry._ID + " =" + projectId.toString()
         val db = readableDatabase
-        val cursor = db.rawQuery(query, null)
-        var project: Project? = null
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                val versionIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_VERSION_FK)
+                val targetLanguageIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_TARGET_LANGUAGE_FK)
+                val sourceLanguageIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_SOURCE_LANGUAGE_FK)
+                val sourceAudioPathIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_SOURCE_AUDIO_PATH)
+                val modeIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_MODE_FK)
+                val bookIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_BOOK_FK)
+                val contributorsIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_CONTRIBUTORS)
 
-        if (cursor.moveToFirst()) {
-            val versionIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_VERSION_FK)
-            val targetLanguageIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_TARGET_LANGUAGE_FK)
-            val sourceLanguageIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_SOURCE_LANGUAGE_FK)
-            val sourceAudioPathIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_SOURCE_AUDIO_PATH)
-            val modeIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_MODE_FK)
-            val bookIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_BOOK_FK)
-            val contributorsIndex = cursor.getColumnIndex(ProjectContract.ProjectEntry.PROJECT_CONTRIBUTORS)
+                try {
+                    val version = getVersion(cursor.getInt(versionIndex))
+                    val targetLanguage = getLanguage(cursor.getInt(targetLanguageIndex))
+                    //Source language could be null
+                    var sourceLanguage: Language? = null
+                    var sourceAudioPath: String? = null
+                    if (cursor.getType(sourceLanguageIndex) == Cursor.FIELD_TYPE_INTEGER) {
+                        sourceLanguage = getLanguage(cursor.getInt(sourceLanguageIndex))
+                        sourceAudioPath = cursor.getString(sourceAudioPathIndex)
+                    }
+                    val mode = getMode(cursor.getInt(modeIndex))
+                    val book = getBook(cursor.getInt(bookIndex))
+                    val anthology = getAnthology(getAnthologyId(book.anthology))
+                    val contributors = cursor.getString(contributorsIndex)
 
-            try {
-                val version = getVersion(cursor.getInt(versionIndex))
-                val targetLanguage = getLanguage(cursor.getInt(targetLanguageIndex))
-                //Source language could be null
-                var sourceLanguage: Language? = null
-                var sourceAudioPath: String? = null
-                if (cursor.getType(sourceLanguageIndex) == Cursor.FIELD_TYPE_INTEGER) {
-                    sourceLanguage = getLanguage(cursor.getInt(sourceLanguageIndex))
-                    sourceAudioPath = cursor.getString(sourceAudioPathIndex)
+                    project = Project(
+                        targetLanguage,
+                        anthology,
+                        book,
+                        version,
+                        mode,
+                        contributors,
+                        sourceLanguage,
+                        sourceAudioPath
+                    )
+                } catch (e: Exception) {
+                    Logger.e(this::javaClass.name, "Error loading project $projectId", e)
                 }
-                val mode = getMode(cursor.getInt(modeIndex))
-                val book = getBook(cursor.getInt(bookIndex))
-                val anthology = getAnthology(getAnthologyId(book.anthology))
-                val contributors = cursor.getString(contributorsIndex)
-
-                project = Project(
-                    targetLanguage,
-                    anthology,
-                    book,
-                    version,
-                    mode,
-                    contributors,
-                    sourceLanguage,
-                    sourceAudioPath
-                )
-            } catch (e: Exception) {
-                Logger.e(this::javaClass.name, "Error loading project $projectId", e)
             }
         }
-        cursor.close()
         return project
     }
 
@@ -1502,16 +1511,16 @@ class ProjectDatabaseHelper(
             ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK,
             ProjectContract.UnitEntry.TABLE_UNIT, ProjectContract.UnitEntry._ID
         )
-        val cursor = db.rawQuery(getTake, arrayOf(unitId.toString()))
-        val takeIdCol = cursor.getColumnIndex(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-        if (cursor.moveToFirst()) {
-            if (!cursor.isNull(takeIdCol)) {
-                val takeId = cursor.getInt(takeIdCol)
-                cursor.close()
-                return takeId
+        db.rawQuery(getTake, arrayOf(unitId.toString())).use { cursor ->
+            val takeIdCol = cursor.getColumnIndex(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+            if (cursor.moveToFirst()) {
+                if (!cursor.isNull(takeIdCol)) {
+                    val takeId = cursor.getInt(takeIdCol)
+                    cursor.close()
+                    return takeId
+                }
             }
         }
-        cursor.close()
         return -1
     }
 
@@ -1542,12 +1551,12 @@ class ProjectDatabaseHelper(
                 ProjectContract.TakeEntry.TABLE_TAKE,
                 ProjectContract.TakeEntry._ID
             )
-            val cursor = db.rawQuery(getTakeNumber, arrayOf(takeId.toString()))
-            if (cursor.moveToFirst()) {
-                val takeNumCol = cursor.getColumnIndex(ProjectContract.TakeEntry.TAKE_NUMBER)
-                val takeNum = cursor.getInt(takeNumCol)
-                cursor.close()
-                return takeNum
+            db.rawQuery(getTakeNumber, arrayOf(takeId.toString())).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val takeNumCol = cursor.getColumnIndex(ProjectContract.TakeEntry.TAKE_NUMBER)
+                    val takeNum = cursor.getInt(takeNumCol)
+                    return takeNum
+                }
             }
         }
         return -1
@@ -1796,6 +1805,8 @@ class ProjectDatabaseHelper(
      */
     override fun getNumStartedUnitsInProject(project: Project): Map<Int, Int> {
         val projectId = getProjectId(project).toString()
+        val numStartedUnits: MutableMap<Int, Int> = HashMap()
+
         val numUnitsStarted = String.format(
             "SELECT %s, COUNT(%s) FROM " +
                     "(SELECT u.%s, c.%s " +
@@ -1822,22 +1833,24 @@ class ProjectDatabaseHelper(
         )
 
         val db = readableDatabase
-        val c = db.rawQuery(numUnitsStarted, arrayOf(projectId))
-        val numStartedUnits: MutableMap<Int, Int> = HashMap()
-        if (c.count > 0) {
-            c.moveToFirst()
-            do {
-                val chapterNum = c.getInt(0)
-                val unitCount = c.getInt(1)
-                numStartedUnits[chapterNum] = unitCount
-            } while (c.moveToNext())
-            return numStartedUnits
+        db.rawQuery(numUnitsStarted, arrayOf(projectId)).use { cursor ->
+            if (cursor.count > 0) {
+                cursor.moveToFirst()
+                do {
+                    val chapterNum = cursor.getInt(0)
+                    val unitCount = cursor.getInt(1)
+                    numStartedUnits[chapterNum] = unitCount
+                } while (cursor.moveToNext())
+                return numStartedUnits
+            }
         }
+
         return numStartedUnits
     }
 
     override fun getTakesForChapterCompilation(project: Project, chapter: Int): List<String> {
         val chapterId = getChapterId(project, chapter).toString()
+        var takesToCompile: MutableList<String> = arrayListOf()
 
         val chapterCompilationQuery = String.format(
             "SELECT name, MAX(score) FROM " +
@@ -1864,14 +1877,14 @@ class ProjectDatabaseHelper(
             ProjectContract.ChapterEntry._ID
         )
         val db = readableDatabase
-        val c = db.rawQuery(chapterCompilationQuery, arrayOf(chapterId))
-        var takesToCompile: MutableList<String> = arrayListOf()
-        if (c.count > 0) {
-            takesToCompile = ArrayList()
-            c.moveToFirst()
-            do {
-                takesToCompile.add(c.getString(0))
-            } while (c.moveToNext())
+        db.rawQuery(chapterCompilationQuery, arrayOf(chapterId)).use { cursor ->
+            if (cursor.count > 0) {
+                takesToCompile = ArrayList()
+                cursor.moveToFirst()
+                do {
+                    takesToCompile.add(cursor.getString(0))
+                } while (cursor.moveToNext())
+            }
         }
         return takesToCompile
     }
@@ -1956,52 +1969,52 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_FILENAME,
             ProjectContract.TakeEntry.TAKE_FILENAME
         )
-        val c = db.rawQuery(getMissingTakes, null)
-        //loop through all of the missing takes and add them to the db
-        if (c.count > 0) {
-            val nameIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
-            val timestampIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
-            c.moveToFirst()
-            do {
-                val takeName = c.getString(nameIndex)
-                val ppm = project.patternMatcher
-                ppm.match(takeName)
-                val takeInfo = ppm.takeInfo!!
-                val slugs = takeInfo.projectSlugs
-                if (!languageExists(slugs.language)) {
-                    if (callback != null) {
-                        val name = callback.requestLanguageName(slugs.language)
-                        addLanguage(slugs.language, name)
-                    } else {
-                        addLanguage(slugs.language, "???") //missingno
+        db.rawQuery(getMissingTakes, null).use { cursor ->
+            //loop through all of the missing takes and add them to the db
+            if (cursor.count > 0) {
+                val nameIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
+                val timestampIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
+                cursor.moveToFirst()
+                do {
+                    val takeName = cursor.getString(nameIndex)
+                    val ppm = project.patternMatcher
+                    ppm.match(takeName)
+                    val takeInfo = ppm.takeInfo!!
+                    val slugs = takeInfo.projectSlugs
+                    if (!languageExists(slugs.language)) {
+                        if (callback != null) {
+                            val name = callback.requestLanguageName(slugs.language)
+                            addLanguage(slugs.language, name)
+                        } else {
+                            addLanguage(slugs.language, "???") //missingno
+                        }
                     }
-                }
-                //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
-                val dir = ProjectFileUtils.getParentDirectory(project, takeName, directoryProvider)
-                val file = File(dir, c.getString(nameIndex))
-                try {
-                    val wav = WavFile(file)
-                    //default user; currently not enough info to be able to figure it out
-                    addTake(
-                        takeInfo,
-                        c.getString(nameIndex),
-                        wav.metadata.modeSlug,
-                        c.getLong(timestampIndex),
-                        0,
-                        1
-                    )
-                } catch (e: IllegalArgumentException) {
-                    //TODO: corrupt file, prompt to fix maybe? or delete? At least tell which file is causing a problem
-                    Logger.e(
-                        this.toString(),
-                        "Error loading wav file named: " + dir + "/" + c.getString(nameIndex),
-                        e
-                    )
-                    corruptFileCallback.onCorruptFile(file)
-                }
-            } while (c.moveToNext())
+                    //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
+                    val dir = ProjectFileUtils.getParentDirectory(project, takeName, directoryProvider)
+                    val file = File(dir, cursor.getString(nameIndex))
+                    try {
+                        val wav = WavFile(file)
+                        //default user; currently not enough info to be able to figure it out
+                        addTake(
+                            takeInfo,
+                            cursor.getString(nameIndex),
+                            wav.metadata.modeSlug,
+                            cursor.getLong(timestampIndex),
+                            0,
+                            1
+                        )
+                    } catch (e: IllegalArgumentException) {
+                        //TODO: corrupt file, prompt to fix maybe? or delete? At least tell which file is causing a problem
+                        Logger.e(
+                            this.toString(),
+                            "Error loading wav file named: " + dir + "/" + cursor.getString(nameIndex),
+                            e
+                        )
+                        corruptFileCallback.onCorruptFile(file)
+                    }
+                } while (cursor.moveToNext())
+            }
         }
-        c.close()
         db.setTransactionSuccessful()
         db.endTransaction()
     }
@@ -2052,36 +2065,35 @@ class ProjectDatabaseHelper(
 //        final String deleteDanglingReferences = String.format("SELECT t1.%s, t1.%s FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.%s=t2.%s WHERE t2.%s IS NULL",
 //                ProjectContract.TakeEntry.TAKE_FILENAME, ProjectContract.TakeEntry._ID, ProjectContract.TakeEntry.TABLE_TAKE, ProjectContract.TempEntry.TABLE_TEMP, ProjectContract.TempEntry.TEMP_TAKE_NAME, ProjectContract.TakeEntry.TAKE_FILENAME, ProjectContract.TakeEntry.TAKE_FILENAME);
         //Cursor c = db.rawQuery(deleteDanglingReferences, null);
-        val c = db.rawQuery(danglingReferences, whereArgs)
-        //for each of these takes that do not have a corresponding match, remove them from the database
-        if (c.count > 0) {
-            val idIndex = c.getColumnIndex("takeid")
-            val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
-            val removeSelectedTake =
-                String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-            c.moveToFirst()
-            do {
-                val cv = ContentValues()
-                cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-                db.update(
-                    ProjectContract.UnitEntry.TABLE_UNIT,
-                    cv,
-                    removeSelectedTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-                db.delete(
-                    ProjectContract.TakeEntry.TABLE_TAKE,
-                    deleteTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-            } while (c.moveToNext())
+        db.rawQuery(danglingReferences, whereArgs).use { cursor ->
+            //for each of these takes that do not have a corresponding match, remove them from the database
+            if (cursor.count > 0) {
+                val idIndex = cursor.getColumnIndex("takeid")
+                val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
+                val removeSelectedTake =
+                    String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                cursor.moveToFirst()
+                do {
+                    val cv = ContentValues()
+                    cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                    db.update(
+                        ProjectContract.UnitEntry.TABLE_UNIT,
+                        cv,
+                        removeSelectedTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                    db.delete(
+                        ProjectContract.TakeEntry.TABLE_TAKE,
+                        deleteTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                } while (cursor.moveToNext())
+            }
         }
-        c.close()
         db.execSQL(ProjectContract.DELETE_TEMP)
         db.setTransactionSuccessful()
         db.endTransaction()
     }
-
 
     override fun resyncDbWithFs(
         project: Project,
@@ -2117,52 +2129,52 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_FILENAME,
             ProjectContract.TakeEntry.TAKE_FILENAME
         )
-        var c = db.rawQuery(getMissingTakes, null)
-        //loop through all of the missing takes and add them to the db
-        if (c.count > 0) {
-            val nameIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
-            val timestampIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
-            c.moveToFirst()
-            do {
-                val takeName = c.getString(nameIndex)
-                val ppm = project.patternMatcher
-                ppm.match(takeName)
-                val takeInfo = ppm.takeInfo!!
-                val slugs = takeInfo.projectSlugs
-                if (!languageExists(slugs.language)) {
-                    if (onLanguageNotFound != null) {
-                        val name = onLanguageNotFound.requestLanguageName(slugs.language)
-                        addLanguage(slugs.language, name)
-                    } else {
-                        addLanguage(slugs.language, "???") //missingno
+        db.rawQuery(getMissingTakes, null).use { cursor ->
+            //loop through all of the missing takes and add them to the db
+            if (cursor.count > 0) {
+                val nameIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
+                val timestampIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
+                cursor.moveToFirst()
+                do {
+                    val takeName = cursor.getString(nameIndex)
+                    val ppm = project.patternMatcher
+                    ppm.match(takeName)
+                    val takeInfo = ppm.takeInfo!!
+                    val slugs = takeInfo.projectSlugs
+                    if (!languageExists(slugs.language)) {
+                        if (onLanguageNotFound != null) {
+                            val name = onLanguageNotFound.requestLanguageName(slugs.language)
+                            addLanguage(slugs.language, name)
+                        } else {
+                            addLanguage(slugs.language, "???") //missingno
+                        }
                     }
-                }
-                //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
-                val dir = ProjectFileUtils.getParentDirectory(project, takeName, directoryProvider)
-                val file = File(dir, c.getString(nameIndex))
-                try {
-                    val wav = WavFile(file)
-                    //default user
-                    addTake(
-                        takeInfo,
-                        c.getString(nameIndex),
-                        wav.metadata.modeSlug,
-                        c.getLong(timestampIndex),
-                        0,
-                        1
-                    )
-                } catch (e: IllegalArgumentException) {
-                    //TODO: corrupt file, prompt to fix maybe? or delete? At least tell which file is causing a problem
-                    Logger.e(
-                        this.toString(),
-                        "Error loading wav file named: " + dir + "/" + c.getString(nameIndex),
-                        e
-                    )
-                    onCorruptFile.onCorruptFile(file)
-                }
-            } while (c.moveToNext())
+                    //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
+                    val dir = ProjectFileUtils.getParentDirectory(project, takeName, directoryProvider)
+                    val file = File(dir, cursor.getString(nameIndex))
+                    try {
+                        val wav = WavFile(file)
+                        //default user
+                        addTake(
+                            takeInfo,
+                            cursor.getString(nameIndex),
+                            wav.metadata.modeSlug,
+                            cursor.getLong(timestampIndex),
+                            0,
+                            1
+                        )
+                    } catch (e: IllegalArgumentException) {
+                        //TODO: corrupt file, prompt to fix maybe? or delete? At least tell which file is causing a problem
+                        Logger.e(
+                            this.toString(),
+                            "Error loading wav file named: " + dir + "/" + cursor.getString(nameIndex),
+                            e
+                        )
+                        onCorruptFile.onCorruptFile(file)
+                    }
+                } while (cursor.moveToNext())
+            }
         }
-        c.close()
 
         //find all the takes in the db that do not have a match in the filesystem
 //        final String deleteDanglingReferences = String.format("SELECT t1.%s, t1.%s FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.%s=t2.%s WHERE t2.%s IS NULL",
@@ -2198,32 +2210,31 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_NUMBER
         )
 
-
-        c = db.rawQuery(deleteDanglingReferences, null)
-        //for each of these takes that do not have a corresponding match, remove them from the database
-        if (c.count > 0) {
-            val idIndex = c.getColumnIndex(ProjectContract.TakeEntry._ID)
-            val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
-            val removeSelectedTake =
-                String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-            c.moveToFirst()
-            do {
-                val cv = ContentValues()
-                cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-                db.update(
-                    ProjectContract.UnitEntry.TABLE_UNIT,
-                    cv,
-                    removeSelectedTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-                db.delete(
-                    ProjectContract.TakeEntry.TABLE_TAKE,
-                    deleteTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-            } while (c.moveToNext())
+        db.rawQuery(deleteDanglingReferences, null).use { cursor ->
+            //for each of these takes that do not have a corresponding match, remove them from the database
+            if (cursor.count > 0) {
+                val idIndex = cursor.getColumnIndex(ProjectContract.TakeEntry._ID)
+                val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
+                val removeSelectedTake =
+                    String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                cursor.moveToFirst()
+                do {
+                    val cv = ContentValues()
+                    cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                    db.update(
+                        ProjectContract.UnitEntry.TABLE_UNIT,
+                        cv,
+                        removeSelectedTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                    db.delete(
+                        ProjectContract.TakeEntry.TABLE_TAKE,
+                        deleteTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                } while (cursor.moveToNext())
+            }
         }
-        c.close()
         db.setTransactionSuccessful()
         db.endTransaction()
         db.execSQL(ProjectContract.DELETE_TEMP)
@@ -2262,40 +2273,40 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_FILENAME,
             ProjectContract.TakeEntry.TAKE_FILENAME
         )
-        var c = db.rawQuery(getMissingTakes, null)
-        //loop through all of the missing takes and add them to the db
-        if (c.count > 0) {
-            val nameIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
-            val timestampIndex = c.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
-            c.moveToFirst()
-            do {
-                val takeName = c.getString(nameIndex)
-                val ppm = project.patternMatcher
-                ppm.match(takeName)
-                val takeInfo = ppm.takeInfo!!
-                val slugs = takeInfo.projectSlugs
-                if (!languageExists(slugs.language)) {
-                    if (languageNotFoundCallback != null) {
-                        val name = languageNotFoundCallback.requestLanguageName(slugs.language)
-                        addLanguage(slugs.language, name)
-                    } else {
-                        addLanguage(slugs.language, "???") //missingno
+        db.rawQuery(getMissingTakes, null).use { cursor ->
+            //loop through all of the missing takes and add them to the db
+            if (cursor.count > 0) {
+                val nameIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TAKE_NAME)
+                val timestampIndex = cursor.getColumnIndex(ProjectContract.TempEntry.TEMP_TIMESTAMP)
+                cursor.moveToFirst()
+                do {
+                    val takeName = cursor.getString(nameIndex)
+                    val ppm = project.patternMatcher
+                    ppm.match(takeName)
+                    val takeInfo = ppm.takeInfo!!
+                    val slugs = takeInfo.projectSlugs
+                    if (!languageExists(slugs.language)) {
+                        if (languageNotFoundCallback != null) {
+                            val name = languageNotFoundCallback.requestLanguageName(slugs.language)
+                            addLanguage(slugs.language, name)
+                        } else {
+                            addLanguage(slugs.language, "???") //missingno
+                        }
                     }
-                }
-                //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
-                val dir = ProjectFileUtils.getParentDirectory(takeInfo, directoryProvider)
-                val wav = WavFile(File(dir, c.getString(nameIndex)))
-                addTake(
-                    takeInfo,
-                    c.getString(nameIndex),
-                    wav.metadata.modeSlug,
-                    c.getLong(timestampIndex),
-                    0,
-                    1
-                )
-            } while (c.moveToNext())
+                    //Need to get the mode out of the metadata because chunks of only one verse are indistinguishable from verse mode
+                    val dir = ProjectFileUtils.getParentDirectory(takeInfo, directoryProvider)
+                    val wav = WavFile(File(dir, cursor.getString(nameIndex)))
+                    addTake(
+                        takeInfo,
+                        cursor.getString(nameIndex),
+                        wav.metadata.modeSlug,
+                        cursor.getLong(timestampIndex),
+                        0,
+                        1
+                    )
+                } while (cursor.moveToNext())
+            }
         }
-        c.close()
         //find all the takes in the db that do not have a match in the filesystem
         val deleteDanglingReferences = String.format(
             "SELECT t1.%s, t1.%s FROM %s AS t1 LEFT JOIN %s AS t2 ON t1.%s=t2.%s WHERE t2.%s IS NULL",
@@ -2307,29 +2318,30 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_FILENAME,
             ProjectContract.TakeEntry.TAKE_FILENAME
         )
-        c = db.rawQuery(deleteDanglingReferences, null)
-        //for each of these takes that do not have a corresponding match, remove them from the database
-        if (c.count > 0) {
-            val idIndex = c.getColumnIndex(ProjectContract.TakeEntry._ID)
-            val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
-            val removeSelectedTake =
-                String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-            c.moveToFirst()
-            do {
-                val cv = ContentValues()
-                cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
-                db.update(
-                    ProjectContract.UnitEntry.TABLE_UNIT,
-                    cv,
-                    removeSelectedTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-                db.delete(
-                    ProjectContract.TakeEntry.TABLE_TAKE,
-                    deleteTake,
-                    arrayOf(c.getInt(idIndex).toString())
-                )
-            } while (c.moveToNext())
+        db.rawQuery(deleteDanglingReferences, null).use { cursor ->
+            //for each of these takes that do not have a corresponding match, remove them from the database
+            if (cursor.count > 0) {
+                val idIndex = cursor.getColumnIndex(ProjectContract.TakeEntry._ID)
+                val deleteTake = String.format("%s=?", ProjectContract.TakeEntry._ID)
+                val removeSelectedTake =
+                    String.format("%s=?", ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                cursor.moveToFirst()
+                do {
+                    val cv = ContentValues()
+                    cv.putNull(ProjectContract.UnitEntry.UNIT_CHOSEN_TAKE_FK)
+                    db.update(
+                        ProjectContract.UnitEntry.TABLE_UNIT,
+                        cv,
+                        removeSelectedTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                    db.delete(
+                        ProjectContract.TakeEntry.TABLE_TAKE,
+                        deleteTake,
+                        arrayOf(cursor.getInt(idIndex).toString())
+                    )
+                } while (cursor.moveToNext())
+            }
         }
         db.setTransactionSuccessful()
         db.endTransaction()
@@ -2364,13 +2376,13 @@ class ProjectDatabaseHelper(
             ProjectContract.TakeEntry.TAKE_RATING,
             ProjectContract.TakeEntry.TAKE_TIMESTAMP
         )
-        val c = db.rawQuery(autoSelect, arrayOf(unitId.toString()))
-        if (c.count > 0) {
-            c.moveToFirst()
-            val takeId = c.getInt(0)
-            setSelectedTake(unitId, takeId)
+        db.rawQuery(autoSelect, arrayOf(unitId.toString())).use { cursor ->
+            if (cursor.count > 0) {
+                cursor.moveToFirst()
+                val takeId = cursor.getInt(0)
+                setSelectedTake(unitId, takeId)
+            }
         }
-        c.close()
     }
 
     override fun getBooks(anthologySlug: String): List<Book> {
@@ -2381,26 +2393,26 @@ class ProjectDatabaseHelper(
                 " ORDER BY " + ProjectContract.BookEntry.BOOK_NUMBER + " ASC"
         val db = readableDatabase
         db.beginTransaction()
-        val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            do {
-                val bookSlugIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_SLUG)
-                val bookSlug = cursor.getString(bookSlugIndex)
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                do {
+                    val bookSlugIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_SLUG)
+                    val bookSlug = cursor.getString(bookSlugIndex)
 
-                val bookNameIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NAME)
-                val bookName = cursor.getString(bookNameIndex)
+                    val bookNameIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NAME)
+                    val bookName = cursor.getString(bookNameIndex)
 
-                val anthologyIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)
-                val anthologyId = cursor.getInt(anthologyIndex)
+                    val anthologyIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_ANTHOLOGY_FK)
+                    val anthologyId = cursor.getInt(anthologyIndex)
 
-                val orderIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER)
-                val order = cursor.getInt(orderIndex)
+                    val orderIndex = cursor.getColumnIndex(ProjectContract.BookEntry.BOOK_NUMBER)
+                    val order = cursor.getInt(orderIndex)
 
-                val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthologySlug)
-                bookList.add(Book(bookSlug, localizedBookName, getAnthologySlug(anthologyId), order))
-            } while (cursor.moveToNext())
+                    val localizedBookName = Book.getLocalizedName(context, bookSlug, bookName, anthologySlug)
+                    bookList.add(Book(bookSlug, localizedBookName, getAnthologySlug(anthologyId), order))
+                } while (cursor.moveToNext())
+            }
         }
-        cursor.close()
         db.endTransaction()
         return bookList
     }
@@ -2413,17 +2425,17 @@ class ProjectDatabaseHelper(
                     " WHERE " + ProjectContract.VersionRelationshipEntry.ANTHOLOGY_FK + "=" + anthId.toString()
         val db = readableDatabase
         db.beginTransaction()
-        val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            do {
-                val versionIdIndex = cursor.getColumnIndex(ProjectContract.VersionRelationshipEntry.VERSION_FK)
-                val versionId = cursor.getInt(versionIdIndex)
-                val versionSlug = getVersionSlug(versionId)
-                val versionName = getVersionName(versionId)
-                versionList.add(Version(versionSlug, versionName))
-            } while (cursor.moveToNext())
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                do {
+                    val versionIdIndex = cursor.getColumnIndex(ProjectContract.VersionRelationshipEntry.VERSION_FK)
+                    val versionId = cursor.getInt(versionIdIndex)
+                    val versionSlug = getVersionSlug(versionId)
+                    val versionName = getVersionName(versionId)
+                    versionList.add(Version(versionSlug, versionName))
+                } while (cursor.moveToNext())
+            }
         }
-        cursor.close()
         db.endTransaction()
         return versionList
     }
@@ -2435,16 +2447,16 @@ class ProjectDatabaseHelper(
                 " WHERE " + ProjectContract.ModeEntry.MODE_ANTHOLOGY_FK + "=" + anthId.toString()
         val db = readableDatabase
         db.beginTransaction()
-        val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            do {
-                val modeIdIndex = cursor.getColumnIndex(ProjectContract.ModeEntry._ID)
-                val modeId = cursor.getInt(modeIdIndex)
-                val mode = getMode(modeId)
-                modeList.add(mode)
-            } while (cursor.moveToNext())
+        db.rawQuery(query, null).use { cursor ->
+            if (cursor.moveToFirst()) {
+                do {
+                    val modeIdIndex = cursor.getColumnIndex(ProjectContract.ModeEntry._ID)
+                    val modeId = cursor.getInt(modeIdIndex)
+                    val mode = getMode(modeId)
+                    modeList.add(mode)
+                } while (cursor.moveToNext())
+            }
         }
-        cursor.close()
         db.endTransaction()
         return modeList
     }

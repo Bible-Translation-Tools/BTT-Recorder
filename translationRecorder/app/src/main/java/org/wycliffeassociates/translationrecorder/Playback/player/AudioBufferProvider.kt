@@ -59,7 +59,6 @@ class AudioBufferProvider(
         get(skip)
         if (mAudio.position() == mAudio.limit()) {
             reset()
-            Logger.e(this.toString(), "Paused right at the limit")
         }
         startPosition = mAudio.position()
     }
