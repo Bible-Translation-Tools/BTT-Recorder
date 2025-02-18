@@ -1,75 +1,90 @@
-package org.wycliffeassociates.translationrecorder.AudioVisualization;
+package org.wycliffeassociates.translationrecorder.AudioVisualization
 
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BlockingQueue
+import kotlin.math.floor
+import kotlin.math.max
 
 /**
  * Created by sarabiaj on 12/20/2016.
  */
+class VisualizerRunnable : Runnable {
+    private var mStart: Int = 0
+    private var mEnd: Int = 0
+    private var mStartPosition: Int = 0
+    private var mIndex: Int = 0
+    private var mScreenHeight: Int = 0
+    private var mIncrement: Float = 0f
+    private var mTid: Int = 0
 
-public class VisualizerRunnable implements Runnable {
+    private lateinit var mAccessor: AudioFileAccessor
+    private lateinit var mResponse: BlockingQueue<Int>
+    private lateinit var mSamples: FloatArray
 
-    int mStart;
-    int mEnd;
-    int mUseCompressedFile;
-    int startPosition;
-    int index;
-    float[] mSamples;
-    AudioFileAccessor mAccessor;
-    BlockingQueue<Integer> mResponse;
-    int mIndex;
-    int mScreenHeight;
-    float increment;
-    int tid;
-
-    public VisualizerRunnable(){
-
+    fun newState(
+        start: Int,
+        end: Int,
+        response: BlockingQueue<Int>,
+        accessor: AudioFileAccessor,
+        samples: FloatArray,
+        index: Int,
+        screenHeight: Int,
+        startPosition: Int,
+        increment: Float,
+        tid: Int
+    ): VisualizerRunnable {
+        mStart = start
+        mEnd = end
+        mResponse = response
+        mAccessor = accessor
+        mSamples = samples
+        mIndex = index
+        mScreenHeight = screenHeight
+        mStartPosition = startPosition
+        mIncrement = increment
+        mTid = tid
+        return this
     }
 
-    public VisualizerRunnable newState(int start, int end, BlockingQueue<Integer> response, AudioFileAccessor accessor, float[] samples, int index, int screenHeight, int startPosition, float increment, int tid){
-        mStart = start;
-        mEnd = end;
-        mResponse = response;
-        mAccessor = accessor;
-        mSamples = samples;
-        mIndex = start * 4;
-        mScreenHeight = screenHeight;
-        this.startPosition = startPosition;
-        this.increment = increment;
-        this.tid = tid;
-        return this;
-    }
+    override fun run() {
+        var wroteData = false
+        var resetIncrementNextIteration = false
+        var offset = 0f
 
-    @Override
-    public void run() {
-        boolean wroteData = false;
-        boolean resetIncrementNextIteration = false;
-        float offset = 0;
-
-        for(int i = mStart; i < mEnd; i++){
-            if(startPosition > mAccessor.size()){
-                break;
+        for (i in mStart until mEnd) {
+            if (mStartPosition > mAccessor.size()) {
+                break
             }
-            mIndex = Math.max(WavVisualizer.addHighAndLowToDrawingArray(mAccessor, mSamples, startPosition, startPosition+(int)increment, mIndex, mScreenHeight), mIndex);
+            mIndex = max(
+                WavVisualizer.addHighAndLowToDrawingArray(
+                    mAccessor,
+                    mSamples,
+                    mStartPosition,
+                    mStartPosition + mIncrement.toInt(),
+                    mIndex,
+                    mScreenHeight
+                ).toDouble(),
+                mIndex.toDouble()
+            ).toInt()
 
-            startPosition += (int) Math.floor(increment);
-            if(resetIncrementNextIteration){
-                resetIncrementNextIteration = false;
-                increment--;
-                offset--;
+            mStartPosition += floor(mIncrement.toDouble()).toInt()
+            if (resetIncrementNextIteration) {
+                resetIncrementNextIteration = false
+                mIncrement--
+                offset--
             }
-            if(offset > 1.0) {
-                increment++;
-                resetIncrementNextIteration = true;
+            if (offset > 1.0) {
+                mIncrement++
+                resetIncrementNextIteration = true
             }
-            offset += (float) (increment - Math.floor(increment));
+            offset += (mIncrement - floor(mIncrement.toDouble())).toFloat()
 
-            wroteData = true;
+            wroteData = true
         }
 
         try {
-            mResponse.put((wroteData)? mIndex : 0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            mResponse.put(if (wroteData) mIndex else 0)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
     }
 }

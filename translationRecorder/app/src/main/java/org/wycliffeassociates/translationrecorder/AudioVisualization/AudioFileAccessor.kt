@@ -1,129 +1,127 @@
-package org.wycliffeassociates.translationrecorder.AudioVisualization;
+package org.wycliffeassociates.translationrecorder.AudioVisualization
 
-import com.door43.tools.reporting.Logger;
-
-import org.wycliffeassociates.translationrecorder.AudioInfo;
-import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp;
-
-import java.nio.ShortBuffer;
+import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.AudioInfo
+import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
+import java.nio.ShortBuffer
 
 /**
  * Created by sarabiaj on 1/12/2016.
  */
-
-
 /**
  * Keywords:
  * Relative - index or time with cuts abstracted away
  * Absolute - index or time with cut data still existing
  */
-public class AudioFileAccessor {
-    ShortBuffer mCompressed;
-    ShortBuffer mUncompressed;
-    CutOp mCut;
-    int mWidth;
-    boolean mUseCmp = false;
+class AudioFileAccessor(
+    private var mCompressed: ShortBuffer?,
+    private var mUncompressed: ShortBuffer,
+    private var mCut: CutOp
+) {
+    private var mUseCmp = mCompressed != null
 
-    public AudioFileAccessor(ShortBuffer compressed, ShortBuffer uncompressed, CutOp cut) {
-        mCompressed = compressed;
-        mUncompressed = uncompressed;
-        mCut = cut;
-        mWidth = AudioInfo.SCREEN_WIDTH;
-        //increment to write the compressed file. ~44 indices uncompressed = 2 compressed
-        mUseCmp = compressed != null;
+    fun switchBuffers(cmpReady: Boolean) {
+        mUseCmp = cmpReady
     }
 
-    public void switchBuffers(boolean cmpReady) {
-        if (cmpReady) {
-            mUseCmp = true;
-        } else {
-            mUseCmp = false;
-        }
-    }
-
-    public void setCompressed(ShortBuffer compressed) {
-        mCompressed = compressed;
+    fun setCompressed(compressed: ShortBuffer?) {
+        mCompressed = compressed
     }
 
     //FIXME: should not be returning 0 if out of bounds access, there's a bigger issue here
-    public short get(int idx) {
-        int loc = mCut.relativeLocToAbsolute(idx, mUseCmp);
-        short val;
+    fun get(idx: Int): Short {
+        val loc = mCut.relativeLocToAbsolute(idx, mUseCmp)
+        val value: Short
         if (mUseCmp) {
             if (loc < 0) {
-                Logger.e(this.toString(), "ERROR, tried to access a negative location from the compressed buffer!");
-                return 0;
-            } else if (loc >= mCompressed.capacity()) {
-                Logger.e(this.toString(), "ERROR, tried to access a negative location from the compressed buffer!");
-                return 0;
+                Logger.e(
+                    this.toString(),
+                    "ERROR, tried to access a negative location from the compressed buffer!"
+                )
+                return 0
+            } else if (loc >= mCompressed!!.capacity()) {
+                Logger.e(
+                    this.toString(),
+                    "ERROR, tried to access a negative location from the compressed buffer!"
+                )
+                return 0
             }
-            val = mCompressed.get(loc);
+            value = mCompressed!![loc]
         } else {
             if (loc < 0) {
-                Logger.e(this.toString(), "ERROR, tried to access a negative location from the compressed buffer!");
-                return 0;
+                Logger.e(
+                    this.toString(),
+                    "ERROR, tried to access a negative location from the compressed buffer!"
+                )
+                return 0
             } else if (loc >= mUncompressed.capacity()) {
-                Logger.e(this.toString(), "ERROR, tried to access a negative location from the compressed buffer!");
-                return 0;
+                Logger.e(
+                    this.toString(),
+                    "ERROR, tried to access a negative location from the compressed buffer!"
+                )
+                return 0
             }
-            val = mUncompressed.get(loc);
+            value = mUncompressed[loc]
         }
-        return val;
+        return value
     }
 
-    public int size() {
+    fun size(): Int {
         if (mUseCmp) {
-            return mCompressed.capacity() - mCut.getSizeFrameCutCmp();
+            return mCompressed!!.capacity() - mCut.sizeFrameCutCmp
         }
-        return mUncompressed.capacity() - mCut.getSizeFrameCutUncmp();
+        return mUncompressed.capacity() - mCut.sizeFrameCutUncmp
     }
 
-    public int[] indexAfterSubtractingFrame(int framesToSubtract, int currentFrame) {
-        int frame = currentFrame;
-        frame -= framesToSubtract;
-        int loc = frameToIndex(frame);
-        int[] locAndTime = new int[2];
-        locAndTime[0] = loc;
-        locAndTime[1] = frame;
-        return locAndTime;
+    fun indexAfterSubtractingFrame(framesToSubtract: Int, currentFrame: Int): IntArray {
+        var frame = currentFrame
+        frame -= framesToSubtract
+        val loc = frameToIndex(frame)
+        val locAndTime = IntArray(2)
+        locAndTime[0] = loc
+        locAndTime[1] = frame
+        return locAndTime
     }
 
-    public int frameToIndex(int frame) {
+    fun frameToIndex(frame: Int): Int {
+        var mFrame = frame
         if (mUseCmp) {
-            frame /= 25;
+            mFrame /= 25
         }
-        return frame;
+        return mFrame
     }
 
-    public int relativeIndexToAbsolute(int idx) {
-        return mCut.relativeLocToAbsolute(idx, mUseCmp);
+    fun relativeIndexToAbsolute(idx: Int): Int {
+        return mCut.relativeLocToAbsolute(idx, mUseCmp)
     }
 
-    public int absoluteIndexToRelative(int idx) {
-        return mCut.absoluteLocToRelative(idx, mUseCmp);
+    fun absoluteIndexToRelative(idx: Int): Int {
+        return mCut.absoluteLocToRelative(idx, mUseCmp)
     }
 
-    public static int fileIncrement() {
-        return AudioInfo.COMPRESSION_RATE;
-    }
+    companion object {
+        fun fileIncrement(): Int {
+            return AudioInfo.COMPRESSION_RATE
+        }
 
-    //used for minimap
-    public static double uncompressedIncrement(double adjustedDuration, double screenWidth) {
-        return (adjustedDuration / screenWidth);
-    }
+        //FIXME: rounding will compound error in long files, resulting in pixels being off
+        //used for minimap- this is why the duration matters
+        fun getIncrement(useCmp: Boolean, adjustedDuration: Double, screenWidth: Double): Double {
+            return if (useCmp) {
+                compressedIncrement(adjustedDuration, screenWidth)
+            } else {
+                uncompressedIncrement(adjustedDuration, screenWidth)
+            }
+        }
 
-    //used for minimap
-    public static double compressedIncrement(double adjustedDuration, double screenWidth) {
-        return (uncompressedIncrement(adjustedDuration, screenWidth) / 25.f);
-    }
+        //used for minimap
+        private fun uncompressedIncrement(adjustedDuration: Double, screenWidth: Double): Double {
+            return (adjustedDuration / screenWidth)
+        }
 
-    //FIXME: rounding will compound error in long files, resulting in pixels being off
-    //used for minimap- this is why the duration matters
-    public static double getIncrement(boolean useCmp, double adjustedDuration, double screenWidth) {
-        if (useCmp) {
-            return compressedIncrement(adjustedDuration, screenWidth);
-        } else {
-            return uncompressedIncrement(adjustedDuration, screenWidth);
+        //used for minimap
+        private fun compressedIncrement(adjustedDuration: Double, screenWidth: Double): Double {
+            return (uncompressedIncrement(adjustedDuration, screenWidth) / 25f)
         }
     }
 }

@@ -285,8 +285,8 @@ class WaveformFragment : Fragment(), PositionChangeMediator, MarkerLineDrawDeleg
     }
 
     override fun onDrawWaveform(canvas: Canvas, paint: Paint) {
-        if (mWavVis != null) {
-            canvas.drawLines(mWavVis!!.getDataToDraw(mCurrentRelativeFrame), paint)
+        mWavVis?.let {
+            canvas.drawLines(it.getDataToDraw(mCurrentRelativeFrame), paint)
         }
     }
 

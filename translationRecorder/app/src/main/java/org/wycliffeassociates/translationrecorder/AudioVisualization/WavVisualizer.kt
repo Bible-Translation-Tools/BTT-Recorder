@@ -1,237 +1,261 @@
-package org.wycliffeassociates.translationrecorder.AudioVisualization;
+package org.wycliffeassociates.translationrecorder.AudioVisualization
 
-import org.wycliffeassociates.translationrecorder.AudioInfo;
-import org.wycliffeassociates.translationrecorder.AudioVisualization.Utils.U;
-import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp;
+import org.wycliffeassociates.translationrecorder.AudioInfo
+import org.wycliffeassociates.translationrecorder.AudioVisualization.Utils.U
+import org.wycliffeassociates.translationrecorder.Playback.Editing.CutOp
+import java.nio.ShortBuffer
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+class WavVisualizer(
+    buffer: ShortBuffer,
+    compressed: ShortBuffer?,
+    numThreads: Int,
+    private var mScreenWidth: Int,
+    private var mScreenHeight: Int,
+    minimapWidth: Int,
+    cut: CutOp
+) {
+    private var mNumFramesOnScreen = DEFAULT_FRAMES_ON_SCREEN
+    private var mUseCompressedFile = false
+    private var mCanSwitch = compressed != null
+    private val mSamples = FloatArray(mScreenWidth * 4)
+    private val mMinimap = FloatArray(minimapWidth * 4)
+    private var mAccessor = AudioFileAccessor(compressed, buffer, cut)
 
+    private var mNumThreads = numThreads
+    private var mThreadResponse: MutableList<LinkedBlockingQueue<Int>> = ArrayList(mNumThreads)
+    private var mRunnable: Array<VisualizerRunnable?> = arrayOfNulls(mNumThreads)
+    private var mThreads = ThreadPoolExecutor(
+        mNumThreads,
+        mNumThreads,
+        20,
+        TimeUnit.SECONDS,
+        ArrayBlockingQueue(mNumThreads)
+    )
 
-public class WavVisualizer {
-
-    private float mUserScale = 1f;
-    private final int mDefaultFramesOnScreen = 441000;
-    public static int mNumFramesOnScreen;
-    private boolean mUseCompressedFile = false;
-    private boolean mCanSwitch = false;
-    private final float[] mSamples;
-    private final float[] mMinimap;
-    int mScreenHeight;
-    int mScreenWidth;
-    AudioFileAccessor mAccessor;
-
-    ThreadPoolExecutor mThreads;
-    List<LinkedBlockingQueue<Integer>> mThreadResponse;
-    VisualizerRunnable[] mRunnable;
-
-    int mNumThreads;
-
-    public WavVisualizer(ShortBuffer buffer, ShortBuffer compressed, int numThreads, int screenWidth, int screenHeight, int minimapWidth, CutOp cut) {
-        mScreenHeight = screenHeight;
-        mScreenWidth = screenWidth;
-        mNumFramesOnScreen = mDefaultFramesOnScreen;
-        mCanSwitch = compressed != null;
-        mSamples = new float[screenWidth*4];
-        mAccessor = new AudioFileAccessor(compressed, buffer, cut);
-        mMinimap = new float[minimapWidth * 4];
-        mNumThreads = numThreads;
-        mThreads = new ThreadPoolExecutor(mNumThreads, mNumThreads, 20, TimeUnit.SECONDS, new ArrayBlockingQueue<>(mNumThreads));
-        mThreads.allowCoreThreadTimeOut(true);
-        mThreadResponse = new ArrayList<>(mNumThreads);
-        mRunnable = new VisualizerRunnable[mNumThreads];
-        for(int i = 0; i < mNumThreads; i++){
-            mThreadResponse.add(new LinkedBlockingQueue<>(1));
-            mRunnable[i] = new VisualizerRunnable();
+    init {
+        mThreads.allowCoreThreadTimeOut(true)
+        for (i in 0 until mNumThreads) {
+            mThreadResponse.add(LinkedBlockingQueue(1))
+            mRunnable[i] = VisualizerRunnable()
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        mThreads.shutdown();
-        mThreads.purge();
+    @Throws(Throwable::class)
+    protected fun finalize() {
+        mThreads.shutdown()
+        mThreads.purge()
     }
 
-    public void enableCompressedFileNextDraw(ShortBuffer compressed){
-        mAccessor.setCompressed(compressed);
-        mCanSwitch = true;
+    fun enableCompressedFileNextDraw(compressed: ShortBuffer?) {
+        mAccessor.setCompressed(compressed)
+        mCanSwitch = true
     }
 
-    public float[] getMinimap(int minimapHeight, int minimapWidth, int durationFrames){
+    fun getMinimap(minimapHeight: Int, minimapWidth: Int, durationFrames: Int): FloatArray {
         //selects the proper buffer to use
-        boolean useCompressed = mCanSwitch && mNumFramesOnScreen > AudioInfo.COMPRESSED_FRAMES_ON_SCREEN;
-        mAccessor.switchBuffers(useCompressed);
+        val useCompressed = mCanSwitch && mNumFramesOnScreen > AudioInfo.COMPRESSED_FRAMES_ON_SCREEN
+        mAccessor.switchBuffers(useCompressed)
 
-        int pos = 0;
-        int index = 0;
+        var pos = 0
+        var index = 0
 
-        double incrementTemp = AudioFileAccessor.getIncrement(useCompressed, durationFrames, minimapWidth);
-        double leftover = incrementTemp - (int)Math.floor(incrementTemp);
-        double count = 0;
-        int increment = (int)Math.floor(incrementTemp);
-        boolean leapedInc = false;
-        for(int i = 0; i < minimapWidth; i++){
-            double max = Double.MIN_VALUE;
-            double min = Double.MAX_VALUE;
-            if(count > 1){
-                count-=1;
-                increment++;
-                leapedInc = true;
+        val incrementTemp = AudioFileAccessor.getIncrement(
+            useCompressed,
+            durationFrames.toDouble(),
+            minimapWidth.toDouble()
+        )
+        val leftover = incrementTemp - floor(incrementTemp).toInt()
+        var count = 0.0
+        var increment = floor(incrementTemp).toInt()
+        var leapedInc = false
+        for (i in 0 until minimapWidth) {
+            var max = Double.MIN_VALUE
+            var min = Double.MAX_VALUE
+            if (count > 1) {
+                count -= 1.0
+                increment++
+                leapedInc = true
             }
-            for(int j = 0; j < increment; j++){
-                if(pos >= mAccessor.size()){
-                    break;
+            for (j in 0 until increment) {
+                if (pos >= mAccessor.size()) {
+                    break
                 }
-                short value = mAccessor.get(pos);
-                max = (max < (double) value) ? value : max;
-                min = (min > (double) value) ? value : min;
-                pos++;
+                val value = mAccessor.get(pos)
+                max = if ((max < value.toDouble())) value.toDouble() else max
+                min = if ((min > value.toDouble())) value.toDouble() else min
+                pos++
             }
-            if(leapedInc){
-                increment--;
-                leapedInc = false;
+            if (leapedInc) {
+                increment--
+                leapedInc = false
             }
-            count += leftover;
-            mMinimap[index] = (float) index / 4;
-            mMinimap[index+1] = U.getValueForScreen(max, minimapHeight);
-            mMinimap[index+2] = (float) index / 4;
-            mMinimap[index+3] = U.getValueForScreen(min, minimapHeight);
-            index += 4;
+            count += leftover
+            mMinimap[index] = index.toFloat() / 4
+            mMinimap[index + 1] = U.getValueForScreen(max, minimapHeight)
+            mMinimap[index + 2] = index.toFloat() / 4
+            mMinimap[index + 3] = U.getValueForScreen(min, minimapHeight)
+            index += 4
         }
 
-        return mMinimap;
+        return mMinimap
     }
 
-    public float[] getDataToDraw(int frame){
-        mNumFramesOnScreen = computeNumFramesOnScreen(mUserScale);
+    fun getDataToDraw(frame: Int): FloatArray {
+        mNumFramesOnScreen = computeNumFramesOnScreen(USER_SCALE)
         //based on the user scale, determine which buffer waveData should be
-        mUseCompressedFile = shouldUseCompressedFile(mNumFramesOnScreen);
-        mAccessor.switchBuffers(mUseCompressedFile);
+        mUseCompressedFile = shouldUseCompressedFile(mNumFramesOnScreen)
+        mAccessor.switchBuffers(mUseCompressedFile)
 
         //get the number of array indices to skip over- the array will likely contain more data than one pixel can show
-        float increment = getIncrement(mNumFramesOnScreen);
-        int framesToSubtract = framesBeforePlaybackLine(mNumFramesOnScreen);
-        int[] locAndTime = mAccessor.indexAfterSubtractingFrame(framesToSubtract, frame);
-        int startPosition = locAndTime[0];
-        int newTime = locAndTime[1];
-        int index = initializeSamples(mSamples, startPosition, newTime);
-        //in the event that the actual start position ends up being negative (such as from shifting forward due to playback being at the start of the file)
-        //it should be set to zero (and the buffer will already be initialized with some zeros, with index being the index of where to resume placing data
-        startPosition = Math.max(0, startPosition);
-        int end = mSamples.length/4;
+        val increment = getIncrement(mNumFramesOnScreen)
+        val framesToSubtract = framesBeforePlaybackLine(mNumFramesOnScreen)
+        val locAndTime = mAccessor.indexAfterSubtractingFrame(framesToSubtract, frame)
+        var startPosition = locAndTime[0]
+        val newTime = locAndTime[1]
+        var index = initializeSamples(mSamples, startPosition, newTime)
+        // in the event that the actual start position ends up being negative
+        // (such as from shifting forward due to playback being at the start of the file)
+        // it should be set to zero (and the buffer will already be initialized with some zeros,
+        // with index being the index of where to resume placing data
+        startPosition = max(0, startPosition)
+        val end = mSamples.size / 4
+        val iterations = end - index / 4
+        val rangePerThread = iterations / mNumThreads
 
-        int iterations = end - index/4;
-        int rangePerThread = iterations / mNumThreads;
-
-        for(int i = 0; i < mThreadResponse.size(); i++){
-            mThreads.submit(mRunnable[i].newState(
-                    index/4 + (rangePerThread * i),
-                    index/4 + (rangePerThread * (i+1)),
-                    mThreadResponse.get(i),
+        for (i in mThreadResponse.indices) {
+            mThreads.submit(
+                mRunnable[i]?.newState(
+                    index / 4 + (rangePerThread * i),
+                    index / 4 + (rangePerThread * (i + 1)),
+                    mThreadResponse[i],
                     mAccessor,
                     mSamples,
-                    index + ((rangePerThread * mNumThreads) * i),
+                    index + (rangePerThread * mNumThreads * i),
                     mScreenHeight,
-                    startPosition + (int)((increment) * (rangePerThread * i)),
+                    startPosition + (increment * rangePerThread * i).toInt(),
                     increment,
                     i
-            ));
+                )
+            )
         }
 
-        for (LinkedBlockingQueue<Integer> integers : mThreadResponse) {
+        for (integers in mThreadResponse) {
             try {
-                int returnIdx = integers.take();
-                index = Math.max(returnIdx, index);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                val returnIdx = integers.take()
+                index = max(returnIdx, index)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
         }
 
         //zero out the rest of the array
-        for (int i = index; i < mSamples.length; i++){
-            mSamples[i] = 0;
+        //index -= 4
+        for (i in index until mSamples.size) {
+            mSamples[i] = 0f
         }
 
-        return mSamples;
+        return mSamples
     }
 
-    public static int addHighAndLowToDrawingArray(AudioFileAccessor accessor, float[] samples, int beginIdx, int endIdx, int index, int screenHeight){
-
-        boolean addedVal = false;
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-
-        //loop over the indicated chunk of data to extract out the high and low in that section, then store it in samples
-        for(int i = beginIdx; i < Math.min(accessor.size(), endIdx); i++){
-            short value = accessor.get(i);
-            max = (max < (double) value) ? value : max;
-            min = (min > (double) value) ? value : min;
-        }
-        if(samples.length > index+4){
-            samples[index] = (float) index / 4;
-            samples[index+1] = U.getValueForScreen(max, screenHeight);
-            samples[index+2] = (float) index / 4;
-            samples[index+3] = U.getValueForScreen(min, screenHeight);
-            index += 4;
-            addedVal = true;
-        }
-
-        //returns the end of relevant data in the buffer
-        return (addedVal)? index : 0;
-    }
-
-    private int initializeSamples(float[] samples, int startPosition, int framesUntilZero){
-        if(startPosition <= 0) {
-            int numberOfZeros = 0;
-            if(framesUntilZero < 0){
-                framesUntilZero *= -1;
-                double fpp = (mNumFramesOnScreen) / (double)mScreenWidth;
-                numberOfZeros = (int)Math.round(framesUntilZero/fpp);
+    private fun initializeSamples(
+        samples: FloatArray,
+        startPosition: Int,
+        framesUntilZero: Int
+    ): Int {
+        var mFramesUntilZero = framesUntilZero
+        if (startPosition <= 0) {
+            var numberOfZeros = 0
+            if (mFramesUntilZero < 0) {
+                mFramesUntilZero *= -1
+                val fpp = (mNumFramesOnScreen) / mScreenWidth.toDouble()
+                numberOfZeros = Math.round(mFramesUntilZero / fpp).toInt()
             }
-            int index = 0;
-            for (int i = 0; i < numberOfZeros; i++) {
-                samples[index] = (float) index / 4;
-                samples[index+1] = 0;
-                samples[index+2] = (float) index / 4;
-                samples[index+3] = 0;
-                index += 4;
+            var index = 0
+            for (i in 0 until numberOfZeros) {
+                samples[index] = index.toFloat() / 4
+                samples[index + 1] = 0f
+                samples[index + 2] = index.toFloat() / 4
+                samples[index + 3] = 0f
+                index += 4
             }
-            return index;
+            return index
         }
-        return 0;
+        return 0
     }
 
-    public boolean shouldUseCompressedFile(int numFramesOnScreen){
-        return numFramesOnScreen >= AudioInfo.COMPRESSED_FRAMES_ON_SCREEN && mCanSwitch;
+    private fun shouldUseCompressedFile(numFramesOnScreen: Int): Boolean {
+        return numFramesOnScreen >= AudioInfo.COMPRESSED_FRAMES_ON_SCREEN && mCanSwitch
     }
 
-    private int framesBeforePlaybackLine(int numFramesOnScreen){
-        return numFramesOnScreen / 8;
+    private fun framesBeforePlaybackLine(numFramesOnScreen: Int): Int {
+        return numFramesOnScreen / 8
     }
 
-    private int computeSampleStartPosition(int startFrame){
-        if(mUseCompressedFile){
-            startFrame /= 25;
+    private fun computeSampleStartPosition(startFrame: Int): Int {
+        var mStartFrame = startFrame
+        if (mUseCompressedFile) {
+            mStartFrame /= 25
         }
-        return startFrame;
+        return mStartFrame
     }
 
-    private float getIncrement(int numFramesOnScreen){
-        float increment = (int)( numFramesOnScreen / (float)mScreenWidth);
-        if(mUseCompressedFile) {
-            increment /= 25.0F;
+    private fun getIncrement(numFramesOnScreen: Int): Float {
+        var increment = numFramesOnScreen / mScreenWidth.toFloat()
+        if (mUseCompressedFile) {
+            increment /= 25.0f
         }
-        return increment;
+        return increment
     }
 
-    private int computeNumFramesOnScreen(float userScale) {
-        int numSecondsOnScreen = Math.round(mNumFramesOnScreen * userScale);
-        return Math.max(numSecondsOnScreen, AudioInfo.COMPRESSED_SECONDS_ON_SCREEN);
+    private fun computeNumFramesOnScreen(userScale: Float): Int {
+        val numSecondsOnScreen = Math.round(mNumFramesOnScreen * userScale)
+        return max(
+            numSecondsOnScreen,
+            AudioInfo.COMPRESSED_SECONDS_ON_SCREEN
+        )
+    }
+
+    companion object {
+        private const val USER_SCALE = 1f
+        private const val DEFAULT_FRAMES_ON_SCREEN = 441000
+
+        fun addHighAndLowToDrawingArray(
+            accessor: AudioFileAccessor,
+            samples: FloatArray,
+            beginIdx: Int,
+            endIdx: Int,
+            index: Int,
+            screenHeight: Int
+        ): Int {
+            var mIndex = index
+            var addedVal = false
+            var max = Double.MIN_VALUE
+            var min = Double.MAX_VALUE
+
+            //loop over the indicated chunk of data to extract out the high and low in that section, then store it in samples
+            for (i in beginIdx .. min(accessor.size(), endIdx)) {
+                val value = accessor.get(i)
+                max = if ((max < value.toDouble())) value.toDouble() else max
+                min = if ((min > value.toDouble())) value.toDouble() else min
+            }
+            if (samples.size > mIndex + 4) {
+                samples[mIndex] = mIndex.toFloat() / 4
+                samples[mIndex + 1] = U.getValueForScreen(max, screenHeight)
+                samples[mIndex + 2] = mIndex.toFloat() / 4
+                samples[mIndex + 3] = U.getValueForScreen(min, screenHeight)
+                mIndex += 4
+                addedVal = true
+            }
+
+            //returns the end of relevant data in the buffer
+            return if ((addedVal)) mIndex else 0
+        }
     }
 }
