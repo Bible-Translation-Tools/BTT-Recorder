@@ -42,7 +42,9 @@ import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
 import org.wycliffeassociates.translationrecorder.project.ChunkPluginLoader
+import org.wycliffeassociates.translationrecorder.usecases.CreateBackup
 import org.wycliffeassociates.translationrecorder.usecases.MigrateOldApp
+import org.wycliffeassociates.translationrecorder.usecases.RestoreBackup
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import java.io.File
 import javax.inject.Inject
@@ -59,6 +61,8 @@ class SettingsFragment : PreferenceFragmentCompat(),
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var assetsProvider: AssetsProvider
     @Inject lateinit var migrateOldApp: MigrateOldApp
+    @Inject lateinit var createBackup: CreateBackup
+    @Inject lateinit var restoreBackup: RestoreBackup
 
     private var parent: LanguageSelector? = null
     private lateinit var taskFragment: TaskFragment
@@ -225,7 +229,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onCreateBackup(zipFileUri: Uri) {
         taskFragment.executeRunnable(
-            CreateBackupTask(BACKUP_TASK_TAG, requireActivity(), zipFileUri, directoryProvider),
+            CreateBackupTask(BACKUP_TASK_TAG, zipFileUri, createBackup),
             getString(R.string.creating_backup),
             getString(R.string.please_wait),
             true
@@ -234,7 +238,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onRestoreBackup(zipFileUri: Uri) {
         taskFragment.executeRunnable(
-            RestoreBackupTask(RESTORE_TASK_TAG, requireActivity(), zipFileUri, directoryProvider),
+            RestoreBackupTask(RESTORE_TASK_TAG, zipFileUri, restoreBackup),
             getString(R.string.restoring_backup),
             getString(R.string.please_wait),
             true

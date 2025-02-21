@@ -5,7 +5,9 @@ import android.net.Uri
 import com.door43.sysutils.FileUtilities
 import com.door43.tools.reporting.Logger
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.usecases.APP_DATA_DIR
 import org.wycliffeassociates.translationrecorder.usecases.ImportProject
+import org.wycliffeassociates.translationrecorder.usecases.USER_DATA_DIR
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import java.io.File
 import java.io.IOException
@@ -42,22 +44,29 @@ class ImportProjectTask(
             context.contentResolver.openInputStream(projectUri)?.use { inputStream ->
                 extractZip(inputStream, extractedDir)
 
-                projectInfo?.let { info ->
-                    val projectDir = File(tempDir, "${info.language}/${info.version}")
-                    projectDir.mkdirs()
-                    FileUtilities.copyDirectory(extractedDir, projectDir, null)
+                if (validProjectDir(extractedDir)) {
+                    projectInfo?.let { info ->
+                        val projectDir = File(tempDir, "${info.language}/${info.version}")
+                        projectDir.mkdirs()
+                        FileUtilities.copyDirectory(extractedDir, projectDir, null)
 
-                    importProject(File(tempDir, info.language))
-                } ?: run {
-                    Logger.e(ImportProjectTask::class.toString(), "Could not define project details")
+                        importProject(File(tempDir, info.language))
+                        onTaskCompleteDelegator()
+                    } ?: run {
+                        Logger.e(ImportProjectTask::class.toString(), "Could not define project details")
+                        onTaskErrorDelegator()
+                    }
+                } else {
+                    Logger.e(ImportProjectTask::class.toString(), "Invalid project backup file.")
+                    onTaskErrorDelegator()
                 }
             }
-            FileUtilities.deleteRecursive(tempDir)
         } catch (e: IOException) {
             Logger.e(ImportProjectTask::class.toString(), e.message, e)
+            onTaskErrorDelegator()
         }
 
-        onTaskCompleteDelegator()
+        FileUtilities.deleteRecursive(tempDir)
     }
 
     private fun setProjectInfo(fileName: String) {
@@ -103,6 +112,16 @@ class ImportProjectTask(
                 }
                 zip.closeEntry()
             }
+        }
+    }
+
+    private fun validProjectDir(projectDir: File): Boolean {
+        val dirs = projectDir.listFiles()
+
+        return when {
+            dirs == null -> false
+            dirs.any { it.name == APP_DATA_DIR || it.name == USER_DATA_DIR } -> false
+            else -> true
         }
     }
 

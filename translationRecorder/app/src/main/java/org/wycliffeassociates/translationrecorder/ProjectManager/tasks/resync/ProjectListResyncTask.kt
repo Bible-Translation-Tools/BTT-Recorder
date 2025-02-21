@@ -55,44 +55,45 @@ class ProjectListResyncTask(
                                     if (!bookDir.isDirectory) {
                                         continue
                                     }
-                                    //get the project from the database if it exists
-                                    var project = db.getProject(lang.name, version.name, bookDir.name)
-                                    if (project != null) {
-                                        projectDirectories[project] = bookDir
-                                    } else { //otherwise derive the project from the filename
-                                        val chapters = bookDir.listFiles()
-                                        var mode: Mode? = null
-                                        var sampleFile: File? = null
 
-                                        if (chapters != null) {
-                                            for (chapter in chapters) {
-                                                if (!chapter.isDirectory) {
-                                                    continue
-                                                }
-                                                val c = chapter.listFiles()
-                                                if (c != null) {
-                                                    for (i in c.indices) {
-                                                        try {
-                                                            val wav = WavFile(c[i])
-                                                            val modeId = db.getModeId(
-                                                                wav.metadata.modeSlug,
-                                                                wav.metadata.anthology
-                                                            )
-                                                            mode = db.getMode(modeId)
-                                                            sampleFile = c[i]
-                                                        } catch (e: IllegalArgumentException) {
-                                                            //don't worry about the corrupt file dialog here;
-                                                            // the database resync will pick it up.
-                                                            Logger.e(toString(), c[i].name, e)
-                                                            continue
+                                    try {
+                                        //get the project from the database if it exists
+                                        var project = db.getProject(lang.name, version.name, bookDir.name)
+                                        if (project != null) {
+                                            projectDirectories[project] = bookDir
+                                        } else { //otherwise derive the project from the filename
+                                            val chapters = bookDir.listFiles()
+                                            var mode: Mode? = null
+                                            var sampleFile: File? = null
+
+                                            if (chapters != null) {
+                                                for (chapter in chapters) {
+                                                    if (!chapter.isDirectory) {
+                                                        continue
+                                                    }
+                                                    val c = chapter.listFiles()
+                                                    if (c != null) {
+                                                        for (i in c.indices) {
+                                                            try {
+                                                                val wav = WavFile(c[i])
+                                                                val modeId = db.getModeId(
+                                                                    wav.metadata.modeSlug,
+                                                                    wav.metadata.anthology
+                                                                )
+                                                                mode = db.getMode(modeId)
+                                                                sampleFile = c[i]
+                                                            } catch (e: IllegalArgumentException) {
+                                                                //don't worry about the corrupt file dialog here;
+                                                                // the database resync will pick it up.
+                                                                Logger.e(toString(), c[i].name, e)
+                                                                continue
+                                                            }
+                                                            break
                                                         }
-                                                        break
                                                     }
                                                 }
                                             }
-                                        }
-                                        if (chapters != null && mode != null) {
-                                            try {
+                                            if (chapters != null && mode != null) {
                                                 val languageId = db.getLanguageId(lang.name)
                                                 val bookId = db.getBookId(bookDir.name)
                                                 val book = db.getBook(bookId)
@@ -116,11 +117,11 @@ class ProjectListResyncTask(
                                                 }
 
                                                 projectDirectories[project] = bookDir
-                                            } catch (e: Exception) {
-                                                val projectId = "${lang.name}_${version.name}_${bookDir.name}"
-                                                Logger.e(this::javaClass.name, "Error syncing project $projectId", e)
                                             }
                                         }
+                                    } catch (e: Exception) {
+                                        val projectId = "${lang.name}_${version.name}_${bookDir.name}"
+                                        Logger.e(this::javaClass.name, "Error syncing project $projectId", e)
                                     }
                                 }
                             }
