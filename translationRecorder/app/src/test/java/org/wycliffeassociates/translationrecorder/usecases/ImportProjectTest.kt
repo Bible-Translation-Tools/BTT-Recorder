@@ -91,4 +91,32 @@ class ImportProjectTest {
         verify { db.addTake(any(), any(), any(), any(), any(), any()) }
         verify { directoryProvider.translationsDir }
     }
+
+    @Test
+    fun testImportProjectWithNoUserFails() {
+        val projectDir = tempFolder.newFolder("project")
+        val audioFile = File(projectDir, "aa_reg_b01_gen_c01_v01_t01.wav")
+        audioFile.createNewFile()
+
+        every { db.allUsers }.returns(listOf())
+
+        val importProject = ImportProject(db, directoryProvider)
+        importProject(projectDir)
+
+        verify { db.allUsers }
+        verify(exactly = 0) { db.addProject(any()) }
+        verify(exactly = 0) { db.addTake(any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun testImportProjectAsFilFails() {
+        val projectDir = tempFolder.newFile("project.zip")
+
+        val importProject = ImportProject(db, directoryProvider)
+        importProject(projectDir)
+
+        verify(exactly = 0) { db.allUsers }
+        verify(exactly = 0) { db.addProject(any()) }
+        verify(exactly = 0) { db.addTake(any(), any(), any(), any(), any(), any()) }
+    }
 }
