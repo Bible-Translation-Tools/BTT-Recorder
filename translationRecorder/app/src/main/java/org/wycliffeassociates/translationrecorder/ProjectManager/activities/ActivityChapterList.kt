@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.door43.tools.reporting.Logger
 import dagger.hilt.android.AndroidEntryPoint
+import org.wycliffeassociates.translationrecorder.FilesPage.FeedbackDialog
 import org.wycliffeassociates.translationrecorder.ProjectManager.adapters.ChapterCardAdapter
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CheckingDialog
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.CompileDialog
@@ -132,7 +133,7 @@ class ActivityChapterList : AppCompatActivity(), CheckingDialog.DialogListener,
         }
     }
 
-    fun refreshChapterCards() {
+    private fun refreshChapterCards() {
         val unitsStarted = db.getNumStartedUnitsInProject(
             mProject
         )
@@ -252,20 +253,39 @@ class ActivityChapterList : AppCompatActivity(), CheckingDialog.DialogListener,
         }
     }
 
-    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
-        if (resultCode == TaskFragment.STATUS_OK) {
-            if (taskTag == DATABASE_RESYNC_TASK) {
+    override fun onTaskComplete(taskTag: Int) {
+        when (taskTag) {
+            DATABASE_RESYNC_TASK -> {
                 mDbResyncing = false
                 refreshChapterCards()
-            } else if (taskTag == COMPILE_CHAPTER_TASK) {
-                for (i in mChaptersCompiled!!) {
-                    val chapter = mChapterCardList[i].chapterNumber
-                    db.setCheckingLevel(mProject, chapter, 0)
-                    mChapterCardList[i].compile()
-                    mAdapter!!.notifyItemChanged(i)
+            }
+            COMPILE_CHAPTER_TASK -> {
+                mChaptersCompiled?.let { chapters ->
+                    for (i in chapters) {
+                        val chapter = mChapterCardList[i].chapterNumber
+                        db.setCheckingLevel(mProject, chapter, 0)
+                        mChapterCardList[i].compile()
+                        mAdapter?.notifyItemChanged(i)
+                    }
                 }
             }
         }
+    }
+
+    override fun onTaskError(taskTag: Int, message: String?) {
+        if (taskTag == COMPILE_CHAPTER_TASK) {
+            val fd = FeedbackDialog.newInstance(
+                getString(R.string.compiling_chapter),
+                getString(
+                    R.string.compile_chapters_failed,
+                    message ?: getString(R.string.unknown_error)
+                )
+            )
+            fd.show(supportFragmentManager, "COMPILE_CHAPTER_TASK")
+        }
+    }
+
+    override fun onTaskCancel(taskTag: Int) {
     }
 
     companion object {

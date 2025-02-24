@@ -1,4 +1,4 @@
-package org.wycliffeassociates.translationrecorder.utilities;
+package org.wycliffeassociates.translationrecorder.utilities
 
 /**
  * Created by sarabiaj on 9/23/2016.
@@ -8,57 +8,37 @@ package org.wycliffeassociates.translationrecorder.utilities;
  * Base class for Tasks to run on the TaskFragment
  * Task allows for creation of Runnables that can communicate to the TaskFragment over the RunnableTask interface
  */
-public abstract class Task implements RunnableTask {
+abstract class Task(var tag: Int) : RunnableTask {
+    private var mCallback: OnTaskProgressListener? = null
+    private var mId: Long = 0
 
-    public static int FIRST_TASK = 1;
-
-    public OnTaskProgressListener mCallback;
-    Long mId;
-    int mTag;
-
-    public Task(int taskTag) {
-        mTag = taskTag;
+    fun setOnTaskProgressListener(progressListener: OnTaskProgressListener?) {
+        mCallback = progressListener
+        mId = 0
     }
 
-    public void setOnTaskProgressListener(OnTaskProgressListener progressListener) {
-        mCallback = progressListener;
-        mId = new Long(0);
+    fun setOnTaskProgressListener(progressListener: OnTaskProgressListener?, id: Long) {
+        mCallback = progressListener
+        mId = id
     }
 
-    public void setOnTaskProgressListener(OnTaskProgressListener progressListener, Long id) {
-        mCallback = progressListener;
-        mId = id;
+    override fun onTaskProgressUpdateDelegator(progress: Int) {
+        mCallback?.onTaskProgressUpdate(mId, progress)
     }
 
-    @Override
-    public void onTaskProgressUpdateDelegator(int progress) {
-        if (mCallback != null) {
-            mCallback.onTaskProgressUpdate(mId, progress);
-        }
+    override fun onTaskCompleteDelegator() {
+        mCallback?.onTaskComplete(mId)
     }
 
-    @Override
-    public void onTaskCompleteDelegator() {
-        if (mCallback != null) {
-            mCallback.onTaskComplete(mId);
-        }
+    override fun onTaskCancelDelegator() {
+        mCallback?.onTaskCancel(mId)
     }
 
-    @Override
-    public void onTaskCancelDelegator() {
-        if (mCallback != null) {
-            mCallback.onTaskCancel(mId);
-        }
+    override fun onTaskErrorDelegator(message: String?) {
+        mCallback?.onTaskError(mId, message)
     }
 
-    @Override
-    public void onTaskErrorDelegator() {
-        if (mCallback != null) {
-            mCallback.onTaskError(mId);
-        }
-    }
-
-    public int getTag() {
-        return mTag;
+    companion object {
+        var FIRST_TASK: Int = 1
     }
 }

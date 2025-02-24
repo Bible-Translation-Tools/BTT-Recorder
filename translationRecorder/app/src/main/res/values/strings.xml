@@ -34,6 +34,7 @@
 
     <string name="set_chapter_level" translatable="false">Set Chapters Level</string>
     <string name="compile_chapters" translatable="false">Compile Chapters</string>
+    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">Set Checking Level</string>
     <string name="warning">Warning</string>
     <string name="compile_chapters_message">Compile all units into one chapter audio?</string>
@@ -41,6 +42,8 @@
     <string name="compiling_chapter">Compiling Chapter</string>
     <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">Delete Chapter Recording?</string>
+    <string name="project_details_undefined">Could not define project details.</string>
+    <string name="invalid_project_backup">Invalid project backup file.</string>
 
     <string name="source_audio">Source Audio</string>
     <string name="select_source_language">Select Source Language</string>
@@ -63,11 +66,13 @@
     <string name="backup_restore">Backup/Restore</string>
     <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
     <string name="restoring_backup">Restoring from backup</string>
+    <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="creating_backup">Creating backup</string>
     <string name="migrate_old_app">Migrate from old app</string>
     <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
     <string name="migrating_old_app">Migrating from the old app data</string>
     <string name="migrating_complete">Migration Complete!</string>
+    <string name="migrating_failed">Migration Failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="app_version">BTT Recorder Version</string>
     <string name="language_code_exists">Language code already exists!</string>
     <string name="language_code_length_tip">Language code must contain exactly 6 characters!</string>
@@ -131,10 +136,11 @@
     <string name="resyncing_database">Resyncing Database</string>
     <string name="exporting_source_audio">Exporting Source Audio</string>
     <string name="source_generation_complete">Source Audio generation complete.</string>
-    <string name="source_generation_failed">Source Audio generation failed.</string>
+    <string name="source_generation_failed">Source Audio generation failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
 
     <string name="project_import_complete">Project successfully imported.</string>
-    <string name="project_import_failed">Project import failed.</string>
+    <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Unknown error occurred.</string>
 
     <string name="label_ok">OK</string>
     <string name="label_close">Close</string>

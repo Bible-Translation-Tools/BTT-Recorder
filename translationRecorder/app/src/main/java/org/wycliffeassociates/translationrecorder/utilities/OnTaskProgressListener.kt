@@ -1,14 +1,14 @@
-package org.wycliffeassociates.translationrecorder.utilities;
+package org.wycliffeassociates.translationrecorder.utilities
 
 /**
  * Created by sarabiaj on 9/23/2016.
  */
-public interface OnTaskProgressListener {
-    void onTaskProgressUpdate(Long id, int progress);
+interface OnTaskProgressListener {
+    fun onTaskProgressUpdate(id: Long, progress: Int)
 
-    void onTaskComplete(Long id);
+    fun onTaskComplete(id: Long)
 
-    void onTaskCancel(Long id);
+    fun onTaskCancel(id: Long)
 
-    void onTaskError(Long id);
+    fun onTaskError(id: Long, message: String?)
 }

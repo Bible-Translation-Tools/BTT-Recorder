@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.recordingapp.integration
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
@@ -19,6 +20,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@IntegrationTest
 class ChunkPluginLoaderTest {
 
     @get:Rule

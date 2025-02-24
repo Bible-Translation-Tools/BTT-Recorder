@@ -4,13 +4,13 @@ import android.Manifest
 import android.content.Context
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -41,7 +41,7 @@ import javax.inject.Inject
  */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
-@LargeTest
+@UITest
 class RecordingActivityIntentTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)

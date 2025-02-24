@@ -9,6 +9,7 @@ import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
@@ -31,6 +32,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@UITest
 class MainMenuTest {
 
     @get:Rule

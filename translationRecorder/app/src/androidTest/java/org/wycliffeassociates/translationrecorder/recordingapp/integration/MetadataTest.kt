@@ -2,6 +2,7 @@ package org.wycliffeassociates.translationrecorder.recordingapp.integration
 
 import android.os.Parcel
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.json.JSONException
@@ -26,6 +27,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@IntegrationTest
 class MetadataTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)

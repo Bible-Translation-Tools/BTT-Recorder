@@ -217,13 +217,17 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
         dialog.show(supportFragmentManager, "single_take_rating")
     }
 
-    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
-        if (resultCode == TaskFragment.STATUS_OK) {
-            if (taskTag == DATABASE_RESYNC_TASK) {
-                dbResyncing = false
-                refreshUnitCards()
-            }
+    override fun onTaskComplete(taskTag: Int) {
+        if (taskTag == DATABASE_RESYNC_TASK) {
+            dbResyncing = false
+            refreshUnitCards()
         }
+    }
+
+    override fun onTaskError(taskTag: Int, message: String?) {
+    }
+
+    override fun onTaskCancel(taskTag: Int) {
     }
 
     companion object {

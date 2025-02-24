@@ -9,6 +9,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -33,6 +34,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@UITest
 class PlaybackActivityTest {
 
     @get:Rule

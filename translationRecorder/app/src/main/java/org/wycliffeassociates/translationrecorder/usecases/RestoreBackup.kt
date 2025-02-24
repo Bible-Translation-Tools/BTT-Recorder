@@ -2,10 +2,8 @@ package org.wycliffeassociates.translationrecorder.usecases
 
 import android.content.Context
 import android.net.Uri
-import com.door43.tools.reporting.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import net.lingala.zip4j.ZipFile
-import org.wycliffeassociates.translationrecorder.ProjectManager.tasks.RestoreBackupTask
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -21,30 +19,26 @@ class RestoreBackup @Inject constructor(
         val uuid = UUID.randomUUID().toString()
         val tempZipFile = File(directoryProvider.internalCacheDir, "$uuid.zip")
 
-        try {
-            context.contentResolver.openInputStream(backupUri).use { inputStream ->
-                FileOutputStream(tempZipFile).use { outputStream ->
-                    val buffer = ByteArray(1024)
-                    var length: Int
-                    while (true) {
-                        checkNotNull(inputStream)
-                        if (inputStream.read(buffer).also { length = it } <= 0) break
-                        outputStream.write(buffer, 0, length)
-                    }
+        context.contentResolver.openInputStream(backupUri).use { inputStream ->
+            FileOutputStream(tempZipFile).use { outputStream ->
+                val buffer = ByteArray(1024)
+                var length: Int
+                while (true) {
+                    checkNotNull(inputStream)
+                    if (inputStream.read(buffer).also { length = it } <= 0) break
+                    outputStream.write(buffer, 0, length)
                 }
             }
-
-            val internalDir = directoryProvider.internalAppDir.parentFile!!
-            val externalDir = directoryProvider.externalAppDir.parentFile!!
-
-            ZipFile(tempZipFile).use { zipFile ->
-                extractDirectory(zipFile, "${APP_DATA_DIR}/", internalDir)
-                extractDirectory(zipFile, "${USER_DATA_DIR}/", externalDir)
-            }
-            tempZipFile.delete()
-        } catch (e: IOException) {
-            Logger.e(RestoreBackupTask::class.toString(), e.message, e)
         }
+
+        val internalDir = directoryProvider.internalAppDir.parentFile!!
+        val externalDir = directoryProvider.externalAppDir.parentFile!!
+
+        ZipFile(tempZipFile).use { zipFile ->
+            extractDirectory(zipFile, "${APP_DATA_DIR}/", internalDir)
+            extractDirectory(zipFile, "${USER_DATA_DIR}/", externalDir)
+        }
+        tempZipFile.delete()
     }
 
     @Throws(IOException::class)

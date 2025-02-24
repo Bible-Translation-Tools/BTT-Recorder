@@ -21,7 +21,6 @@ import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.project.ScrollableListFragment
 import org.wycliffeassociates.translationrecorder.project.adapters.TargetLanguageAdapter
 import org.wycliffeassociates.translationrecorder.project.components.Language
-import org.wycliffeassociates.translationrecorder.utilities.TaskFragment
 import org.wycliffeassociates.translationrecorder.utilities.TaskFragment.OnTaskComplete
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -162,26 +161,52 @@ class SettingsActivity : AppCompatActivity(), ScrollableListFragment.OnItemClick
             .add(binding.fragmentScrollList.id, fragment!!).commit()
     }
 
-    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
-        if (resultCode == TaskFragment.STATUS_OK) {
-            when (taskTag) {
-                RESTORE_TASK_TAG -> {
-                    val intent = Intent(this, SplashScreen::class.java)
-                    startActivity(intent)
-                    finishAffinity()
-                    exitProcess(0)
-                }
-                MIGRATE_TASK_TAG -> {
-                    val fd = FeedbackDialog.newInstance(
-                        getString(R.string.migrate_old_app),
-                        getString(R.string.migrating_complete)
-                    )
-                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
+    override fun onTaskComplete(taskTag: Int) {
+        when (taskTag) {
+            RESTORE_TASK_TAG -> {
+                val intent = Intent(this, SplashScreen::class.java)
+                startActivity(intent)
+                finishAffinity()
+                exitProcess(0)
+            }
+            MIGRATE_TASK_TAG -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.migrate_old_app),
+                    getString(R.string.migrating_complete)
+                )
+                fd.show(supportFragmentManager, "PROJECT_IMPORT")
 
-                    (fragment as? SettingsFragment)?.resyncProjectList()
-                }
+                (fragment as? SettingsFragment)?.resyncProjectList()
             }
         }
+    }
+
+    override fun onTaskError(taskTag: Int, message: String?) {
+        when (taskTag) {
+            RESTORE_TASK_TAG -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.backup_restore),
+                    getString(
+                        R.string.restoring_backup_failed,
+                        message ?: getString(R.string.unknown_error)
+                    )
+                )
+                fd.show(supportFragmentManager, "MIGRATE_TASK_TAG")
+            }
+            MIGRATE_TASK_TAG -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.migrate_old_app),
+                    getString(
+                        R.string.migrating_failed,
+                        message ?: getString(R.string.unknown_error)
+                    )
+                )
+                fd.show(supportFragmentManager, "MIGRATE_TASK_TAG")
+            }
+        }
+    }
+
+    override fun onTaskCancel(taskTag: Int) {
     }
 
     companion object {

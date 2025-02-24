@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.door43.sysutils.FileUtilities
 import com.door43.tools.reporting.Logger
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.usecases.APP_DATA_DIR
 import org.wycliffeassociates.translationrecorder.usecases.ImportProject
@@ -54,16 +55,16 @@ class ImportProjectTask(
                         onTaskCompleteDelegator()
                     } ?: run {
                         Logger.e(ImportProjectTask::class.toString(), "Could not define project details")
-                        onTaskErrorDelegator()
+                        onTaskErrorDelegator(context.getString(R.string.project_details_undefined))
                     }
                 } else {
                     Logger.e(ImportProjectTask::class.toString(), "Invalid project backup file.")
-                    onTaskErrorDelegator()
+                    onTaskErrorDelegator(context.getString(R.string.invalid_project_backup))
                 }
             }
         } catch (e: IOException) {
             Logger.e(ImportProjectTask::class.toString(), e.message, e)
-            onTaskErrorDelegator()
+            onTaskErrorDelegator(e.message)
         }
 
         FileUtilities.deleteRecursive(tempDir)

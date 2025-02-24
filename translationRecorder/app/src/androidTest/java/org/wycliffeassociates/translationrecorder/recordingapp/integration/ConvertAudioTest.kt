@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.recordingapp.integration
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith
 import org.wycliffeassociates.translationrecorder.login.utils.ConvertAudio
 
 @RunWith(AndroidJUnit4::class)
+@IntegrationTest
 class ConvertAudioTest {
 
     @get:Rule var tempFolder = TemporaryFolder()

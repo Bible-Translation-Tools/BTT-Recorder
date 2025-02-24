@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.ProjectManager.tasks
 
 import android.net.Uri
+import com.door43.tools.reporting.Logger
 import org.wycliffeassociates.translationrecorder.usecases.RestoreBackup
 import org.wycliffeassociates.translationrecorder.utilities.Task
 
@@ -14,7 +15,12 @@ class RestoreBackupTask(
 ) : Task(taskTag) {
 
     override fun run() {
-        restoreBackup(backupUri)
-        onTaskCompleteDelegator()
+        try {
+            restoreBackup(backupUri)
+            onTaskCompleteDelegator()
+        } catch (e: Exception) {
+            Logger.e("RestoreBackupTask", "Restore from backup failed", e)
+            onTaskErrorDelegator(e.message)
+        }
     }
 }

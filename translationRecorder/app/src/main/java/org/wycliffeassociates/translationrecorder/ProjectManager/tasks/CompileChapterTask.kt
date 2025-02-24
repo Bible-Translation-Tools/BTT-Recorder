@@ -19,22 +19,25 @@ class CompileChapterTask(
 ) : Task(taskTag) {
 
     override fun run() {
-        var currentCard = 0
-        val totalCards = mCardsToCompile.size
-        for ((chapterCard, files) in mCardsToCompile) {
-            val sortedFiles = sortFilesInChapter(files)
-            val wavFiles = getWavFilesFromName(sortedFiles, chapterCard.chapterNumber)
-            WavFile.compileChapter(
-                mProject,
-                chapterCard.chapterNumber,
-                wavFiles,
-                directoryProvider
-            )
-            onTaskProgressUpdateDelegator(((currentCard / totalCards.toFloat()) * 100).toInt())
-            currentCard++
+        try {
+            var currentCard = 0
+            val totalCards = mCardsToCompile.size
+            for ((chapterCard, files) in mCardsToCompile) {
+                val sortedFiles = sortFilesInChapter(files)
+                val wavFiles = getWavFilesFromName(sortedFiles, chapterCard.chapterNumber)
+                WavFile.compileChapter(
+                    mProject,
+                    chapterCard.chapterNumber,
+                    wavFiles,
+                    directoryProvider
+                )
+                onTaskProgressUpdateDelegator(((currentCard / totalCards.toFloat()) * 100).toInt())
+                currentCard++
+            }
+            onTaskCompleteDelegator()
+        } catch (e: Exception) {
+            onTaskErrorDelegator(e.message)
         }
-
-        onTaskCompleteDelegator()
     }
 
     private fun sortFilesInChapter(files: List<String>): List<String> {

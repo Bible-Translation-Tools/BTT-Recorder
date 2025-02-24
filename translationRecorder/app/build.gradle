@@ -33,8 +33,8 @@ android {
         compileSdk 35
         minSdk 22
         targetSdk 35
-        versionCode 49
-        versionName "1.4.28"
+        versionCode 50
+        versionName "1.4.29"
 
         multiDexEnabled true
         testBuildType "verify"
@@ -213,4 +213,16 @@ tasks.withType(AndroidLintAnalysisTask).configureEach {
     dependsOn ":obschunk:jar"
     dependsOn ":noteschunk:jar"
     dependsOn ":questionschunk:jar"
+}
+
+tasks.register('uiTests', Exec) {
+    commandLine "../gradlew",
+            "connectedAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.annotation=org.wycliffeassociates.translationrecorder.recordingapp.UITest"
+}
+
+tasks.register('integrationTests', Exec) {
+    commandLine "../gradlew",
+            "connectedAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.annotation=org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest"
 }

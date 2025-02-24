@@ -1,6 +1,7 @@
 package org.wycliffeassociates.translationrecorder.recordingapp.integration
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,6 +13,7 @@ import org.wycliffeassociates.translationrecorder.project.TakeInfo
  * Created by sarabiaj on 4/25/2017.
  */
 @RunWith(AndroidJUnit4::class)
+@IntegrationTest
 class ProjectPatternMatcherTest {
     @Test
     fun testProjectPatternMatcher() {

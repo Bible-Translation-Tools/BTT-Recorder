@@ -13,6 +13,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withHint
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -33,6 +34,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@UITest
 class SettingsActivityTest {
 
     @get:Rule

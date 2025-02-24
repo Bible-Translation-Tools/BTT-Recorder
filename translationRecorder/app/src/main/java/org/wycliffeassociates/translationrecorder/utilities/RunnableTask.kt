@@ -1,14 +1,14 @@
-package org.wycliffeassociates.translationrecorder.utilities;
+package org.wycliffeassociates.translationrecorder.utilities
 
 /**
  * Created by sarabiaj on 9/23/2016.
  */
-public interface RunnableTask extends Runnable {
-    void onTaskProgressUpdateDelegator(int progress);
+interface RunnableTask : Runnable {
+    fun onTaskProgressUpdateDelegator(progress: Int)
 
-    void onTaskCompleteDelegator();
+    fun onTaskCompleteDelegator()
 
-    void onTaskCancelDelegator();
+    fun onTaskCancelDelegator()
 
-    void onTaskErrorDelegator();
+    fun onTaskErrorDelegator(message: String? = null)
 }

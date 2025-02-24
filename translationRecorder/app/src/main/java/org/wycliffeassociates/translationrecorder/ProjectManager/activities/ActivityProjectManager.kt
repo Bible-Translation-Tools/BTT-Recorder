@@ -576,48 +576,57 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
         startActivityForResult(intent, SAVE_SOURCE_AUDIO_REQUEST)
     }
 
-    override fun onTaskComplete(taskTag: Int, resultCode: Int) {
-        if (resultCode == TaskFragment.STATUS_OK) {
-            when (taskTag) {
-                DATABASE_RESYNC_TASK -> {
-                    mNumProjects = db.numProjects
-                    mDbResyncing = false
-                    initializeViews()
-                }
-                SOURCE_AUDIO_TASK -> {
-                    val fd = FeedbackDialog.newInstance(
-                        getString(R.string.source_audio),
-                        getString(R.string.source_generation_complete)
-                    )
-                    fd.show(supportFragmentManager, "SOURCE_AUDIO")
-                }
-                IMPORT_TASK -> {
-                    resyncProjectList(true)
-                    val fd = FeedbackDialog.newInstance(
-                        getString(R.string.import_project),
-                        getString(R.string.project_import_complete)
-                    )
-                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
-                }
+    override fun onTaskComplete(taskTag: Int) {
+        when (taskTag) {
+            DATABASE_RESYNC_TASK -> {
+                mNumProjects = db.numProjects
+                mDbResyncing = false
+                initializeViews()
             }
-        } else if (resultCode == TaskFragment.STATUS_ERROR) {
-            when (taskTag) {
-                SOURCE_AUDIO_TASK -> {
-                    val fd = FeedbackDialog.newInstance(
-                        getString(R.string.source_audio),
-                        getString(R.string.source_generation_failed)
-                    )
-                    fd.show(supportFragmentManager, "SOURCE_AUDIO")
-                }
-                IMPORT_TASK -> {
-                    val fd = FeedbackDialog.newInstance(
-                        getString(R.string.import_project),
-                        getString(R.string.project_import_failed)
-                    )
-                    fd.show(supportFragmentManager, "PROJECT_IMPORT")
-                }
+            SOURCE_AUDIO_TASK -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.source_audio),
+                    getString(R.string.source_generation_complete)
+                )
+                fd.show(supportFragmentManager, "SOURCE_AUDIO")
+            }
+            IMPORT_TASK -> {
+                resyncProjectList(true)
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.import_project),
+                    getString(R.string.project_import_complete)
+                )
+                fd.show(supportFragmentManager, "PROJECT_IMPORT")
             }
         }
+    }
+
+    override fun onTaskError(taskTag: Int, message: String?) {
+        when (taskTag) {
+            SOURCE_AUDIO_TASK -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.source_audio),
+                    getString(
+                        R.string.source_generation_failed,
+                        message ?: getString(R.string.unknown_error)
+                    )
+                )
+                fd.show(supportFragmentManager, "SOURCE_AUDIO")
+            }
+            IMPORT_TASK -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.import_project),
+                    getString(
+                        R.string.project_import_failed,
+                        message ?: getString(R.string.unknown_error)
+                    )
+                )
+                fd.show(supportFragmentManager, "PROJECT_IMPORT")
+            }
+        }
+    }
+
+    override fun onTaskCancel(taskTag: Int) {
     }
 
     companion object {

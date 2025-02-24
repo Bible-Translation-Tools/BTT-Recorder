@@ -3,6 +3,7 @@ package org.wycliffeassociates.translationrecorder.recordingapp.integration
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -10,7 +11,6 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import okhttp3.mockwebserver.MockResponse
@@ -42,6 +42,7 @@ import javax.inject.Inject
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
+@IntegrationTest
 class TranslationExchangeExportTest {
 
     @get:Rule

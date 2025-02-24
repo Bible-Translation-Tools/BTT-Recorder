@@ -10,8 +10,8 @@ import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.BoundedMatcher
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -45,7 +45,7 @@ import javax.inject.Inject
  */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
-@LargeTest
+@UITest
 class ActivityUnitListTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
