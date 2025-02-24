@@ -30,8 +30,8 @@ public class FolderExport extends Export{
     @Override
     protected void initialize() {
         File projectDir = ProjectFileUtils.getProjectDirectory(mProject);
-        boolean hasManifest = new File(projectDir.getAbsolutePath() + "manifest.json").exists();
-        if (!hasManifest) {
+        if (projectDir.exists()) {
+            // writes manifest before backing up
             Manifest manifest = new Manifest(mProject, projectDir);
             TranslationRecorderApp app = (TranslationRecorderApp) mCtx.getActivity().getApplication();
             try {
