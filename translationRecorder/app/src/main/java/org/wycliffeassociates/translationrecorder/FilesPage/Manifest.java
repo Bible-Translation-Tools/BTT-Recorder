@@ -58,7 +58,8 @@ public class Manifest {
         File output = new File(mProjectDirectory, "manifest.json");
         try (JsonWriter jw = gson.newJsonWriter(new FileWriter(output))) {
             jw.beginObject();
-            writeLanguage(jw);
+            writeTargetLanguage(jw);
+            writeSourceLanguage(jw);
             writeBook(jw);
             writeVersion(jw);
             writeAnthology(jw);
@@ -79,12 +80,22 @@ public class Manifest {
         mProgressCallback = progressCallback;
     }
 
-    private void writeLanguage(JsonWriter jw) throws IOException {
+    private void writeTargetLanguage(JsonWriter jw) throws IOException {
         jw.name("language");
         jw.beginObject();
         jw.name("slug").value(mProject.getTargetLanguageSlug());
         jw.name("name").value(mProject.mTargetLanguage.getName());
         jw.endObject();
+    }
+
+    private void writeSourceLanguage(JsonWriter jw) throws IOException {
+        if (mProject.mSourceLanguage != null) {
+            jw.name("source_language");
+            jw.beginObject();
+            jw.name("slug").value(mProject.getSourceLanguageSlug());
+            jw.name("name").value(mProject.mSourceLanguage.getName());
+            jw.endObject();
+        }
     }
 
     private void writeBook(JsonWriter jw) throws IOException {
