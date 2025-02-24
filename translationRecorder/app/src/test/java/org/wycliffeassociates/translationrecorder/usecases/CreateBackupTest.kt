@@ -7,7 +7,9 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.verify
+import net.lingala.zip4j.ZipFile
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -40,11 +42,15 @@ class CreateBackupTest {
     @Test
     fun testCreateBackup() {
         val backupFile = tempFolder.newFile("backup.zip")
+        val tempZipFile = tempFolder.newFile("temp.zip")
         val backupUri = mockk<Uri>()
 
         every { context.contentResolver }.returns(contentResolver)
         every { contentResolver.openOutputStream(any()) }
             .returns(backupFile.outputStream())
+
+        mockkConstructor(ZipFile::class)
+        every { anyConstructed<ZipFile>().file }.returns(tempZipFile)
 
         val createBackup = CreateBackup(context, directoryProvider)
         createBackup(backupUri)
