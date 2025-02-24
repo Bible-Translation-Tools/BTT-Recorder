@@ -6,7 +6,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
+import org.wycliffeassociates.translationrecorder.FilesPage.Manifest;
+import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.project.Project;
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -22,6 +25,22 @@ public class FolderExport extends Export{
 
     public FolderExport(File projectToExport, Project project){
         super(projectToExport, project);
+    }
+
+    @Override
+    protected void initialize() {
+        File projectDir = ProjectFileUtils.getProjectDirectory(mProject);
+        boolean hasManifest = new File(projectDir.getAbsolutePath() + "manifest.json").exists();
+        if (!hasManifest) {
+            Manifest manifest = new Manifest(mProject, projectDir);
+            TranslationRecorderApp app = (TranslationRecorderApp) mCtx.getActivity().getApplication();
+            try {
+                manifest.createManifestFile(app, app.getDatabase());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        super.initialize();
     }
 
     @Override
