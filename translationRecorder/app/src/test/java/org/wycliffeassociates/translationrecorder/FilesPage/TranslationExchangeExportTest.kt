@@ -76,7 +76,7 @@ class TranslationExchangeExportTest {
                 exp.export()
             }
             every { requireContext() }.returns(mockk {
-                every { getString(any()) }.returns("server")
+                every { getString(any()) }.returns(server.url("/").toString())
             })
         }
 
@@ -94,7 +94,7 @@ class TranslationExchangeExportTest {
             directoryProvider,
             prefs,
             assetsProvider,
-            "server"
+            server.url("/").toString()
         )
         exportDelegator.delegateExport(appExport)
 

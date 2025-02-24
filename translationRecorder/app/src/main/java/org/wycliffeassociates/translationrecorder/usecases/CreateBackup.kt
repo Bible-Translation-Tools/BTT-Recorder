@@ -41,18 +41,23 @@ class CreateBackup @Inject constructor(
 
             zipper.addFolder(externalDir, zp)
             zipper.renameFile(externalDir.name + "/", USER_DATA_DIR)
-        }
 
-        context.contentResolver.openOutputStream(backupUri).use { outputStream ->
-            FileInputStream(tempZipFile).use { inputStream ->
-                val buffer = ByteArray(1024)
-                var length: Int
-                while ((inputStream.read(buffer).also { length = it }) > 0) {
-                    checkNotNull(outputStream)
-                    outputStream.write(buffer, 0, length)
+            try {
+                context.contentResolver.openOutputStream(backupUri).use { outputStream ->
+                    FileInputStream(tempZipFile).use { inputStream ->
+                        val buffer = ByteArray(1024)
+                        var length: Int
+                        while ((inputStream.read(buffer).also { length = it }) > 0) {
+                            checkNotNull(outputStream)
+                            outputStream.write(buffer, 0, length)
+                        }
+                    }
                 }
+            } catch (e: Exception) {
+                println(e.message)
             }
+
+            tempZipFile.delete()
         }
-        tempZipFile.delete()
     }
 }
