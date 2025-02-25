@@ -253,6 +253,7 @@ class ActivityProjectManager : AppCompatActivity(), InfoDialogCallback, ExportDe
 
     fun hideProjectsIfEmpty(numProjects: Int) {
         if (numProjects > 0) {
+            binding.projectListLayout.visibility = View.VISIBLE
             binding.newProjectButton.visibility = View.GONE
         } else {
             binding.projectListLayout.visibility = View.GONE
