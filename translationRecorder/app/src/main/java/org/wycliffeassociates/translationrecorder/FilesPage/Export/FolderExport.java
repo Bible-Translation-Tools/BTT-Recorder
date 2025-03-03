@@ -6,17 +6,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonWriter;
+
 import org.wycliffeassociates.translationrecorder.FilesPage.Manifest;
 import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher;
+import org.wycliffeassociates.translationrecorder.project.TakeInfo;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by sarabiaj on 12/10/2015.
@@ -36,6 +45,7 @@ public class FolderExport extends Export{
             TranslationRecorderApp app = (TranslationRecorderApp) mCtx.getActivity().getApplication();
             try {
                 manifest.createManifestFile(app, app.getDatabase());
+                writeSelectedTakes(app.getDatabase());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -53,6 +63,43 @@ public class FolderExport extends Export{
             e.printStackTrace();
         }
         mCtx.startActivity(i);
+    }
+
+    /** Writes selected takes name to a file */
+    private void writeSelectedTakes(ProjectDatabaseHelper db) {
+        File projectDir = ProjectFileUtils.getProjectDirectory(mProject);
+        ArrayList<String> selectedTakes = new ArrayList<String>();
+
+        for (File file : projectDir.listFiles()) {
+            if (file.isDirectory() && file.getName().matches("\\d+")) {
+                File chapterDir = file;
+                for (File take : chapterDir.listFiles()) {
+                    ProjectPatternMatcher ppm = mProject.getPatternMatcher();
+                    if (ppm.match(take)) {
+                        TakeInfo takeInfo = ppm.getTakeInfo();
+                        int chosen = db.getSelectedTakeNumber(takeInfo);
+                        boolean isSelected = chosen == takeInfo.getTake();
+                        if (isSelected) {
+                            selectedTakes.add(take.getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        Gson gson = new Gson();
+        File output = new File(projectDir, "selected.json");
+
+        try (JsonWriter jw = gson.newJsonWriter(new FileWriter(output))) {
+            jw.beginArray(); // Start JSON array
+            for (String item : selectedTakes) {
+                jw.value(item); // Write each item as a string value
+            }
+            jw.endArray(); // End JSON array
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static class StorageAccess extends Activity{
