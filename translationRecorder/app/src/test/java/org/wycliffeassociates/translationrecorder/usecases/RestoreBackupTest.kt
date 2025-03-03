@@ -13,6 +13,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 
 class RestoreBackupTest {
@@ -30,6 +31,8 @@ class RestoreBackupTest {
         every { directoryProvider.internalCacheDir }.returns(tempFolder.newFolder("cache"))
         every { directoryProvider.internalAppDir }.returns(tempFolder.newFolder("internal"))
         every { directoryProvider.externalAppDir }.returns(tempFolder.newFolder("external"))
+
+        every { context.getString(R.string.invalid_backup) }.returns("invalid backup")
     }
 
     @After
