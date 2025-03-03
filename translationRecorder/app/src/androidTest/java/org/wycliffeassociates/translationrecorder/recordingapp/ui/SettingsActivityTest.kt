@@ -8,6 +8,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasCategories
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasType
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withHint
@@ -19,6 +20,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.hasItem
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -113,7 +116,8 @@ class SettingsActivityTest {
             onView(withText(R.string.update_language_from_file)).tryPerform(click())
 
             Intents.intended(allOf(
-                hasAction(Intent.ACTION_OPEN_DOCUMENT),
+                hasAction(Intent.ACTION_GET_CONTENT),
+                hasCategories(hasItem(equalTo(Intent.CATEGORY_OPENABLE))),
                 hasType("*/*")
             ))
         }

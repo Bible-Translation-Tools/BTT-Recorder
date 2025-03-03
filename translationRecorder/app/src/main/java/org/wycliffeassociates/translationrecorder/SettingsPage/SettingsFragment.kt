@@ -1,7 +1,5 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage
 
-import android.app.Activity
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.net.Uri
@@ -68,6 +66,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
     private lateinit var taskFragment: TaskFragment
 
     private lateinit var openDirectory: ActivityResultLauncher<Uri?>
+    private lateinit var openLanguagesFile: ActivityResultLauncher<String>
 
     interface LanguageSelector {
         fun sourceLanguageSelected()
@@ -83,6 +82,24 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
         openDirectory = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
             it?.let(::migrate)
+        }
+
+        openLanguagesFile = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let {
+                taskFragment.executeRunnable(
+                    ResyncLanguageNamesTask(
+                        RESYNC_LANGUAGE_NAMES_TASK_TAG,
+                        requireContext(),
+                        db,
+                        assetsProvider,
+                        requireContext(),
+                        it
+                    ),
+                    getString(R.string.updating_languages),
+                    getString(R.string.please_wait),
+                    true
+                )
+            }
         }
 
         return view
@@ -141,9 +158,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
         val updateLanguagesFromFilePref: Preference? = findPreference(KEY_PREF_UPDATE_LANGUAGES_FROM_FILE)
         updateLanguagesFromFilePref?.setOnPreferenceClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intent.setType("*/*")
-            startActivityForResult(intent, FILE_GET_REQUEST_CODE)
+            openLanguagesFile.launch("*/*")
             true
         }
 
@@ -204,27 +219,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
         preferenceScreen
             .sharedPreferences
             ?.unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == FILE_GET_REQUEST_CODE) {
-                val uri = data?.data
-                taskFragment.executeRunnable(
-                    ResyncLanguageNamesTask(
-                        RESYNC_LANGUAGE_NAMES_TASK_TAG,
-                        requireContext(),
-                        db,
-                        assetsProvider,
-                        requireContext(),
-                        uri
-                    ),
-                    getString(R.string.updating_languages),
-                    getString(R.string.please_wait),
-                    true
-                )
-            }
-        }
     }
 
     override fun onCreateBackup(zipFileUri: Uri) {

@@ -16,8 +16,12 @@ class RestoreBackupTask(
 
     override fun run() {
         try {
-            restoreBackup(backupUri)
-            onTaskCompleteDelegator()
+            val result = restoreBackup(backupUri)
+            if (result.success) {
+                onTaskCompleteDelegator()
+            } else {
+                onTaskErrorDelegator(result.message)
+            }
         } catch (e: Exception) {
             Logger.e("RestoreBackupTask", "Restore from backup failed", e)
             onTaskErrorDelegator(e.message)

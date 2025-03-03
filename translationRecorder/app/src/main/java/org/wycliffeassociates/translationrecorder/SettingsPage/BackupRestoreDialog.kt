@@ -1,11 +1,11 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,17 +23,33 @@ class BackupRestoreDialog : DialogFragment() {
         fun onRestoreBackup(zipFileUri: Uri)
     }
 
-    companion object {
-        const val CREATE_BACKUP_FILE = 1
-        const val RESTORE_BACKUP_FILE = 2
-    }
-
     private var listener: BackupRestoreDialogListener? = null
+
+    private lateinit var createBackup: ActivityResultLauncher<String>
+    private lateinit var restoreBackup: ActivityResultLauncher<String>
 
     @SuppressLint("SimpleDateFormat")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val binding = DialogBackupRestoreBinding.inflate(layoutInflater)
         val builder = AlertDialog.Builder(requireActivity())
+
+        createBackup = registerForActivityResult(
+            ActivityResultContracts.CreateDocument("application/zip")
+        ) { uri ->
+            uri?.let {
+                listener?.onCreateBackup(it)
+                dismiss()
+            }
+        }
+
+        restoreBackup = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            uri?.let {
+                listener?.onRestoreBackup(it)
+                dismiss()
+            }
+        }
 
         with(binding) {
             backupButton.setOnClickListener {
@@ -58,39 +74,11 @@ class BackupRestoreDialog : DialogFragment() {
         this.listener = listener
     }
 
-    override fun onActivityResult(
-        requestCode: Int, resultCode: Int,
-        resultData: Intent?
-    ) {
-        if (resultCode == Activity.RESULT_OK) {
-            resultData?.data?.let {
-                when (requestCode) {
-                    RESTORE_BACKUP_FILE -> {
-                        listener?.onRestoreBackup(it)
-                    }
-                    CREATE_BACKUP_FILE -> {
-                        listener?.onCreateBackup(it)
-
-                    }
-                    else -> {}
-                }
-            }
-        }
-        dismiss()
-    }
-
     private fun chooseFileForBackup(fileName: String) {
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.setType("application/zip")
-        intent.putExtra(Intent.EXTRA_TITLE, fileName)
-        startActivityForResult(intent, CREATE_BACKUP_FILE)
+        createBackup.launch(fileName)
     }
 
     private fun chooseFileForRestore() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.setType("application/zip")
-        startActivityForResult(intent, RESTORE_BACKUP_FILE)
+        restoreBackup.launch("application/zip")
     }
 }

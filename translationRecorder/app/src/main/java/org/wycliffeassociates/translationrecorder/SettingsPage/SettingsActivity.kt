@@ -164,17 +164,30 @@ class SettingsActivity : AppCompatActivity(), ScrollableListFragment.OnItemClick
     override fun onTaskComplete(taskTag: Int) {
         when (taskTag) {
             RESTORE_TASK_TAG -> {
-                val intent = Intent(this, SplashScreen::class.java)
-                startActivity(intent)
-                finishAffinity()
-                exitProcess(0)
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.backup_restore),
+                    getString(R.string.backup_restored)
+                ) {
+                    val intent = Intent(this, SplashScreen::class.java)
+                    startActivity(intent)
+                    finishAffinity()
+                    exitProcess(0)
+                }
+                fd.show(supportFragmentManager, "BACKUP_TASK_TAG")
+            }
+            BACKUP_TASK_TAG -> {
+                val fd = FeedbackDialog.newInstance(
+                    getString(R.string.backup_restore),
+                    getString(R.string.backup_created)
+                )
+                fd.show(supportFragmentManager, "BACKUP_TASK_TAG")
             }
             MIGRATE_TASK_TAG -> {
                 val fd = FeedbackDialog.newInstance(
                     getString(R.string.migrate_old_app),
                     getString(R.string.migrating_complete)
                 )
-                fd.show(supportFragmentManager, "PROJECT_IMPORT")
+                fd.show(supportFragmentManager, "MIGRATE_TASK_TAG")
 
                 (fragment as? SettingsFragment)?.resyncProjectList()
             }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import net.lingala.zip4j.ZipFile
+import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -15,7 +16,12 @@ class RestoreBackup @Inject constructor(
     @ApplicationContext private val context: Context,
     private val directoryProvider: IDirectoryProvider
 ) {
-    operator fun invoke(backupUri: Uri) {
+    data class Result(
+        val success: Boolean,
+        val message: String?
+    )
+
+    operator fun invoke(backupUri: Uri): Result {
         val uuid = UUID.randomUUID().toString()
         val tempZipFile = File(directoryProvider.internalCacheDir, "$uuid.zip")
 
@@ -34,11 +40,18 @@ class RestoreBackup @Inject constructor(
         val internalDir = directoryProvider.internalAppDir.parentFile!!
         val externalDir = directoryProvider.externalAppDir.parentFile!!
 
-        ZipFile(tempZipFile).use { zipFile ->
-            extractDirectory(zipFile, "${APP_DATA_DIR}/", internalDir)
-            extractDirectory(zipFile, "${USER_DATA_DIR}/", externalDir)
+        val result = ZipFile(tempZipFile).use { zipFile ->
+            if (validBackup(zipFile)) {
+                extractDirectory(zipFile, "${APP_DATA_DIR}/", internalDir)
+                extractDirectory(zipFile, "${USER_DATA_DIR}/", externalDir)
+                Result(true, null)
+            } else {
+                Result(false, context.getString(R.string.invalid_backup))
+            }
         }
         tempZipFile.delete()
+
+        return result
     }
 
     @Throws(IOException::class)
@@ -63,5 +76,22 @@ class RestoreBackup @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun validBackup(zipFile: ZipFile): Boolean {
+        var hasAppData = false
+        var hasUserData = false
+
+        for (fileHeader in zipFile.fileHeaders) {
+            if (fileHeader.isDirectory) {
+                if (fileHeader.fileName == "${APP_DATA_DIR}/") {
+                    hasAppData = true
+                }
+                if (fileHeader.fileName == "${USER_DATA_DIR}/") {
+                    hasUserData = true
+                }
+            }
+        }
+        return hasAppData && hasUserData
     }
 }

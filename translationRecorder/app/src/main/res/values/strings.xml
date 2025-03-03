@@ -66,8 +66,11 @@
     <string name="backup_restore">Backup/Restore</string>
     <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
     <string name="restoring_backup">Restoring from backup</string>
+    <string name="backup_restored">Restored from backup. The app will restart.</string>
     <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="creating_backup">Creating backup</string>
+    <string name="backup_created">Backup created</string>
+    <string name="invalid_backup">Invalid backup file</string>
     <string name="migrate_old_app">Migrate from old app</string>
     <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
     <string name="migrating_old_app">Migrating from the old app data</string>

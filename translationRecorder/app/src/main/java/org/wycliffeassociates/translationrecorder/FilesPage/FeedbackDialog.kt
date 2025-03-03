@@ -13,6 +13,8 @@ class FeedbackDialog : DialogFragment() {
     private var _binding: DialogFeedbackBinding? = null
     private val binding get() = _binding!!
 
+    private var onDismissCallback: (() -> Unit)? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mTitle = requireArguments().getString(DIALOG_TITLE)
         val mMessage = requireArguments().getString(DIALOG_MESSAGE)
@@ -21,7 +23,10 @@ class FeedbackDialog : DialogFragment() {
 
         val builder = AlertDialog.Builder(requireActivity())
 
-        binding.okButton.setOnClickListener { dismiss() }
+        binding.okButton.setOnClickListener {
+            dismiss()
+            onDismissCallback?.invoke()
+        }
         binding.title.text = mTitle
         binding.message.text = mMessage
 
@@ -35,17 +40,26 @@ class FeedbackDialog : DialogFragment() {
         ft.commitAllowingStateLoss()
     }
 
+    fun setOnDismiss(callback: () -> Unit) {
+        onDismissCallback = callback
+    }
+
     companion object {
         const val DIALOG_TITLE: String = "dialogTitle"
         const val DIALOG_MESSAGE: String = "dialogMessage"
 
-        fun newInstance(title: String, message: String): FeedbackDialog {
+        fun newInstance(
+            title: String,
+            message: String,
+            onDismiss: () -> Unit = {}
+        ): FeedbackDialog {
             val dialog = FeedbackDialog()
 
             val args = Bundle()
             args.putString(DIALOG_TITLE, title)
             args.putString(DIALOG_MESSAGE, message)
             dialog.arguments = args
+            dialog.setOnDismiss(onDismiss)
 
             return dialog
         }
