@@ -66,15 +66,15 @@ class FolderExport(
         }
 
         val gson = Gson()
-        val output = File(projectDir, "selected.json")
+        val output = File(projectDir, "selected.json") // an array of selected take file names
 
         try {
             gson.newJsonWriter(FileWriter(output)).use { jw ->
-                jw.beginArray() // Start JSON array
+                jw.beginArray()
                 for (item in selectedTakes) {
-                    jw.value(item) // Write each item as a string value
+                    jw.value(item)
                 }
-                jw.endArray() // End JSON array
+                jw.endArray()
             }
         } catch (e: IOException) {
             e.printStackTrace()
