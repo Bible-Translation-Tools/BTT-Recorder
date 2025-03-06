@@ -113,7 +113,7 @@ class ProjectInfoDialog : DialogFragment() {
         }
 
         binding.folderButton.setOnClickListener {
-            export = FolderExport(project, directoryProvider).apply {
+            export = FolderExport(project, directoryProvider, db, assetsProvider).apply {
                 exportDelegator?.delegateExport(this)
             }
         }
