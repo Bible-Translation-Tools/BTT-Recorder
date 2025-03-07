@@ -39,6 +39,7 @@ class FolderExportTest {
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var initializeApp: InitializeApp
+    @Inject lateinit var assetProvider: AssetProvider
 
     @Before
     fun setUp() {
@@ -67,7 +68,7 @@ class FolderExportTest {
             }
         }
 
-        val folderExport = spyk(FolderExport(project, directoryProvider), recordPrivateCalls = true)
+        val folderExport = spyk(FolderExport(project, directoryProvider, db, assetProvider), recordPrivateCalls = true)
 
         every { folderExport["handleUserInput"]() }.just(awaits)
         exportDelegator.delegateExport(folderExport)
