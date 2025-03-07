@@ -23,6 +23,7 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.FolderExport
 import org.wycliffeassociates.translationrecorder.InitializeApp
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
@@ -39,7 +40,7 @@ class FolderExportTest {
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var initializeApp: InitializeApp
-    @Inject lateinit var assetProvider: AssetProvider
+    @Inject lateinit var assetProvider: AssetsProvider
 
     @Before
     fun setUp() {
