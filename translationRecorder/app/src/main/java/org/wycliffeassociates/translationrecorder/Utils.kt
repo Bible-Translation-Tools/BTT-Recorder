@@ -7,7 +7,10 @@ import android.provider.OpenableColumns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.door43.tools.reporting.Logger
+import net.lingala.zip4j.ZipFile
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
+import org.wycliffeassociates.translationrecorder.usecases.APP_DATA_DIR
+import org.wycliffeassociates.translationrecorder.usecases.USER_DATA_DIR
 import java.io.BufferedInputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -146,5 +149,22 @@ object Utils {
         }
 
         return null
+    }
+
+    fun isAppBackup(zipFile: ZipFile): Boolean {
+        var hasAppData = false
+        var hasUserData = false
+
+        for (fileHeader in zipFile.fileHeaders) {
+            if (fileHeader.isDirectory) {
+                if (fileHeader.fileName == "$APP_DATA_DIR/") {
+                    hasAppData = true
+                }
+                if (fileHeader.fileName == "$USER_DATA_DIR/") {
+                    hasUserData = true
+                }
+            }
+        }
+        return hasAppData && hasUserData
     }
 }

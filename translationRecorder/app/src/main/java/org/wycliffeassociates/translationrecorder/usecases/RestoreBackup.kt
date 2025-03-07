@@ -5,6 +5,7 @@ import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import net.lingala.zip4j.ZipFile
 import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import java.io.File
 import java.io.FileOutputStream
@@ -41,7 +42,7 @@ class RestoreBackup @Inject constructor(
         val externalDir = directoryProvider.externalAppDir.parentFile!!
 
         val result = ZipFile(tempZipFile).use { zipFile ->
-            if (validBackup(zipFile)) {
+            if (Utils.isAppBackup(zipFile)) {
                 extractDirectory(zipFile, "${APP_DATA_DIR}/", internalDir)
                 extractDirectory(zipFile, "${USER_DATA_DIR}/", externalDir)
                 Result(true, null)
@@ -76,22 +77,5 @@ class RestoreBackup @Inject constructor(
                 }
             }
         }
-    }
-
-    private fun validBackup(zipFile: ZipFile): Boolean {
-        var hasAppData = false
-        var hasUserData = false
-
-        for (fileHeader in zipFile.fileHeaders) {
-            if (fileHeader.isDirectory) {
-                if (fileHeader.fileName == "${APP_DATA_DIR}/") {
-                    hasAppData = true
-                }
-                if (fileHeader.fileName == "${USER_DATA_DIR}/") {
-                    hasUserData = true
-                }
-            }
-        }
-        return hasAppData && hasUserData
     }
 }

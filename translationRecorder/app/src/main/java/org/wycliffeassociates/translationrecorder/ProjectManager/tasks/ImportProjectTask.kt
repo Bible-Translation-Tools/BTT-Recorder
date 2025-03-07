@@ -4,19 +4,17 @@ import android.content.Context
 import android.net.Uri
 import com.door43.sysutils.FileUtilities
 import com.door43.tools.reporting.Logger
+import net.lingala.zip4j.ZipFile
 import org.wycliffeassociates.translationrecorder.R
+import org.wycliffeassociates.translationrecorder.Utils
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
-import org.wycliffeassociates.translationrecorder.usecases.APP_DATA_DIR
 import org.wycliffeassociates.translationrecorder.usecases.ImportProject
-import org.wycliffeassociates.translationrecorder.usecases.USER_DATA_DIR
 import org.wycliffeassociates.translationrecorder.utilities.Task
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.util.UUID
 import java.util.regex.Pattern
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 
 /**
  * Created by sarabiaj on 9/27/2016.
@@ -39,27 +37,38 @@ class ImportProjectTask(
     override fun run() {
         val uuid = UUID.randomUUID().toString()
         val tempDir = directoryProvider.createTempDir(uuid)
-        val extractedDir = File(tempDir, "extracted")
+        val tempZipFile = File(directoryProvider.internalCacheDir, "$uuid.zip")
 
         try {
             context.contentResolver.openInputStream(projectUri)?.use { inputStream ->
-                extractZip(inputStream, extractedDir)
-
-                if (validProjectDir(extractedDir)) {
-                    projectInfo?.let { info ->
-                        val projectDir = File(tempDir, "${info.language}/${info.version}")
-                        projectDir.mkdirs()
-                        FileUtilities.copyDirectory(extractedDir, projectDir, null)
-
-                        importProject(File(tempDir, info.language))
-                        onTaskCompleteDelegator()
-                    } ?: run {
-                        Logger.e(ImportProjectTask::class.toString(), "Could not define project details")
-                        onTaskErrorDelegator(context.getString(R.string.project_details_undefined))
+                FileOutputStream(tempZipFile).use { outputStream ->
+                    val buffer = ByteArray(1024)
+                    var length: Int
+                    while (true) {
+                        if (inputStream.read(buffer).also { length = it } <= 0) break
+                        outputStream.write(buffer, 0, length)
                     }
-                } else {
-                    Logger.e(ImportProjectTask::class.toString(), "Invalid project backup file.")
-                    onTaskErrorDelegator(context.getString(R.string.invalid_project_backup))
+                }
+
+                ZipFile(tempZipFile).use { zipFile ->
+                    if (!Utils.isAppBackup(zipFile)) {
+                        findProjectInfo(zipFile)
+                        projectInfo?.let { info ->
+                            val projectDir = File(tempDir, "${info.language}/${info.version}")
+                            projectDir.mkdirs()
+
+                            zipFile.extractAll(projectDir.absolutePath)
+
+                            importProject(File(tempDir, info.language))
+                            onTaskCompleteDelegator()
+                        } ?: run {
+                            Logger.e(ImportProjectTask::class.toString(), "Could not define project details")
+                            onTaskErrorDelegator(context.getString(R.string.project_details_undefined))
+                        }
+                    } else {
+                        Logger.e(ImportProjectTask::class.toString(), "Invalid project backup file.")
+                        onTaskErrorDelegator(context.getString(R.string.invalid_project_backup))
+                    }
                 }
             }
         } catch (e: IOException) {
@@ -68,61 +77,32 @@ class ImportProjectTask(
         }
 
         FileUtilities.deleteRecursive(tempDir)
+        FileUtilities.deleteRecursive(tempZipFile)
     }
 
-    private fun setProjectInfo(fileName: String) {
-        if (projectInfo == null) {
-            try {
-                val chapterPattern = Pattern.compile(CHAPTER_FILE_REGEX)
-                chapterPattern.matcher(fileName).apply {
-                    val found = find()
-                    if (found) {
-                        projectInfo = ProjectInfo(group(1)!!, group(2)!!)
-                        return
-                    }
-                }
-                val versePattern = Pattern.compile(VERSE_FILE_REGEX)
-                versePattern.matcher(fileName).apply {
-                    val found = find()
-                    if (found) {
-                        projectInfo = ProjectInfo(group(1)!!, group(2)!!)
-                        return
-                    }
-                }
-            } catch (_: Exception) {
-            }
-        }
-    }
-
-    private fun extractZip(inputStream: InputStream, tempDir: File) {
-        ZipInputStream(inputStream).use { zip ->
-            var zipEntry: ZipEntry?
-            while (zip.nextEntry.also { zipEntry = it } != null) {
-                val file = File(tempDir, zipEntry!!.name)
-                if (zipEntry!!.isDirectory) {
-                    file.mkdirs()
-                } else {
-                    setProjectInfo(zipEntry!!.name)
-                    file.outputStream().use { out ->
-                        val buffer = ByteArray(4096)
-                        var len: Int
-                        while (zip.read(buffer).also { len = it } > 0) {
-                            out.write(buffer, 0, len)
+    private fun findProjectInfo(zipFile: ZipFile) {
+        zipFile.fileHeaders.forEach { header ->
+            if (!header.isDirectory) {
+                try {
+                    val chapterPattern = Pattern.compile(CHAPTER_FILE_REGEX)
+                    chapterPattern.matcher(header.fileName).apply {
+                        val found = find()
+                        if (found) {
+                            projectInfo = ProjectInfo(group(1)!!, group(2)!!)
+                            return
                         }
                     }
+                    val versePattern = Pattern.compile(VERSE_FILE_REGEX)
+                    versePattern.matcher(header.fileName).apply {
+                        val found = find()
+                        if (found) {
+                            projectInfo = ProjectInfo(group(1)!!, group(2)!!)
+                            return
+                        }
+                    }
+                } catch (_: Exception) {
                 }
-                zip.closeEntry()
             }
-        }
-    }
-
-    private fun validProjectDir(projectDir: File): Boolean {
-        val dirs = projectDir.listFiles()
-
-        return when {
-            dirs == null -> false
-            dirs.any { it.name == APP_DATA_DIR || it.name == USER_DATA_DIR } -> false
-            else -> true
         }
     }
 

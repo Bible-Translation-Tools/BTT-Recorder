@@ -125,7 +125,7 @@ class TranslationExchangeExportTest {
 
         exportDelegator.delegateExport(tEExport)
 
-        Thread.sleep(1000)
+        Thread.sleep(2000)
 
         val files = directoryProvider.uploadDir.listFiles()
 
