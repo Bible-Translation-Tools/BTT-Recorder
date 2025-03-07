@@ -48,7 +48,8 @@ class Manifest(
         val output = File(projectDirectory, "manifest.json")
         gson.newJsonWriter(FileWriter(output)).use { jw ->
             jw.beginObject()
-            writeLanguage(jw)
+            writeTargetLanguage(jw)
+            writeSourceLanguage(jw)
             writeBook(jw)
             writeVersion(jw)
             writeAnthology(jw)
@@ -68,12 +69,23 @@ class Manifest(
     }
 
     @Throws(IOException::class)
-    private fun writeLanguage(jw: JsonWriter) {
+    private fun writeTargetLanguage(jw: JsonWriter) {
         jw.name("language")
         jw.beginObject()
         jw.name("slug").value(project.targetLanguageSlug)
         jw.name("name").value(project.targetLanguage.name)
         jw.endObject()
+    }
+
+    @Throws(IOException::class)
+    private fun writeSourceLanguage(jw: JsonWriter) {
+        if (project.sourceLanguage != null) {
+            jw.name("source_language")
+            jw.beginObject()
+            jw.name("slug").value(project.sourceLanguageSlug)
+            jw.name("name").value(project.sourceLanguage!!.name)
+            jw.endObject()
+        }
     }
 
     @Throws(IOException::class)

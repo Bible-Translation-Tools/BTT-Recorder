@@ -4,19 +4,83 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import com.google.gson.Gson
+import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getProjectDirectory
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileWriter
 import java.io.IOException
+
 
 /**
  * Created by sarabiaj on 12/10/2015.
  */
 class FolderExport(
     project: Project,
-    directoryProvider: IDirectoryProvider
-) : Export(project, directoryProvider) {
+    private val directoryProvider: IDirectoryProvider,
+    private val db: IProjectDatabaseHelper,
+    private val assetsProvider: AssetsProvider
+    ) : Export(project, directoryProvider) {
+
+    override fun initialize() {
+        val projectDir = getProjectDirectory(project, directoryProvider)
+        if (projectDir.exists()) {
+            // writes manifest before backing up
+            val manifest = Manifest(project, projectDir, db, directoryProvider, assetsProvider)
+            try {
+                manifest.createManifestFile()
+                writeSelectedTakes(db)
+            } catch (e: IOException) {
+                throw RuntimeException(e)
+            }
+        }
+        super.initialize()
+    }
+
+    private fun writeSelectedTakes(db: IProjectDatabaseHelper) {
+        val projectDir = getProjectDirectory(project, directoryProvider)
+        val selectedTakes = ArrayList<String>()
+
+        for (file in projectDir.listFiles()!!) {
+            if (file.isDirectory && file.name.matches("\\d+".toRegex())) {
+                val chapterDir = file
+                for (take in chapterDir.listFiles()) {
+                    val ppm: ProjectPatternMatcher = project.patternMatcher
+                    if (ppm.match(take)) {
+                        val takeInfo = ppm.takeInfo!!
+                        val chosen = db.getSelectedTakeNumber(takeInfo)
+                        val isSelected = chosen == takeInfo.take
+                        if (isSelected) {
+                            selectedTakes.add(take.name)
+                        }
+                    }
+                }
+            }
+        }
+
+        val gson = Gson()
+        val output = File(projectDir, "selected.json") // an array of selected take file names
+
+        try {
+            gson.newJsonWriter(FileWriter(output)).use { jw ->
+                jw.beginArray()
+                for (item in selectedTakes) {
+                    jw.value(item)
+                }
+                jw.endArray()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     override fun handleUserInput() {
         val i = Intent(fragment.activity, StorageAccess::class.java)
         try {
