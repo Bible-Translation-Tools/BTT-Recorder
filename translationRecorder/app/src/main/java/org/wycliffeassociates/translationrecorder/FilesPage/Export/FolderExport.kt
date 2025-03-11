@@ -4,18 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import com.google.gson.Gson
-import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
-import org.wycliffeassociates.translationrecorder.database.ProjectDatabaseHelper
 import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
-import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getProjectDirectory
-import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileWriter
 import java.io.IOException
 
 
