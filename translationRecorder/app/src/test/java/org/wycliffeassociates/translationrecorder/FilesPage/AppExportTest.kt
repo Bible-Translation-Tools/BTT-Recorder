@@ -37,6 +37,7 @@ class AppExportTest {
             tempFolder.newFolder(name)
         }
         every { directoryProvider.translationsDir }.returns(tempFolder.newFolder("translations"))
+        directoryProvider.translationsDir.resolve("aa/reg/mrk").mkdirs()
     }
 
     @After
