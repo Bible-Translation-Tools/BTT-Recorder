@@ -36,7 +36,7 @@ class TranslationExchangeExport(
     private val prefs: IPreferenceRepository,
     private val assetsProvider: AssetsProvider,
     private val server: String
-) : Export(project, directoryProvider), RequestObserverDelegate {
+) : Export(project, directoryProvider, db, assetsProvider), RequestObserverDelegate {
 
     private var differ: TranslationExchangeDiff? = null
 

@@ -24,62 +24,10 @@ import java.io.IOException
  */
 class FolderExport(
     project: Project,
-    private val directoryProvider: IDirectoryProvider,
-    private val db: IProjectDatabaseHelper,
-    private val assetsProvider: AssetsProvider
-    ) : Export(project, directoryProvider) {
-
-    override fun initialize() {
-        val projectDir = getProjectDirectory(project, directoryProvider)
-        if (projectDir.exists()) {
-            // writes manifest before backing up
-            val manifest = Manifest(project, projectDir, db, directoryProvider, assetsProvider)
-            try {
-                manifest.createManifestFile()
-                writeSelectedTakes(db)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
-        }
-        super.initialize()
-    }
-
-    private fun writeSelectedTakes(db: IProjectDatabaseHelper) {
-        val projectDir = getProjectDirectory(project, directoryProvider)
-        val selectedTakes = ArrayList<String>()
-
-        for (file in projectDir.listFiles()!!) {
-            if (file.isDirectory && file.name.matches("\\d+".toRegex())) {
-                val chapterDir = file
-                for (take in chapterDir.listFiles()) {
-                    val ppm: ProjectPatternMatcher = project.patternMatcher
-                    if (ppm.match(take)) {
-                        val takeInfo = ppm.takeInfo!!
-                        val chosen = db.getSelectedTakeNumber(takeInfo)
-                        val isSelected = chosen == takeInfo.take
-                        if (isSelected) {
-                            selectedTakes.add(take.name)
-                        }
-                    }
-                }
-            }
-        }
-
-        val gson = Gson()
-        val output = File(projectDir, "selected.json") // an array of selected take file names
-
-        try {
-            gson.newJsonWriter(FileWriter(output)).use { jw ->
-                jw.beginArray()
-                for (item in selectedTakes) {
-                    jw.value(item)
-                }
-                jw.endArray()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
+    directoryProvider: IDirectoryProvider,
+    db: IProjectDatabaseHelper,
+    assetsProvider: AssetsProvider
+) : Export(project, directoryProvider, db, assetsProvider) {
 
     override fun handleUserInput() {
         val i = Intent(fragment.activity, StorageAccess::class.java)

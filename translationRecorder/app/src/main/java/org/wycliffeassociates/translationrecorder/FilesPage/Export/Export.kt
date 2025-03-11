@@ -3,11 +3,19 @@ package org.wycliffeassociates.translationrecorder.FilesPage.Export
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.Fragment
+import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
+import org.wycliffeassociates.translationrecorder.FilesPage.Manifest
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
+import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils.getProjectDirectory
+import org.wycliffeassociates.translationrecorder.project.ProjectPatternMatcher
 import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import kotlin.concurrent.Volatile
 
 /**
@@ -40,6 +48,8 @@ abstract class Export : SimpleProgressCallback {
 
     val project: Project
     private val directoryProvider: IDirectoryProvider
+    private val db: IProjectDatabaseHelper
+    private val assetsProvider: AssetsProvider
     lateinit var fragment: Fragment
 
     var directoryToZip: File?
@@ -53,10 +63,14 @@ abstract class Export : SimpleProgressCallback {
 
     constructor(
         project: Project,
-        directoryProvider: IDirectoryProvider
+        directoryProvider: IDirectoryProvider,
+        databaseHelper: IProjectDatabaseHelper,
+        assetsProvider: AssetsProvider
     ) {
         this.project = project
         this.directoryProvider = directoryProvider
+        this.db = databaseHelper
+        this.assetsProvider = assetsProvider
 
         directoryToZip = ProjectFileUtils.getProjectDirectory(project, directoryProvider)
         filesToZip = null
@@ -66,10 +80,14 @@ abstract class Export : SimpleProgressCallback {
     constructor(
         filesToExport: ArrayList<File>,
         project: Project,
-        directoryProvider: IDirectoryProvider
+        directoryProvider: IDirectoryProvider,
+        databaseHelper: IProjectDatabaseHelper,
+        assetsProvider: AssetsProvider
     ) {
         this.project = project
         this.directoryProvider = directoryProvider
+        this.db = databaseHelper
+        this.assetsProvider = assetsProvider
 
         directoryToZip = null
         filesToZip = filesToExport
@@ -89,6 +107,8 @@ abstract class Export : SimpleProgressCallback {
     }
 
     protected open fun initialize() {
+        writeManifest()
+        writeSelectedTakes()
         if (directoryToZip != null) {
             zip(directoryToZip!!)
         } else {
@@ -127,6 +147,57 @@ abstract class Export : SimpleProgressCallback {
         root.mkdirs()
         zipFile = File(root, zipName)
         return zipFile!!
+    }
+
+    private fun writeManifest() {
+        val projectDir = getProjectDirectory(project, directoryProvider)
+        if (projectDir.exists()) {
+            // writes manifest before backing up
+            val manifest = Manifest(project, projectDir, db, directoryProvider, assetsProvider)
+            try {
+                manifest.createManifestFile()
+                writeSelectedTakes()
+            } catch (e: IOException) {
+                throw RuntimeException(e)
+            }
+        }
+    }
+
+    private fun writeSelectedTakes() {
+        val projectDir = getProjectDirectory(project, directoryProvider)
+        val selectedTakes = ArrayList<String>()
+
+        for (file in projectDir.listFiles()!!) {
+            if (file.isDirectory && file.name.matches("\\d+".toRegex())) {
+                val chapterDir = file
+                for (take in chapterDir.listFiles()) {
+                    val ppm: ProjectPatternMatcher = project.patternMatcher
+                    if (ppm.match(take)) {
+                        val takeInfo = ppm.takeInfo!!
+                        val chosen = db.getSelectedTakeNumber(takeInfo)
+                        val isSelected = chosen == takeInfo.take
+                        if (isSelected) {
+                            selectedTakes.add(take.name)
+                        }
+                    }
+                }
+            }
+        }
+
+        val gson = Gson()
+        val output = File(projectDir, "selected.json") // an array of selected take file names
+
+        try {
+            gson.newJsonWriter(FileWriter(output)).use { jw ->
+                jw.beginArray()
+                for (item in selectedTakes) {
+                    jw.value(item)
+                }
+                jw.endArray()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     /**
