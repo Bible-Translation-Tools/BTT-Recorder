@@ -23,6 +23,7 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFra
 import org.wycliffeassociates.translationrecorder.InitializeApp
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
@@ -39,6 +40,7 @@ class AppExportTest {
     @Inject lateinit var db: IProjectDatabaseHelper
     @Inject lateinit var directoryProvider: IDirectoryProvider
     @Inject lateinit var initializeApp: InitializeApp
+    @Inject lateinit var assetsProvider: AssetsProvider
 
     @Before
     fun setUp() {
@@ -67,7 +69,7 @@ class AppExportTest {
             }
         }
 
-        val appExport = spyk(AppExport(project, directoryProvider), recordPrivateCalls = true)
+        val appExport = spyk(AppExport(project, directoryProvider, db, assetsProvider), recordPrivateCalls = true)
 
         every { appExport["handleUserInput"]() }.just(awaits)
         exportDelegator.delegateExport(appExport)
