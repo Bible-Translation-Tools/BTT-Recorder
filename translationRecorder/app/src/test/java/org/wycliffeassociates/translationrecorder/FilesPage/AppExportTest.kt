@@ -14,6 +14,8 @@ import org.wycliffeassociates.translationrecorder.FilesPage.Export.AppExport
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.Export
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.ExportTaskFragment
 import org.wycliffeassociates.translationrecorder.ProjectManager.dialogs.ProjectInfoDialog
+import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
+import org.wycliffeassociates.translationrecorder.persistance.AssetsProvider
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.project.Project
 
@@ -22,6 +24,8 @@ class AppExportTest {
     @get:Rule val tempFolder = TemporaryFolder()
 
     @MockK lateinit var directoryProvider: IDirectoryProvider
+    @MockK lateinit var db: IProjectDatabaseHelper
+    @MockK lateinit var assetsProvider: AssetsProvider
 
     @Before
     fun setUp() {
@@ -33,6 +37,7 @@ class AppExportTest {
             tempFolder.newFolder(name)
         }
         every { directoryProvider.translationsDir }.returns(tempFolder.newFolder("translations"))
+        directoryProvider.translationsDir.resolve("aa/reg/mrk").mkdirs()
     }
 
     @After
@@ -64,7 +69,7 @@ class AppExportTest {
             }
         }
 
-        val appExport = AppExport(project, directoryProvider).apply {
+        val appExport = AppExport(project, directoryProvider, db, assetsProvider).apply {
             exportDelegator.delegateExport(this)
         }
 

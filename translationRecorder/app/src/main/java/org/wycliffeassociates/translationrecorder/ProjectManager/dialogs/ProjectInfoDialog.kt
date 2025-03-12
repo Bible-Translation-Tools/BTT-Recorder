@@ -136,7 +136,7 @@ class ProjectInfoDialog : DialogFragment() {
         }
 
         binding.otherButton.setOnClickListener {
-            export = AppExport(project, directoryProvider).apply {
+            export = AppExport(project, directoryProvider, db, assetsProvider).apply {
                 exportDelegator?.delegateExport(this)
             }
         }
