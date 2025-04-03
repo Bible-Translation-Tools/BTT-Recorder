@@ -55,18 +55,6 @@ object UiTestUtils {
     }
 
     /**
-     * Dismiss system dialog that shows busyness of an app
-     */
-    fun dismissANRSystemDialog(text: String) {
-        val device = UiDevice.getInstance(getInstrumentation())
-        // If running the device in English Locale
-        val waitButton = device.findObject(UiSelector().textContains(text))
-        //if (waitButton.exists()) {
-            waitButton.click()
-        //}
-    }
-
-    /**
      * make sure text is displayed or not displayed in view
      * @param resource
      * @param displayed
