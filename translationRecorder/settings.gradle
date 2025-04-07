@@ -1,1 +1,4 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
 include ':app', ':door43login', ':sysutils', ':widgets', ':com.door43.tools.reporting', ':chunkplugin', ':biblechunk', ':obschunk', ':noteschunk', ':questionschunk', ':pulseview-1.0.2'

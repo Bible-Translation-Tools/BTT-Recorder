@@ -3,10 +3,24 @@ import com.android.build.gradle.internal.lint.*
 
 import java.text.SimpleDateFormat
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.2'
+    }
+}
 
-def buildTime() {
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
+}
+
+static def buildTime() {
     def df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'") // you can change it
     df.setTimeZone(TimeZone.getTimeZone("UTC"))
     return df.format(new Date())
@@ -14,17 +28,18 @@ def buildTime() {
 
 android {
     namespace 'org.wycliffeassociates.translationrecorder'
-
     defaultConfig {
         applicationId "bible.translationtools.recorder"
-        compileSdk 31
-        minSdk 21
-        targetSdk 28
-        versionCode 36
-        versionName "1.4.16"
-        versionNameSuffix
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        compileSdk 35
+        minSdk 22
+        targetSdk 35
+        versionCode 54
+        versionName "1.4.33"
+
         multiDexEnabled true
+        testBuildType "verify"
+        testInstrumentationRunner "org.wycliffeassociates.translationrecorder.recordingapp.CustomTestRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
 
     def shouldRelease = project.hasProperty('keystorePath')
@@ -41,7 +56,6 @@ android {
             }
         }
     }
-
     buildTypes {
         if (shouldRelease) {
             release {
@@ -50,106 +64,134 @@ android {
                 proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             }
         }
+        verify {
+            initWith debug
+            applicationIdSuffix ".test"
+        }
     }
-
     sourceSets { main { assets.srcDirs = ['src/main/assets', 'src/main/assets/'] } }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
     productFlavors {
     }
-
     buildFeatures {
         viewBinding true
-        buildConfig = true
+        buildConfig true
     }
-
     packagingOptions {
         resources {
-            excludes += ['META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE.txt', 'LICENSE.txt']
+            excludes += [
+                    'META-INF/*',
+                    'LICENSE.txt'
+            ]
         }
     }
-
     lint {
         abortOnError true
-        disable += ['ExpiredTargetSdkVersion']
+        disable += ['ExpiredTargetSdkVersion','MissingTranslation','ExtraTranslation']
     }
-
-}
-
-repositories {
-    maven { url 'https://guardian.github.com/maven/repo-releases' }
-    maven { url "https://jitpack.io" }
-    mavenCentral()
-
-    dependencies {
-        implementation fileTree(include: ['*.jar'], dir: 'libs')
-        implementation 'com.android.support:multidex:1.0.3'
-
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1'
-        implementation 'commons-net:commons-net:3.6'
-        implementation 'commons-io:commons-io:2.6'
-        implementation 'org.apache.commons:commons-lang3:3.7'
-        implementation 'commons-codec:commons-codec:1.11'
-
-        implementation 'androidx.vectordrawable:vectordrawable:1.0.0'
-        implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-        implementation 'androidx.media:media:1.0.0'
-        implementation 'androidx.appcompat:appcompat:1.0.0'
-        implementation 'androidx.cardview:cardview:1.0.0'
-        implementation 'androidx.recyclerview:recyclerview:1.0.0'
-        implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta1'
-
-        implementation 'com.bignerdranch.android:recyclerview-multiselect:0.2'
-        implementation 'com.github.filippudak.progresspieview:library:1.0.4'
-        implementation 'com.karumi:dexter:5.0.0'
-
-        def uploadServiceVersion = "3.4.2"
-        implementation "net.gotev:uploadservice:$uploadServiceVersion"
-        implementation "net.gotev:uploadservice-okhttp:$uploadServiceVersion"
-        implementation 'com.squareup.okhttp3:okhttp:3.9.1'
-        implementation 'com.daimajia.easing:library:2.0@aar'
-        implementation 'com.daimajia.androidanimations:library:2.3@aar'
-        implementation 'com.pixplicity.sharp:library:1.1.3'
-        implementation 'net.lingala.zip4j:zip4j:1.3.2'
-        implementation 'com.google.code.gson:gson:2.8.1'
-
-        testImplementation 'junit:junit:4.12'
-        androidTestImplementation 'org.mockito:mockito-core:2.6.3'
-        androidTestImplementation 'androidx.test:core:1.5.0'
-        androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-        androidTestImplementation 'org.mockito:mockito-android:2.6.3'
-        androidTestImplementation 'com.android.support.test:runner:0.3'
-        androidTestImplementation 'com.android.support.test:rules:0.3'
-        androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2.1'
-        androidTestImplementation('com.android.support.test.espresso:espresso-contrib:2.2.1') {
-            exclude group: 'com.android.support', module: 'appcompat-v7'
-            exclude group: 'com.android.support', module: 'support-v4'
-            exclude module: 'recyclerview-v7'
-        }
-
-        implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.3'
-        implementation files('src/main/lib/jdenticon-kotlin.jar')
-
-        implementation project(':widgets')
-        implementation project(':sysutils')
-        implementation project(':com.door43.tools.reporting')
-        implementation project(':door43login')
-        implementation project(':chunkplugin')
-        implementation project(':biblechunk')
-        implementation project(':obschunk')
-        //compile project(':questionschunk')
-        //compile project(':noteschunk')
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+        animationsDisabled = true
     }
 }
 
 dependencies {
-    implementation 'androidx.test:runner:1.6.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:multidex:1.0.3'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation 'commons-net:commons-net:3.6'
+    implementation 'commons-io:commons-io:2.18.0'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'commons-codec:commons-codec:1.17.1'
+
+    implementation 'androidx.vectordrawable:vectordrawable:1.2.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.media:media:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+
+    implementation 'com.bignerdranch.android:recyclerview-multiselect:0.2'
+    implementation 'com.github.filippudak.progresspieview:library:1.0.4'
+    implementation 'com.guolindev.permissionx:permissionx:1.8.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+
+    def uploadServiceVersion = "4.9.3"
+    implementation "net.gotev:uploadservice:$uploadServiceVersion"
+    implementation "net.gotev:uploadservice-okhttp:$uploadServiceVersion"
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.daimajia.easing:library:2.0@aar'
+    implementation 'com.daimajia.androidanimations:library:2.3@aar'
+    implementation 'com.pixplicity.sharp:library:1.1.3'
+    implementation 'net.lingala.zip4j:zip4j:2.11.5'
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'com.google.android.material:material:1.12.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'org.mockito:mockito-core:5.11.0'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    implementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'org.mockito:mockito-android:2.6.3'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation('androidx.test.espresso:espresso-contrib:3.6.1')
+    androidTestImplementation "androidx.test.espresso:espresso-intents:3.6.1"
+    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.3.0"
+
+    androidTestUtil 'androidx.test:orchestrator:1.5.1'
+
+    implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.4'
+    implementation 'com.arthenica:ffmpeg-kit-audio:6.0-2.LTS'
+    implementation files('src/main/lib/jdenticon-kotlin.jar')
+
+    implementation project(':widgets')
+    implementation project(':sysutils')
+    implementation project(':com.door43.tools.reporting')
+    implementation project(':door43login')
+    implementation project(':chunkplugin')
+    implementation project(':biblechunk')
+    implementation project(':obschunk')
+    //compile project(':questionschunk')
+    //compile project(':noteschunk')
+
+    implementation 'androidx.test:runner:1.6.2'
     implementation 'com.android.support:support-annotations:28.0.0'
+    androidTestImplementation 'org.hamcrest:hamcrest:3.0'
+
+    // Hilt/Dagger dependencies
+    implementation 'com.google.dagger:hilt-android:2.52'
+    kapt 'com.google.dagger:hilt-compiler:2.52'
+    androidTestImplementation  'com.google.dagger:hilt-android-testing:2.52'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.52'
+    androidTestAnnotationProcessor 'com.google.dagger:hilt-android-compiler:2.52'
+
+    // Mockk
+    testImplementation "io.mockk:mockk:1.13.13"
+    testImplementation "io.mockk:mockk-agent:1.13.13"
+    androidTestImplementation "io.mockk:mockk-android:1.13.13"
+    androidTestImplementation "io.mockk:mockk-agent:1.13.13"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+}
+
+kapt {
+    correctErrorTypes true
+}
+
+hilt {
+    enableAggregatingTask = true
 }
 
 tasks.withType(MergeSourceSetFolders).configureEach {
@@ -171,4 +213,16 @@ tasks.withType(AndroidLintAnalysisTask).configureEach {
     dependsOn ":obschunk:jar"
     dependsOn ":noteschunk:jar"
     dependsOn ":questionschunk:jar"
+}
+
+tasks.register('uiTests', Exec) {
+    commandLine "../gradlew",
+            "connectedAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.annotation=org.wycliffeassociates.translationrecorder.recordingapp.UITest"
+}
+
+tasks.register('integrationTests', Exec) {
+    commandLine "../gradlew",
+            "connectedAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.annotation=org.wycliffeassociates.translationrecorder.recordingapp.IntegrationTest"
 }

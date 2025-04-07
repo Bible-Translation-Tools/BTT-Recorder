@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
     <PreferenceCategory
         android:title="@string/app_settings"
         android:key="pref_key_app_settings"
         android:layout="@layout/custom_pref_category">
 
         <!--Not sure the default should be in the strings file; do other languages change directory text? -->
-        <PreferenceScreen
+        <Preference
             android:key="pref_global_src_loc"
             android:layout="@layout/custom_pref"
             android:title="@string/source_audio_location"
@@ -17,49 +16,63 @@
             <intent
                 android:action="org.wycliffeassociates.translationrecorder.SettingsPage.SELECT_SRC_INTENT">
             </intent>
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
             android:key="pref_global_lang_src"
             android:layout="@layout/custom_pref"
-            android:title="@string/source_language"
+            android:title="@string/source_audio_language"
             android:summary="@string/pref_default_lang"
             android:defaultValue="@string/pref_default_lang">
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
             android:key="pref_add_temp_language"
             android:layout="@layout/custom_pref"
             android:title="@string/add_temp_language">
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
             android:key="pref_update_languages"
             android:layout="@layout/custom_pref"
             android:title="@string/update_language_from_td">
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
                 android:key="pref_update_languages_from_file"
                 android:layout="@layout/custom_pref"
                 android:title="@string/update_language_from_file">
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
             android:key="pref_languages_url"
             android:layout="@layout/custom_pref"
             android:title="@string/change_languages_url"
             android:summary="@string/pref_languages_url"
             android:defaultValue="@string/pref_languages_url">
-        </PreferenceScreen>
+        </Preference>
 
-        <PreferenceScreen
+        <Preference
                 android:key="pref_upload_server"
                 android:layout="@layout/custom_pref"
                 android:title="@string/change_upload_server"
                 android:summary="@string/pref_upload_server"
                 android:defaultValue="@string/pref_upload_server">
-        </PreferenceScreen>
+        </Preference>
+
+        <Preference
+            android:key="pref_backup_restore"
+            android:layout="@layout/custom_pref"
+            android:title="@string/backup_restore"
+            android:summary="@string/backup_restore_hint">
+        </Preference>
+
+        <Preference
+            android:key="pref_migrate_old_app"
+            android:title="@string/migrate_old_app"
+            android:layout="@layout/custom_pref"
+            android:summary="@string/migrate_old_app_hint">
+        </Preference>
 
     </PreferenceCategory>
 
@@ -67,14 +80,15 @@
         android:title="@string/app_version"
         android:key="pref_key_app_version"
         android:layout="@layout/custom_pref_category">
+
         <EditTextPreference
             android:key="version"
             android:title="@string/version"
             android:enabled="false"
             android:selectable="false"
             android:persistent="false"
-            android:shouldDisableView="false"/>
+            android:shouldDisableView="false"
+            android:layout="@layout/custom_pref"/>
     </PreferenceCategory>
-
 
 </PreferenceScreen>

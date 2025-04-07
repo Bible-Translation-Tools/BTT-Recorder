@@ -3,69 +3,64 @@ package org.wycliffeassociates.translationrecorder.login
 import android.content.Intent
 import android.os.Bundle
 import com.door43.login.TermsOfUseActivity
+import dagger.hilt.android.AndroidEntryPoint
 import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.databinding.ActivityLoginBinding
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile
+import org.wycliffeassociates.translationrecorder.login.fragments.FragmentCreateProfile.OnProfileCreatedListener
 import org.wycliffeassociates.translationrecorder.login.fragments.FragmentReviewProfile
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnProfileCreatedListener
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnRedoListener
+import org.wycliffeassociates.translationrecorder.login.fragments.FragmentReviewProfile.OnReviewProfileListener
 import org.wycliffeassociates.translationrecorder.permissions.PermissionActivity
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.wav.WavFile
 import java.io.File
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 3/9/2018.
  */
-
-class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoListener {
+@AndroidEntryPoint
+class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnReviewProfileListener {
     override fun onPermissionsAccepted() {}
 
-    private lateinit var mFragmentCreateProfile: FragmentCreateProfile
-    private var mFragmentReviewProfile: FragmentReviewProfile? = null
-    private lateinit var profilesDirectory: File
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+
+    private lateinit var fragmentCreateProfile: FragmentCreateProfile
+    private var fragmentReviewProfile: FragmentReviewProfile? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Screen.lockOrientation(this)
         if (savedInstanceState == null) {
             startActivityForResult(Intent(this, TermsOfUseActivity::class.java), 42)
-            profilesDirectory = File(externalCacheDir, "profiles")
             initializeFragments()
             addFragments()
         }
     }
 
     private fun initializeFragments() {
-        mFragmentCreateProfile = FragmentCreateProfile.newInstance(
-                profilesDirectory,
-                this
-        )
-        mFragmentCreateProfile.retainInstance = true
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(directoryProvider)
     }
 
     private fun addFragments() {
-        fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, mFragmentCreateProfile)
+        supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, fragmentCreateProfile)
                 .commit()
     }
 
     override fun onProfileCreated(wav: WavFile, audio: File, hash: String) {
-        mFragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash, this)
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, mFragmentReviewProfile)
+        fragmentReviewProfile = FragmentReviewProfile.newInstance(wav, audio, hash)
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragmentReviewProfile!!)
                 .commit()
     }
 
     override fun onRedo() {
-        mFragmentCreateProfile = FragmentCreateProfile.newInstance(
-                profilesDirectory,
-                this
-        )
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, mFragmentCreateProfile)
+        fragmentCreateProfile = FragmentCreateProfile.newInstance(directoryProvider)
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragmentCreateProfile)
                 .commit()
     }
 
@@ -78,7 +73,6 @@ class LoginActivity : PermissionActivity(), OnProfileCreatedListener, OnRedoList
 
     override fun onBackPressed() {
         super.onBackPressed()
-
         startActivity(Intent(this, UserActivity::class.java))
         finish()
     }

@@ -20,23 +20,23 @@
         android:textSize="@dimen/title"
         android:text="Major Text"
         android:textColor="@color/dark_primary_text"
-        android:paddingLeft="@dimen/default_padding_m" />
+        android:paddingStart="@dimen/default_padding_m" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:gravity="center|right"
+        android:gravity="center|end"
         android:layout_height="match_parent"
         android:id="@+id/rightmost_scroll_list_item_layout">
 
         <TextView android:id="@+id/minorText"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Minor Text"
             android:textColor="@color/dark_secondary_text"
             android:layout_weight="1"
             android:textSize="@dimen/body"
-            android:gravity="right"/>
+            android:gravity="end"/>
 
         <ImageView
             android:layout_width="@dimen/icon_m"

@@ -1,5 +1,6 @@
 package org.wycliffeassociates.translationrecorder.project.components;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -36,7 +37,7 @@ public abstract class ProjectComponent implements Comparable, Parcelable {
         return mSort;
     }
 
-    public abstract String getLabel();
+    public abstract String getLabel(Context context);
 
     @Override
     public int compareTo(Object another) {

@@ -4,8 +4,7 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:animateLayoutChanges="true"
-    >
+    android:animateLayoutChanges="true">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/unitCard"
@@ -13,22 +12,19 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/default_padding_xs"
         card_view:cardCornerRadius="2dp"
-        card_view:cardElevation="@dimen/cardview_default_elevation"
-        >
+        card_view:cardElevation="@dimen/cardview_default_elevation">
 
         <LinearLayout
             android:id="@+id/unitCardContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/card_bg"
-            >
+            android:background="@color/card_bg">
 
             <RelativeLayout
                 android:id="@+id/cardHeader"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/unitTitle"
@@ -39,8 +35,7 @@
                     android:textColor="@color/primary_text_default_material_light"
                     android:textStyle="bold"
                     android:layout_centerVertical="true"
-                    android:padding="@dimen/default_padding_m"
-                    />
+                    android:padding="@dimen/default_padding_m" />
 
                 <LinearLayout
                     android:id="@+id/unitActions"
@@ -49,8 +44,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:clickable="true"
-                    android:padding="@dimen/default_padding_m"
-                    >
+                    android:padding="@dimen/default_padding_m">
 
                     <ImageView
                         android:id="@+id/unitRecordBtn"
@@ -62,8 +56,7 @@
                         android:duplicateParentState="true"
                         android:clickable="true"
                         android:cropToPadding="false"
-                        android:layout_marginRight="@dimen/default_padding_l"
-                    />
+                        android:layout_marginRight="@dimen/default_padding_l" />
 
                     <ImageView
                         android:id="@+id/unitExpandBtn"
@@ -75,8 +68,7 @@
                         android:duplicateParentState="true"
                         android:clickable="true"
                         android:cropToPadding="false"
-                        android:layout_marginLeft="@dimen/default_padding_l"
-                        />
+                        android:layout_marginStart="@dimen/default_padding_l" />
 
                 </LinearLayout>
 
@@ -87,8 +79,7 @@
                     android:layout_centerVertical="true"
                     android:layout_toStartOf="@id/unitActions"
                     android:layout_marginEnd="@dimen/default_padding_m"
-                    android:gravity="center"
-                    >
+                    android:gravity="center">
 
                     <ImageView
                         android:id="@+id/take_count_icon"
@@ -135,7 +126,7 @@
                         android:text="00:00:00"
                         android:textSize="@dimen/abc_text_size_small_material"
                         android:textColor="@color/primary_text_default_material_light"
-                        android:layout_gravity="center_vertical|right"
+                        android:layout_gravity="center_vertical|end"
                         />
 
                     <SeekBar

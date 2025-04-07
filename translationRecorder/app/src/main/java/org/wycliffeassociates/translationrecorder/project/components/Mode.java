@@ -1,9 +1,9 @@
 package org.wycliffeassociates.translationrecorder.project.components;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.chunkplugin.ChunkPlugin.TYPE;
 
 /**
@@ -36,7 +36,7 @@ public class Mode extends ProjectComponent {
     }
 
     @Override
-    public String getLabel() {
+    public String getLabel(Context context) {
         return mName;
     }
 

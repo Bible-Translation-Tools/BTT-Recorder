@@ -1,6 +1,6 @@
 package org.wycliffeassociates.translationrecorder.login.fragments
 
-import android.app.Fragment
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Animatable
 import android.os.Bundle
@@ -9,71 +9,86 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.wycliffeassociates.translationrecorder.AudioVisualization.ActiveRecordingRenderer
-import org.wycliffeassociates.translationrecorder.R
 import org.wycliffeassociates.translationrecorder.Recording.RecordingQueues
 import org.wycliffeassociates.translationrecorder.Recording.WavFileWriter
 import org.wycliffeassociates.translationrecorder.Recording.WavRecorder
 import org.wycliffeassociates.translationrecorder.Recording.fragments.FragmentRecordingWaveform
 import org.wycliffeassociates.translationrecorder.databinding.FragmentCreateProfileBinding
-import org.wycliffeassociates.translationrecorder.login.interfaces.OnProfileCreatedListener
-import org.wycliffeassociates.translationrecorder.login.utils.convertWavToMp4
+import org.wycliffeassociates.translationrecorder.login.utils.ConvertAudio
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.wav.WavFile
 import java.io.File
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Created by sarabiaj on 3/10/2018.
  */
-
+@AndroidEntryPoint
 class FragmentCreateProfile : Fragment() {
 
+    @Inject lateinit var directoryProvider: IDirectoryProvider
+
+    interface OnProfileCreatedListener {
+        fun onProfileCreated(wav: WavFile, audio: File, hash: String)
+    }
+
     companion object {
-        fun newInstance(uploadDir: File, profileCreatedCallback: OnProfileCreatedListener): FragmentCreateProfile {
+        fun newInstance(directoryProvider: IDirectoryProvider): FragmentCreateProfile {
             val args = Bundle()
             val fragment = FragmentCreateProfile()
             fragment.arguments = args
-            fragment.uploadDir = uploadDir
-            uploadDir.mkdirs()
-            fragment.userAudio = File(uploadDir, UUID.randomUUID().toString())
+            fragment.userAudio = File(directoryProvider.profilesDir, UUID.randomUUID().toString())
             fragment.userAudio.createNewFile()
-            fragment.retainInstance = true
-            fragment.profileCreatedCallback = profileCreatedCallback
             return fragment
         }
     }
 
-    private lateinit var uploadDir: File
     private lateinit var userAudio: File
     private lateinit var hash: String
+
+    private lateinit var recordingWaveform: FragmentRecordingWaveform
+    private lateinit var renderer: ActiveRecordingRenderer
+
     private var profileCreatedCallback: OnProfileCreatedListener? = null
 
-    private lateinit var mRecording: File
-    private lateinit var mRecordingWaveform: FragmentRecordingWaveform
-    private lateinit var mRenderer: ActiveRecordingRenderer
-
-    private lateinit var binding: FragmentCreateProfileBinding
+    private var _binding: FragmentCreateProfileBinding? = null
+    private val binding get() = _binding!!
 
     private var isRecording = false
-    private var mNewRecording: WavFile? = null
+    private var recording: File? = null
+    private var newRecording: WavFile? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        binding = FragmentCreateProfileBinding.inflate(inflater, container, false)
+        _binding = FragmentCreateProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        profileCreatedCallback = context as OnProfileCreatedListener
+    }
+
     override fun onDestroy() {
-        profileCreatedCallback = null
         super.onDestroy()
+        profileCreatedCallback = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mRecordingWaveform = FragmentRecordingWaveform.newInstance()
+        recordingWaveform = FragmentRecordingWaveform.newInstance()
 
         with(binding) {
             btnRecord.setOnClickListener {
@@ -85,37 +100,28 @@ class FragmentCreateProfile : Fragment() {
             }
         }
 
-        fragmentManager.beginTransaction().add(R.id.waveform_view, mRecordingWaveform).commit()
-        mRenderer = ActiveRecordingRenderer(null, null, mRecordingWaveform)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-        outState?.let {
-            outState.putSerializable("user_audio", userAudio)
-        }
+        parentFragmentManager.beginTransaction()
+            .add(binding.waveformView.id, recordingWaveform).commit()
+        renderer = ActiveRecordingRenderer(null, null, recordingWaveform)
     }
 
     private fun startRecording() {
         if (!isRecording) {
             isRecording = true
-            activity.stopService(Intent(activity, WavRecorder::class.java))
+            requireActivity().stopService(Intent(activity, WavRecorder::class.java))
             RecordingQueues.clearQueues()
-            mRecording = File.createTempFile(UUID.randomUUID().toString(), ".raw")
-            mNewRecording = WavFile(
-                    mRecording,
-                    null
-            )
-            activity.startService(Intent(activity, WavRecorder::class.java))
-            activity.startService(WavFileWriter.getIntent(activity, mNewRecording))
-            mRenderer.listenForRecording(false)
+            recording = directoryProvider.createTempFile("recording", ".raw")
+            newRecording = WavFile(recording, null)
+            requireActivity().startService(Intent(activity, WavRecorder::class.java))
+            requireActivity().startService(WavFileWriter.getIntent(activity, newRecording))
+            renderer.listenForRecording(false)
             Handler(Looper.getMainLooper()).postDelayed({ stopRecording() }, 3000)
         }
     }
 
     private fun stopRecording() {
         //Stop recording, load the recorded file, and draw
-        activity.stopService(Intent(activity, WavRecorder::class.java))
+        requireActivity().stopService(Intent(activity, WavRecorder::class.java))
         RecordingQueues.pauseQueues()
         RecordingQueues.stopQueues(activity)
         isRecording = false
@@ -124,13 +130,9 @@ class FragmentCreateProfile : Fragment() {
     }
 
     private fun convertAudio() {
-        GlobalScope.launch(Dispatchers.Main) {
-            if (userAudio.exists()) {
-                userAudio.delete()
-                userAudio.createNewFile()
-            }
-            hash = convertWavToMp4(mRecording, userAudio)
-            profileCreatedCallback?.onProfileCreated(mNewRecording!!, userAudio, hash)
+        lifecycleScope.launch(Dispatchers.Main) {
+            hash = ConvertAudio.convertWavToMp4(recording!!, userAudio)
+            profileCreatedCallback?.onProfileCreated(newRecording!!, userAudio, hash)
         }
     }
 }

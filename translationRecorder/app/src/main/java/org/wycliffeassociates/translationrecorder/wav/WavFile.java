@@ -8,6 +8,7 @@ import com.door43.tools.reporting.Logger;
 
 import org.json.JSONException;
 import org.wycliffeassociates.translationrecorder.AudioInfo;
+import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider;
 import org.wycliffeassociates.translationrecorder.project.Project;
 import org.wycliffeassociates.translationrecorder.project.ProjectFileUtils;
 
@@ -19,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -29,7 +31,7 @@ import java.util.List;
 /**
  * Created by sarabiaj on 6/2/2016.
  */
-public class WavFile implements Parcelable {
+public class WavFile implements Parcelable, Serializable {
 
     public static final int SAMPLERATE = 44100;
     public static final int CHANNEL_TYPE = AudioFormat.CHANNEL_IN_MONO;
@@ -82,55 +84,6 @@ public class WavFile implements Parcelable {
         mTotalDataLength = in.readInt();
         mMetadataLength = in.readInt();
     }
-//
-//    public WavFile(File file, String jsonMetadata) {
-//        mFile = file;
-//        mMetadataLength = 0;
-//        mTotalAudioLength = (int) file.length() - HEADER_SIZE;
-//        mTotalDataLength = (int) file.length() - 8;
-//        try {
-//            mMetadata = new Metadata(new JSONObject(jsonMetadata));
-//            writeMetadata();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void parseChunkSizes() {
-//        RandomAccessFile raf = null;
-//        try {
-//            raf = new RandomAccessFile(mFile, "r");
-//            byte[] size = new byte[4];
-//            raf.seek(4);
-//            raf.read(size);
-//            mTotalDataLength = littleEndianToDecimal(size);
-//            raf.seek(40);
-//            raf.read(size);
-//            mTotalAudioLength = littleEndianToDecimal(size);
-//            //check if this is okay
-//            raf.seek(44 + mTotalAudioLength);
-//            raf.read(size);
-//            String tag = new String(size, StandardCharsets.US_ASCII);
-//            if (tag.compareTo("LIST") == 0) {
-//                raf.seek(44 + mTotalAudioLength + 16);
-//                raf.read(size);
-//                mMetadataLength = littleEndianToDecimal(size);
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                raf.close();
-//            } catch (IOException e) {
-//                Logger.e(this.toString(), "IOException while closing stream", e);
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     public File getFile() {
         return mFile;
@@ -279,72 +232,6 @@ public class WavFile implements Parcelable {
         return;
     }
 
-//    private int writeMetadata(String metadata) throws IOException {
-//        byte[] data = convertToMetadata(metadata);
-//        BufferedOutputStream bof = null;
-//        FileOutputStream out = null;
-//        try {
-//            out = new FileOutputStream(mFile, true);
-//            //truncates existing metadata- new metadata may not be as long
-//            out.getChannel().truncate(HEADER_SIZE + mTotalAudioLength);
-//            bof = new BufferedOutputStream(out);
-//            bof.write(data);
-//        } finally {
-//            try {
-//                bof.close();
-//                out.close();
-//            } catch (IOException e) {
-//                Logger.e(this.toString(), "IOException while closing streams", e);
-//                e.printStackTrace();
-//            }
-//        }
-//        mMetadataLength = data.length;
-//        mTotalDataLength = mTotalAudioLength + mMetadataLength + HEADER_SIZE - 8;
-//        overwriteHeaderData();
-//        return data.length;
-//    }
-
-//    public static byte[] convertToMetadata(String metadata) {
-//        //word align
-//        int padding = metadata.length() % 4;
-//        if (padding != 0) {
-//            padding = 4 - padding;
-//        }
-//        byte[] infoTag = new byte[metadata.length() + padding + 20];
-//
-//        int metadataSize = metadata.length() + padding;
-//        int chunkSize = 12 + metadataSize;
-//
-//        infoTag[0] = 'L';
-//        infoTag[1] = 'I';
-//        infoTag[2] = 'S';
-//        infoTag[3] = 'T';
-//        infoTag[4] = (byte) (chunkSize & 0xff);
-//        infoTag[5] = (byte) ((chunkSize >> 8) & 0xff);
-//        infoTag[6] = (byte) ((chunkSize >> 16) & 0xff);
-//        infoTag[7] = (byte) ((chunkSize >> 24) & 0xff);
-//        infoTag[8] = 'I';
-//        infoTag[9] = 'N';
-//        infoTag[10] = 'F';
-//        infoTag[11] = 'O';
-//        infoTag[12] = 'I'; // fmt  chunk
-//        infoTag[13] = 'A';
-//        infoTag[14] = 'R';
-//        infoTag[15] = 'T';
-//        infoTag[16] = (byte) (metadataSize & 0xff);
-//        infoTag[17] = (byte) ((metadataSize >> 8) & 0xff);
-//        infoTag[18] = (byte) ((metadataSize >> 16) & 0xff);
-//        infoTag[19] = (byte) ((metadataSize >> 24) & 0xff);
-//
-//        for (int i = 20; i < metadata.length() + 20; i++) {
-//            infoTag[i] = (metadata.getBytes(StandardCharsets.US_ASCII))[i - 20];
-//        }
-//        for (int i = metadata.length() + 20; i < infoTag.length; i++) {
-//            infoTag[i] = '\0';
-//        }
-//        return infoTag;
-//    }
-
     public void overwriteHeaderData() {
         RandomAccessFile fileAccessor = null;
         try {
@@ -481,8 +368,13 @@ public class WavFile implements Parcelable {
         return mMetadata;
     }
 
-    public static WavFile compileChapter(Project project, int chapter, List<WavFile> toCompile) {
-        File root = ProjectFileUtils.getParentDirectory(project, chapter);
+    public static WavFile compileChapter(
+            Project project,
+            int chapter,
+            List<WavFile> toCompile,
+            IDirectoryProvider directoryProvider
+    ) {
+        File root = ProjectFileUtils.getParentDirectory(project, chapter, directoryProvider);
         File chap = new File(root, project.getChapterFileName(chapter));
         chap.delete();
         String chapterString = ProjectFileUtils.chapterIntToString(project, chapter);
@@ -645,7 +537,7 @@ public class WavFile implements Parcelable {
         dest.writeInt(mMetadataLength);
     }
 
-    public static final Parcelable.Creator<WavFile> CREATOR = new Parcelable.Creator<WavFile>() {
+    public static final Parcelable.Creator<WavFile> CREATOR = new Parcelable.Creator<>() {
         public WavFile createFromParcel(Parcel in) {
             return new WavFile(in);
         }

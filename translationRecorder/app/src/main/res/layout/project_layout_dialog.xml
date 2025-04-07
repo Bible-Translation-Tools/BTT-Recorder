@@ -26,7 +26,7 @@
         <LinearLayout
             android:id="@+id/formLayout"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="@dimen/default_padding_m">
 
@@ -40,7 +40,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/project"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -64,7 +64,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/target_language"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -88,7 +88,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/translation_type"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -112,7 +112,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/unit"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -136,7 +136,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/source_audio_language"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -145,7 +145,7 @@
                     android:id="@+id/source_audio_language"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/default_padding_m"
+                    android:layout_marginEnd="@dimen/default_padding_m"
                     android:text=""
                     android:textColor="@color/dark_primary_text"
                     android:textSize="@dimen/body" />
@@ -170,7 +170,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/source_audio_location"
                     android:textColor="@color/dark_secondary_text"
                     android:textSize="@dimen/body" />
@@ -179,8 +179,7 @@
                     android:layout_weight="9"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/default_padding_m"
-                    >
+                    android:layout_marginEnd="@dimen/default_padding_m">
 
                     <TextView
                         android:id="@+id/source_audio_location"
@@ -235,7 +234,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="right|end">
+            android:gravity="end">
 
             <ImageButton
                 android:id="@+id/export_as_source_btn"
@@ -245,15 +244,6 @@
                 android:background="?attr/selectableItemBackground"
                 android:scaleType="fitCenter"
                 android:src="@drawable/export_as_source" />
-
-            <ImageButton
-                android:id="@+id/sdcard_button"
-                android:layout_width="@dimen/icon_m"
-                android:layout_height="@dimen/icon_m"
-                android:layout_margin="12dp"
-                android:background="?attr/selectableItemBackground"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_sd_black_24dp" />
 
             <ImageButton
                 android:id="@+id/folder_button"
