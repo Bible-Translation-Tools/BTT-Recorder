@@ -51,7 +51,15 @@
 
         <activity
             android:name="org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity"
-            android:theme="@style/TR" />
+            android:theme="@style/TR"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name="org.wycliffeassociates.translationrecorder.ProjectManager.activities.ActivityProjectManager" />

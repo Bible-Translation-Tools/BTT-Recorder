@@ -33,8 +33,8 @@ android {
         compileSdk 35
         minSdk 22
         targetSdk 35
-        versionCode 54
-        versionName "1.4.33"
+        versionCode 55
+        versionName "1.4.34"
 
         multiDexEnabled true
         testBuildType "verify"
