@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="auto">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -20,7 +21,7 @@
         android:theme="@style/TR.NoActionBar"
         android:networkSecurityConfig="@xml/network_security_config"
         tools:replace="android:theme"
-        tools:targetApi="n">
+        tools:targetApi="vanilla_ice_cream">
 
         <!-- Splash screen -->
         <activity
