@@ -75,6 +75,8 @@ android {
     sourceSets {
         main {
             assets.srcDirs = ['src/main/assets', 'src/main/assets/']
+            jniLibs.srcDir 'libs'
+            jni.srcDirs = []
         }
     }
     compileOptions {
@@ -94,6 +96,10 @@ android {
                     'LICENSE.txt'
             ]
         }
+        pickFirst 'lib/x86/libavcodec.so'
+        pickFirst 'lib/x86_64/libavcodec.so'
+        pickFirst 'lib/armeabi-v7a/libavcodec.so'
+        pickFirst 'lib/arm64-v8a/libavcodec.so '
     }
     lint {
         abortOnError true
@@ -160,6 +166,7 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.5.1'
 
     implementation 'com.github.WycliffeAssociates.ArchiveOfHolding:aoh:1.4'
+    //noinspection Aligned16KB
     implementation 'com.arthenica:ffmpeg-kit-audio:6.0-2.LTS'
     implementation files('src/main/lib/jdenticon-kotlin.jar')
 
