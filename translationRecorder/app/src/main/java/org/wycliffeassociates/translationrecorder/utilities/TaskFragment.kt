@@ -121,7 +121,7 @@ class TaskFragment : Fragment(), OnTaskProgressListener {
         progress: Int,
         indeterminate: Boolean
     ): ProgressDialog {
-        val pd = ProgressDialog(activity)
+        val pd = ProgressDialog(requireContext())
         pd.isIndeterminate = indeterminate
         if (!indeterminate) {
             pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)

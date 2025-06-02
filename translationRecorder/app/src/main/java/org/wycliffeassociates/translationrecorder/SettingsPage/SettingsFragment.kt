@@ -1,9 +1,12 @@
 package org.wycliffeassociates.translationrecorder.SettingsPage
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,6 +75,19 @@ class SettingsFragment : PreferenceFragmentCompat(),
         fun sourceLanguageSelected()
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        taskFragment = (parentFragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT) as? TaskFragment) ?: run {
+            val fragment = TaskFragment()
+            parentFragmentManager.beginTransaction().add(fragment, TAG_TASK_FRAGMENT).commit()
+            fragment
+        }
+
+        val handler = Handler(Looper.getMainLooper())
+        activity?.intent?.let { handler.post { handleIntent(it) } }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -110,12 +126,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
         preferenceManager.createPreferenceScreen(requireContext())
         addPreferencesFromResource(R.xml.preference)
-
-        taskFragment = (parentFragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT) as? TaskFragment) ?: run {
-            val fragment = TaskFragment()
-            parentFragmentManager.beginTransaction().add(fragment, TAG_TASK_FRAGMENT).commit()
-            fragment
-        }
 
         updateSummaryText(KEY_PREF_GLOBAL_LANG_SRC)
         updateSummaryText(KEY_PREF_LANGUAGES_URL)
@@ -285,8 +295,20 @@ class SettingsFragment : PreferenceFragmentCompat(),
         )
     }
 
+    private fun handleIntent(intent: Intent?) {
+        when (intent?.action) {
+            Intent.ACTION_SEND -> {
+                if (intent.type?.startsWith("application/zip") == true) {
+                    val fileUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                    fileUri?.let { uri: Uri ->
+                        onRestoreBackup(uri)
+                    }
+                }
+            }
+        }
+    }
+
     private companion object {
-        const val FILE_GET_REQUEST_CODE = 45
         const val TAG_TASK_FRAGMENT = "tag_task_fragment"
     }
 }
