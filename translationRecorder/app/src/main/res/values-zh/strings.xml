@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">BTT录音机</string>
+    <string name="import_menu">Import</string>
     <string name="settings_menu">设置</string>
     <string name="logout_menu">退出</string>
     <string name="help_menu">帮助</string>
@@ -28,12 +29,15 @@
     <string name="delete_project">删除项目</string>
     <string name="confirm_delete_project_alt">删除此项目将会删除所有关联的节和段落录制。\n\n你确定吗?</string>
     <string name="target_language">目标语言</string>
+    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">设置检查级别</string>
     <string name="warning">警告</string>
     <string name="compile_chapters_message">把所有单元编成一章音频？</string>
     <string name="recompile_chapters_message">重新编译一章将重写当前音频并重置检查级别。</string>
     <string name="compiling_chapter">编译章</string>
+    <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">删除章录制吗？</string>
+    <string name="project_details_undefined">Could not define project details.</string>
     <string name="source_audio">源音频</string>
     <string name="select_source_language">选择源语言</string>
     <string name="select_source_location">选择源位置</string>
@@ -49,6 +53,21 @@
     <string name="update_language_from_td">从翻译数据库更新语言</string>
     <string name="update_language_from_file">从文件更新语言</string>
     <string name="change_upload_server">更改上载服务器</string>
+    <string name="change_languages_url">Change Languages Url</string>
+    <string name="updating_languages">Updating Languages</string>
+    <string name="backup_restore">Backup/Restore</string>
+    <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
+    <string name="restoring_backup">Restoring from backup</string>
+    <string name="backup_restored">Restored from backup. The app will restart.</string>
+    <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="creating_backup">Creating backup</string>
+    <string name="backup_created">Backup created</string>
+    <string name="invalid_backup">Invalid backup file</string>
+    <string name="migrate_old_app">Migrate from old app</string>
+    <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
+    <string name="migrating_old_app">Migrating from the old app data</string>
+    <string name="migrating_complete">Migration Complete!</string>
+    <string name="migrating_failed">Migration Failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="app_version">BTT录音机版本</string>
     <string name="language_code_exists">语言代码已经存在！</string>
     <string name="language_code_length_tip">语言代码必须包含6个字符！</string>
@@ -58,6 +77,9 @@
     <string name="languages_updated">语言更新成功！</string>
     <string name="invalid_json">无效语言文件</string>
     <string name="server_name">服务器名称： </string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
+    <string name="lang_url">URL: </string>
     <string name="restore_defaults">恢复</string>
     <string name="save">保存</string>
     <string name="version">版本</string>
@@ -95,10 +117,14 @@
     <string name="exporting_source_audio">导出源音频</string>
     <string name="source_generation_complete">源音频生成完成。</string>
     <string name="source_generation_failed">源音频生成失败。</string>
+    <string name="project_import_complete">Project successfully imported.</string>
+    <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Unknown error occurred.</string>
     <string name="label_ok">好的</string>
     <string name="label_close">关闭</string>
     <string name="title_cancel">取消</string>
     <string name="please_wait">请等待</string>
+    <string name="label_continue">Continue</string>
     <!--Anthologies-->
     <string name="bible">圣经</string>
     <string name="bible_stories">圣经故事</string>
