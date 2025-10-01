@@ -1,5 +1,7 @@
 package org.wycliffeassociates.translationrecorder.project;
 
+import android.annotation.SuppressLint;
+
 import org.wycliffeassociates.translationrecorder.project.components.Anthology;
 import org.wycliffeassociates.translationrecorder.project.components.Book;
 import org.wycliffeassociates.translationrecorder.project.components.Language;
@@ -31,6 +33,7 @@ public class FileName {
         mPattern = computeFileNameFormat(mMask, language, anthology, version, book);
     }
 
+    @SuppressLint("DefaultLocale")
     public String getFileName(int chapter, int ... verses) {
         int mask = Integer.parseInt(mMask, 2);
         StringBuilder sb = new StringBuilder(mPattern);
@@ -48,26 +51,27 @@ public class FileName {
         return sb.toString();
     }
 
+    @SuppressLint("DefaultLocale")
     private String computeFileNameFormat(String maskString, Language language, Anthology anthology, Version version, Book book) {
         int mask = Integer.parseInt(maskString, 2);
         StringBuilder sb = new StringBuilder();
         if((mask | LANGUAGE) == MATCH) {
-            sb.append(language.getSlug() + "_");
+            sb.append(language.getSlug()).append("_");
         }
         if((mask | RESOURCE) == MATCH) {
-            sb.append(anthology.getResource() + "_");
+            sb.append(anthology.getResource()).append("_");
         }
         if((mask | ANTHOLOGY) == MATCH) {
-            sb.append(anthology.getSlug() + "_");
+            sb.append(anthology.getSlug()).append("_");
         }
         if((mask | VERSION) == MATCH) {
-            sb.append(version.getSlug() + "_");
+            sb.append(version.getSlug()).append("_");
         }
         if((mask | BOOK_NUMBER) == MATCH) {
             sb.append(String.format("b%02d_", book.getOrder()));
         }
         if((mask | BOOK) == MATCH) {
-            sb.append(book.getSlug() + "_");
+            sb.append(book.getSlug()).append("_");
         }
         mPattern = sb.toString();
         return mPattern;

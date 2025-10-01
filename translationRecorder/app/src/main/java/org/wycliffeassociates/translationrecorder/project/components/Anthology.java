@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
@@ -22,8 +21,17 @@ public class Anthology extends ProjectComponent implements Parcelable {
     private String mGroups;
     private String mMask;
 
-    public Anthology(String slug, String name, String resource, int sort,
-                     String regex, String groups, String mask, String pluginJarName, String pluginClassName) {
+    public Anthology(
+        String slug,
+        String name,
+        String resource,
+        int sort,
+        String regex,
+        String groups,
+        String mask,
+        String pluginJarName,
+        String pluginClassName
+    ) {
         super(slug, name, sort);
         mResource = resource;
         mSort = sort;
@@ -63,32 +71,25 @@ public class Anthology extends ProjectComponent implements Parcelable {
     }
 
     @Override
-    public String getLabel() {
+    public String getLabel(Context context) {
         // get localized string from resources
-        Context ctx = TranslationRecorderApp.getContext();
-        String resource = ResourceUtility.getStringByName(
-                mResource,
-                ctx.getResources(),
-                ctx.getPackageName()
-        );
+        String resource = ResourceUtility.getStringByName(mResource, context);
         String anthSlug = "anthology_" + mSlug;
-        String name = ResourceUtility.getStringByName(
-                anthSlug,
-                ctx.getResources(),
-                ctx.getPackageName()
-        );
+        String name = ResourceUtility.getStringByName(anthSlug, context);
 
         resource = (resource == null) ? mResource : resource;
         name = (name == null)? mName : name;
 
-        String label = "";
-        label += Utils.capitalizeFirstLetter(resource);
-        label += ":";
+        StringBuilder label = new StringBuilder();
+        label.append(Utils.capitalizeFirstLetter(resource));
+        label.append(":");
         String[] resourceLabels = name.split(" ");
         for(String part : resourceLabels) {
-            label += " " + Utils.capitalizeFirstLetter(part);
+            label
+                    .append(" ")
+                    .append(Utils.capitalizeFirstLetter(part));
         }
-        return label;
+        return label.toString();
     }
 
     @Override
@@ -109,7 +110,7 @@ public class Anthology extends ProjectComponent implements Parcelable {
         dest.writeString(mPluginClassName);
     }
 
-    public static final Parcelable.Creator<Anthology> CREATOR = new Parcelable.Creator<Anthology>() {
+    public static final Parcelable.Creator<Anthology> CREATOR = new Parcelable.Creator<>() {
         public Anthology createFromParcel(Parcel in) {
             return new Anthology(in);
         }

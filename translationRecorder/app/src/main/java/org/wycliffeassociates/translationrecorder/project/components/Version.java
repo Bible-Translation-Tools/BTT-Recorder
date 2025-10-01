@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.wycliffeassociates.translationrecorder.TranslationRecorderApp;
 import org.wycliffeassociates.translationrecorder.Utils;
 import org.wycliffeassociates.translationrecorder.utilities.ResourceUtility;
 
@@ -19,25 +18,22 @@ public class Version extends ProjectComponent implements Parcelable {
     }
 
     @Override
-    public String getLabel() {
-        String label = "";
-        label += mSlug.toUpperCase();
-        label += ":";
+    public String getLabel(Context context) {
+        StringBuilder label = new StringBuilder();
+        label.append(mSlug.toUpperCase());
+        label.append(":");
 
-        Context ctx = TranslationRecorderApp.getContext();
-        String name = ResourceUtility.getStringByName(
-                mSlug,
-                ctx.getResources(),
-                ctx.getPackageName()
-        );
+        String name = ResourceUtility.getStringByName(mSlug, context);
 
         name = (name == null)? mName : name;
 
         String[] resourceLabels = name.split(" ");
         for(String part : resourceLabels) {
-            label += " " + Utils.capitalizeFirstLetter(part);
+            label
+                    .append(" ")
+                    .append(Utils.capitalizeFirstLetter(part));
         }
-        return label;
+        return label.toString();
     }
 
     @Override

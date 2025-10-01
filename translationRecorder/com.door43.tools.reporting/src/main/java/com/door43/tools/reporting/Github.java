@@ -18,6 +18,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+
 /**
  * Created by joel on 8/21/2015.
  */
@@ -98,7 +100,7 @@ public class Github {
         try {
             String urlString = apiMethod.isEmpty() ? mApiUrl : mApiUrl + '/' + apiMethod;
             URL url = new URL(urlString);
-            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpsURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
 
             // headers
@@ -126,8 +128,7 @@ public class Github {
             while ((current = bis.read()) != -1) {
                 baos.write((byte) current);
             }
-            String response = baos.toString("UTF-8");
-            return response;
+            return baos.toString("UTF-8");
         } finally {
             if(urlConnection != null) {
                 urlConnection.disconnect();

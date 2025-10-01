@@ -7,7 +7,6 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.wycliffeassociates.translationrecorder.R
-import org.wycliffeassociates.translationrecorder.login.Screen
 import android.provider.Settings
 
 private const val PERMISSIONS_PAGE = 50
@@ -22,7 +21,6 @@ class PermissionsDialogActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Screen.lockOrientation(this)
         createPermissionDialog()
     }
 
@@ -38,8 +36,7 @@ class PermissionsDialogActivity : AppCompatActivity() {
                 .setTitle(R.string.permissions_denied_title)
                 .setMessage(R.string.permissions_denied_message)
                 .setPositiveButton(R.string.open_permissions)
-                {
-                    _, _ ->
+                { _, _ ->
                     val intent = Intent()
                     intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                     val uri = Uri.fromParts("package", packageName, null)
@@ -47,7 +44,7 @@ class PermissionsDialogActivity : AppCompatActivity() {
                     this@PermissionsDialogActivity.startActivityForResult(intent, PERMISSIONS_PAGE)
                 }
                 .setCancelable(false)
-                .setView(R.layout.dialog_permissions_guide)
+                //.setView(R.layout.dialog_permissions_guide)
                 .create()
                 .show()
 

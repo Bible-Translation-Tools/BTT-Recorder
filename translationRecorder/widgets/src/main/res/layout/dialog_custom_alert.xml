@@ -70,8 +70,8 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:id="@+id/controlsLayout"
-            android:layout_marginBottom="@dimen/dialog_controls_margin">
-            android:layout_marginLeft="@dimen/dialog_content_margin">
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:layout_marginStart="@dimen/dialog_content_margin">
 
             <Button
                 android:id="@+id/hiddenButton"

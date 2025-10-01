@@ -4,14 +4,13 @@
     android:id="@+id/recording_screen_container"
     android:orientation="vertical"
     android:layout_height="match_parent"
-    android:layout_width="match_parent" >
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true">
 
     <FrameLayout
         android:id="@+id/fragment_recording_file_bar_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        />
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:id="@+id/wave_view"
@@ -40,15 +39,11 @@
     <FrameLayout
         android:id="@+id/fragment_source_audio_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/fragment_recording_controls_holder"
-        />
+        android:layout_height="wrap_content" />
 
     <FrameLayout
         android:id="@+id/fragment_recording_controls_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
