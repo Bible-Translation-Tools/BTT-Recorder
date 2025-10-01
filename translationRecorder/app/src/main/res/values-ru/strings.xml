@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">BTT Recorder</string>
+    <string name="import_menu">Import</string>
     <string name="settings_menu">Настройки</string>
     <string name="logout_menu">Выход</string>
     <string name="help_menu">Помощь</string>
@@ -28,12 +29,16 @@
     <string name="delete_project">Удаление проекта</string>
     <string name="confirm_delete_project_alt">Удаление этого проекта также удалит его отрывки и стихи.\n\nВы уверены?</string>
     <string name="target_language">Целевой язык</string>
+    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">Установить уровень проверки</string>
     <string name="warning">Внимание</string>
     <string name="compile_chapters_message">Объединить все элементы в аудио файл целой главы?</string>
     <string name="recompile_chapters_message">Повторное объединение главы перезапишет существующее аудио и сбросит уровень проверки.</string>
     <string name="compiling_chapter">Объединение главы</string>
+    <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">Удалить запись главы?</string>
+    <string name="project_details_undefined">Could not define project details.</string>
+    <string name="invalid_project_backup">Invalid project backup file.</string>
     <string name="source_audio">Исходное аудио</string>
     <string name="select_source_language">Выберите исходный язык</string>
     <string name="select_source_location">Выберите исходное аудио</string>
@@ -49,6 +54,21 @@
     <string name="update_language_from_td">Обновить языки из translationDatabase</string>
     <string name="update_language_from_file">Обновить языки из файла</string>
     <string name="change_upload_server">Изменить сервер загрузки</string>
+    <string name="change_languages_url">Change Languages Url</string>
+    <string name="updating_languages">Updating Languages</string>
+    <string name="backup_restore">Backup/Restore</string>
+    <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
+    <string name="restoring_backup">Restoring from backup</string>
+    <string name="backup_restored">Restored from backup. The app will restart.</string>
+    <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="creating_backup">Creating backup</string>
+    <string name="backup_created">Backup created</string>
+    <string name="invalid_backup">Invalid backup file</string>
+    <string name="migrate_old_app">Migrate from old app</string>
+    <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
+    <string name="migrating_old_app">Migrating from the old app data</string>
+    <string name="migrating_complete">Migration Complete!</string>
+    <string name="migrating_failed">Migration Failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="app_version">BTT Recorder Версия</string>
     <string name="language_code_exists">Такой код языка уже существует!</string>
     <string name="language_code_length_tip">Код языка должен состоять из 6 символов!</string>
@@ -58,6 +78,9 @@
     <string name="languages_updated">Языки были успешно обновлены!</string>
     <string name="invalid_json">Неверный файл языков</string>
     <string name="server_name">Имя сервера: </string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
+    <string name="lang_url">URL: </string>
     <string name="restore_defaults">Восстановить</string>
     <string name="save">Сохранить</string>
     <string name="version">Версия</string>
@@ -95,10 +118,14 @@
     <string name="exporting_source_audio">Экспортирование исходного аудио</string>
     <string name="source_generation_complete">Создание исходного аудио завершено.</string>
     <string name="source_generation_failed">Создание исходного аудио не удалось.</string>
+    <string name="project_import_complete">Project successfully imported.</string>
+    <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Unknown error occurred.</string>
     <string name="label_ok">ОК</string>
     <string name="label_close">Закрыть</string>
     <string name="title_cancel">Отмена</string>
     <string name="please_wait">Пожалуйста, подождите</string>
+    <string name="label_continue">Continue</string>
     <!--Anthologies-->
     <string name="bible">Bible</string>
     <string name="bible_stories">Bible Stories</string>
