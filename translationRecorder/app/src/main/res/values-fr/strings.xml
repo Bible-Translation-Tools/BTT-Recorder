@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Enregistreur BTT</string>
+    <string name="import_menu">Importer</string>
     <string name="settings_menu">Réglages</string>
     <string name="logout_menu">Déconnexion</string>
     <string name="help_menu">Aide</string>
@@ -14,8 +15,8 @@
     <string name="yes">Oui</string>
     <string name="no">Non</string>
     <string name="delete_take">Supprimer la prise d\'enregistrement?</string>
-    <string name="rate_take">Evaluer cette prise d\'enregistrement</string>
-    <string name="label_take_detailed">Prise d\'enregistrement <xliff:g example="1" id="current">%1$s</xliff:g> de <xliff:g example="2" id="total">%2$s</xliff:g></string>
+    <string name="rate_take">Evaluer cette prise d’enregistrement</string>
+    <string name="label_take_detailed">Prise d’enregistrement <xliff:g example="1" id="current">%1$s</xliff:g> de <xliff:g example="2" id="total">%2$s</xliff:g></string>
     <string name="label_chapter_title_detailed">Chapitre <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
     <string name="project">Projet</string>
     <string name="project_upload">Téléchargement du projet</string>
@@ -28,28 +29,47 @@
     <string name="delete_project">Supprimer le projet</string>
     <string name="confirm_delete_project_alt">Supprimer ce projet supprimera tous les enregistrements de verset et de morceaux associés.\n\nÊtes-vous sûr(e) ?</string>
     <string name="target_language">Langue cible</string>
+    <string name="compile_chapters_failed">Impossible de compiler les chapitres\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">Régler le niveau de vérification</string>
     <string name="warning">Avertissement</string>
-    <string name="compile_chapters_message">Compiler toutes les unités en un seul chapitre audio ?</string>
-    <string name="recompile_chapters_message">La nouvelle compilation d\'un chapitre supplantera l\'audio actuel et réinitialisera le niveau de vérification.</string>
+    <string name="compile_chapters_message">Compiler toutes les unités en un seul chapitre audio?</string>
+    <string name="recompile_chapters_message">La nouvelle compilation d’un chapitre supplantera l’audio actuel et réinitialisera le niveau de vérification.</string>
     <string name="compiling_chapter">Compiler le chapitre</string>
-    <string name="delete_chapter_recording">Supprimer l\'enregistrement du chapitre ?</string>
+    <string name="importing_project">Importation du projet en cours</string>
+    <string name="delete_chapter_recording">Supprimer l’enregistrement du chapitre?</string>
+    <string name="project_details_undefined">Impossible de définir les détails du projet.</string>
+    <string name="invalid_project_backup">Fichier de sauvegarde de projet invalide.</string>
     <string name="source_audio">Audio Source</string>
     <string name="select_source_language">Sélectionner une Langue source</string>
-    <string name="select_source_location">Sélectionnez l\'emplacement de la source</string>
+    <string name="select_source_location">Sélectionnez l’emplacement de la source</string>
     <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Langue source : %s</string>
     <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Emplacement de la source : %s</string>
-    <string name="source_audio_not_found">L\'audio source est introuvable dans l\'emplacement par défaut. Si vous souhaitez utiliser l\'audio Source avec votre projet, veuillez sélectionner une langue source et ensuite trouver le dossier audio source correspondant sur votre appareil ou carte SD en utilisant les boutons ci-dessous.</string>
+    <string name="source_audio_not_found">L’audio source est introuvable dans l’emplacement par défaut. Si vous souhaitez utiliser l’audio Source avec votre projet, veuillez sélectionner une langue source et ensuite trouver le dossier audio source correspondant sur votre appareil ou carte SD en utilisant les boutons ci-dessous.</string>
     <string name="source_audio_location">Emplacement de la source audio</string>
     <string name="source_audio_language">Audio de la langue source</string>
     <string name="choose_source_language">Choisir la langue source</string>
-    <string name="app_settings">Paramètres de l\'enregistreur BTT</string>
+    <string name="app_settings">Paramètres de l’enregistreur BTT</string>
     <string name="source_language">Langue source</string>
     <string name="add_temp_language">Ajouter une langue temporaire</string>
     <string name="update_language_from_td">Mettre à jour les langues à partir de la base de données de traduction</string>
     <string name="update_language_from_file">Mettre à jour les langues à partir du fichier</string>
     <string name="change_upload_server">Changer le serveur de téléchargement</string>
-    <string name="app_version">Version de l\'enregistreur BTT</string>
+    <string name="change_languages_url">Changer l’Url des langues</string>
+    <string name="updating_languages">Mise à jour des langues</string>
+    <string name="backup_restore">Sauvegarde/Restauration</string>
+    <string name="backup_restore_hint">Sauvegarder/Restaurer les données de l’application entières, y compris les traductions, la base de données et les préférences</string>
+    <string name="restoring_backup">Restauration à partir d’une sauvegarde</string>
+    <string name="backup_restored">Restauré à partir de la sauvegarde. L’application va redémarrer.</string>
+    <string name="restoring_backup_failed">La restauration à partir de la sauvegarde a échoué\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="creating_backup">Création d’une sauvegarde</string>
+    <string name="backup_created">Sauvegarde créée</string>
+    <string name="invalid_backup">Fichier de sauvegarde invalide</string>
+    <string name="migrate_old_app">Migrer depuis l’ancienne application</string>
+    <string name="migrate_old_app_hint">Migrer les traductions depuis l’ancien dossier de données de l’application</string>
+    <string name="migrating_old_app">Migration des données de l’ancienne application</string>
+    <string name="migrating_complete">Migration terminée !</string>
+    <string name="migrating_failed">La migration a échoué\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="app_version">Version de l’enregistreur BTT</string>
     <string name="language_code_exists">Le code de langue existe déjà !</string>
     <string name="language_code_length_tip">Le code de langue doit contenir exactement 6 caractères !</string>
     <string name="language_name">Nom de la langue: </string>
@@ -58,14 +78,17 @@
     <string name="languages_updated">Langues mises à jour avec succès!</string>
     <string name="invalid_json">Fichier de langue invalide</string>
     <string name="server_name">Nom du serveur:</string>
+    <string name="backup">Sauvegarde</string>
+    <string name="restore">Restaurer</string>
+    <string name="lang_url">URL : </string>
     <string name="restore_defaults">Restaurer</string>
     <string name="save">Sauvegarder</string>
     <string name="version">Version</string>
     <string name="label_skip">Ignorer</string>
     <string name="saving">Sauvegarder</string>
     <string name="writing_changes">Changements en train d\'être écrits dans le fichier, veuillez patienter...</string>
-    <string name="inserting_recording">Insertion de l\'enregistrement</string>
-    <string name="audio_player_error">Impossible d\'initialiser le lecteur audio</string>
+    <string name="inserting_recording">Insertion de l’enregistrement</string>
+    <string name="audio_player_error">Impossible d’initialiser le lecteur audio</string>
     <string name="restart_device">Si ce problème persiste, essayez de redémarrer votre appareil.</string>
     <string name="chapter_title">Chapitre</string>
     <string name="chunk_title">Morceau</string>
@@ -85,20 +108,24 @@
     <string name="available_users">Utilisateurs disponibles :</string>
     <string name="is_this_ok_txt">Est-ce correct ?</string>
     <string name="permissions_denied_title">Permissions requises</string>
-    <string name="permissions_denied_message">Veuillez activer les permissions pour utiliser l\'enregistreur BTT</string>
+    <string name="permissions_denied_message">Veuillez activer les permissions pour utiliser l’enregistreur BTT</string>
     <string name="open_permissions">Ouvrir les paramètres de permission</string>
     <string name="project_exists">Le projet existe déjà !</string>
-    <string name="project_exists_message">Un projet existe déjà pour cette langue, ce livre et cette version.\nSi vous souhaitez changer de mode d\'enregistrement, veuillez supprimer le projet avant de le créer à nouveau.</string>
+    <string name="project_exists_message">Un projet existe déjà pour cette langue, ce livre et cette version.\nSi vous souhaitez changer de mode d’enregistrement, veuillez supprimer le projet avant de le créer à nouveau.</string>
     <string name="no_source_audio">Aucune source audio</string>
     <string name="left_title">Gauche</string>
     <string name="resyncing_database">Resynchronisation de la base de données</string>
     <string name="exporting_source_audio">Exportation de la source audio</string>
-    <string name="source_generation_complete">Génération de l\'audio source terminée.</string>
+    <string name="source_generation_complete">Génération de l’audio source terminée.</string>
     <string name="source_generation_failed">La génération de la source audio a échoué.</string>
+    <string name="project_import_complete">Projet importé avec succès.</string>
+    <string name="project_import_failed">Échec de l’importation du projet\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Une erreur inconnue s’est produite.</string>
     <string name="label_ok">OK</string>
     <string name="label_close">Fermer</string>
     <string name="title_cancel">Annuler</string>
     <string name="please_wait">Veuillez patienter</string>
+    <string name="label_continue">Continuer</string>
     <!--Anthologies-->
     <string name="bible">La Bible</string>
     <string name="bible_stories">Histoires de la Bible</string>
@@ -202,7 +229,7 @@
     <string name="obs_book_24">24. Jean baptise Jésus</string>
     <string name="obs_book_25">25. Satan tente Jésus</string>
     <string name="obs_book_26">26. Jésus commence son ministère</string>
-    <string name="obs_book_27">27. L\'histoire du bon samaritain</string>
+    <string name="obs_book_27">27. L’histoire du bon samaritain</string>
     <string name="obs_book_28">28. Le jeune homme riche</string>
     <string name="obs_book_29">29. La parabole du serviteur sans pitié</string>
     <string name="obs_book_30">30. Jésus nourrit cinq mille personnes</string>
@@ -218,7 +245,7 @@
     <string name="obs_book_40">40. Jésus est crucifié</string>
     <string name="obs_book_41">41. Dieu ressuscite Jésus des morts</string>
     <string name="obs_book_42">42. Jésus retourne au ciel</string>
-    <string name="obs_book_43">43. Les débuts de l\'église</string>
+    <string name="obs_book_43">43. Les débuts de l’église</string>
     <string name="obs_book_44">44. Pierre et Jean guérissent un mendiant</string>
     <string name="obs_book_45">45. Étienne et Philippe</string>
     <string name="obs_book_46">46. Paul devient chrétien</string>

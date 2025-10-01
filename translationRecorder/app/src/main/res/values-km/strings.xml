@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">ម៉ាស៊ីនថតសំឡេង BTT</string>
+    <string name="import_menu">Import</string>
     <string name="settings_menu">ការ​កំណត់</string>
     <string name="logout_menu">ចេញ</string>
     <string name="help_menu">ជំនួយ</string>
@@ -28,12 +29,16 @@
     <string name="delete_project">លុបគម្រោង</string>
     <string name="confirm_delete_project_alt">ការលុប​គម្រោង​នេះ​​​នឹងធ្វើ​​​ឲ្យ​រលុប​បាត់​​​ខ និងកំណាត់​​សំឡេងថត​ដែល​​​​ជាប់ពាក់ព័ន្ធគ្នា​។ \n\nតើ​អ្នក​​ច្បាស់​​ហើយ​ឬ?</string>
     <string name="target_language">ភាសាគោលដៅ</string>
+    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">កំណត់​កម្រិត​ត្រួត​ពិនិត្យ​</string>
     <string name="warning">ការព្រមាន</string>
     <string name="compile_chapters_message">ចងក្រង​​បំណែក​ទាំងអស់​​ឲ្យ​ទៅជាឯកសារ​​សំឡេងជា​​ជំពូកតែ​មួយ?</string>
     <string name="recompile_chapters_message">ការចងក្រងជំពូកឡើងវិញនឹងសរសេរ​ជាន់​លើ​សំឡេងដែលមានស្រាប់ ហើយកំណត់កម្រិត​ត្រួត​ពិនិត្យ​សា​ឡើងវិញ។</string>
     <string name="compiling_chapter">ការចងក្រងជំពូក</string>
+    <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">លុប​​សំឡេងថតជំពូកនេះ?</string>
+    <string name="project_details_undefined">Could not define project details.</string>
+    <string name="invalid_project_backup">Invalid project backup file.</string>
     <string name="source_audio">សំឡេងប្រភពដើម</string>
     <string name="select_source_language">ជ្រើស​យក​សំឡេងប្រភពដើម</string>
     <string name="select_source_location">ជ្រើស​យក​​ទីតាំង​ប្រភពដើម</string>
@@ -49,6 +54,21 @@
     <string name="update_language_from_td">ធ្វើបច្ចុប្បន្នភាពភាសាពីមូលដ្ឋានទិន្នន័យបកប្រែ</string>
     <string name="update_language_from_file">ធ្វើបច្ចុប្បន្នភាពភាសាពីឯកសារ</string>
     <string name="change_upload_server">ផ្លាស់ប្តូរម៉ាស៊ីនអាប់ឡូដ</string>
+    <string name="change_languages_url">Change Languages Url</string>
+    <string name="updating_languages">Updating Languages</string>
+    <string name="backup_restore">Backup/Restore</string>
+    <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
+    <string name="restoring_backup">Restoring from backup</string>
+    <string name="backup_restored">Restored from backup. The app will restart.</string>
+    <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="creating_backup">Creating backup</string>
+    <string name="backup_created">Backup created</string>
+    <string name="invalid_backup">Invalid backup file</string>
+    <string name="migrate_old_app">Migrate from old app</string>
+    <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
+    <string name="migrating_old_app">Migrating from the old app data</string>
+    <string name="migrating_complete">Migration Complete!</string>
+    <string name="migrating_failed">Migration Failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="app_version">ជំនាន់​ម៉ាស៊ីនថតសំឡេង BTT</string>
     <string name="language_code_exists">កូដភាសាមានប្រើហើយ!</string>
     <string name="language_code_length_tip">កូដភាសាត្រូវតែមាន ៦ តួគត់!</string>
@@ -58,6 +78,9 @@
     <string name="languages_updated">ភាសាត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ!</string>
     <string name="invalid_json">ឯកសារភាសាមិនត្រឹមត្រូវ</string>
     <string name="server_name">ឈ្មោះម៉ាស៊ីនមេ៖ </string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
+    <string name="lang_url">URL: </string>
     <string name="restore_defaults">ស្តារ</string>
     <string name="save">រក្សាទុក</string>
     <string name="version">ជំនាន់</string>
@@ -95,10 +118,14 @@
     <string name="exporting_source_audio">នាំ​ចេញសំឡេងប្រភពដើម</string>
     <string name="source_generation_complete">ការបង្កើតសំឡេង​ប្រភព​ដើមបាន​សម្រេច។</string>
     <string name="source_generation_failed">ការបង្កើតសំឡេងប្រភពដើមមិនបានសម្រេច។</string>
+    <string name="project_import_complete">Project successfully imported.</string>
+    <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Unknown error occurred.</string>
     <string name="label_ok">យល់ព្រម</string>
     <string name="label_close">បិទ</string>
     <string name="title_cancel">បោះបង់</string>
     <string name="please_wait">សូមរង់​ចាំ</string>
+    <string name="label_continue">Continue</string>
     <!--Anthologies-->
     <string name="bible">ព្រះគម្ពីរ</string>
     <string name="bible_stories">រឿង​ទាំងឡាយ​នៃ​ព្រះគម្ពីរ</string>
