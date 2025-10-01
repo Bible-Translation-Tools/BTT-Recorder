@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Enregistreur BTT</string>
+    <string name="import_menu">Import</string>
     <string name="settings_menu">Réglages</string>
     <string name="logout_menu">Déconnexion</string>
     <string name="help_menu">Aide</string>
@@ -28,12 +29,16 @@
     <string name="delete_project">Supprimer le projet</string>
     <string name="confirm_delete_project_alt">Supprimer ce projet supprimera tous les enregistrements de verset et de morceaux associés.\n\nÊtes-vous sûr(e) ?</string>
     <string name="target_language">Langue cible</string>
+    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">Régler le niveau de vérification</string>
     <string name="warning">Avertissement</string>
     <string name="compile_chapters_message">Compiler toutes les unités en un seul chapitre audio ?</string>
     <string name="recompile_chapters_message">La nouvelle compilation d\'un chapitre supplantera l\'audio actuel et réinitialisera le niveau de vérification.</string>
     <string name="compiling_chapter">Compiler le chapitre</string>
+    <string name="importing_project">Importing Project</string>
     <string name="delete_chapter_recording">Supprimer l\'enregistrement du chapitre ?</string>
+    <string name="project_details_undefined">Could not define project details.</string>
+    <string name="invalid_project_backup">Invalid project backup file.</string>
     <string name="source_audio">Audio Source</string>
     <string name="select_source_language">Sélectionner une Langue source</string>
     <string name="select_source_location">Sélectionnez l\'emplacement de la source</string>
@@ -49,6 +54,21 @@
     <string name="update_language_from_td">Mettre à jour les langues à partir de la base de données de traduction</string>
     <string name="update_language_from_file">Mettre à jour les langues à partir du fichier</string>
     <string name="change_upload_server">Changer le serveur de téléchargement</string>
+    <string name="change_languages_url">Change Languages Url</string>
+    <string name="updating_languages">Updating Languages</string>
+    <string name="backup_restore">Backup/Restore</string>
+    <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
+    <string name="restoring_backup">Restoring from backup</string>
+    <string name="backup_restored">Restored from backup. The app will restart.</string>
+    <string name="restoring_backup_failed">Restoring from backup failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="creating_backup">Creating backup</string>
+    <string name="backup_created">Backup created</string>
+    <string name="invalid_backup">Invalid backup file</string>
+    <string name="migrate_old_app">Migrate from old app</string>
+    <string name="migrate_old_app_hint">Migrate translations from the old app data folder</string>
+    <string name="migrating_old_app">Migrating from the old app data</string>
+    <string name="migrating_complete">Migration Complete!</string>
+    <string name="migrating_failed">Migration Failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="app_version">Version de l\'enregistreur BTT</string>
     <string name="language_code_exists">Le code de langue existe déjà !</string>
     <string name="language_code_length_tip">Le code de langue doit contenir exactement 6 caractères !</string>
@@ -58,6 +78,9 @@
     <string name="languages_updated">Langues mises à jour avec succès!</string>
     <string name="invalid_json">Fichier de langue invalide</string>
     <string name="server_name">Nom du serveur:</string>
+    <string name="backup">Backup</string>
+    <string name="restore">Restore</string>
+    <string name="lang_url">URL: </string>
     <string name="restore_defaults">Restaurer</string>
     <string name="save">Sauvegarder</string>
     <string name="version">Version</string>
@@ -95,10 +118,14 @@
     <string name="exporting_source_audio">Exportation de la source audio</string>
     <string name="source_generation_complete">Génération de l\'audio source terminée.</string>
     <string name="source_generation_failed">La génération de la source audio a échoué.</string>
+    <string name="project_import_complete">Project successfully imported.</string>
+    <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="unknown_error">Unknown error occurred.</string>
     <string name="label_ok">OK</string>
     <string name="label_close">Fermer</string>
     <string name="title_cancel">Annuler</string>
     <string name="please_wait">Veuillez patienter</string>
+    <string name="label_continue">Continue</string>
     <!--Anthologies-->
     <string name="bible">La Bible</string>
     <string name="bible_stories">Histoires de la Bible</string>
