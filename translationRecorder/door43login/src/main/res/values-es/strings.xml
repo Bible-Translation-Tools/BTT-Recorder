@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+<resources>
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Términos de uso</string>
     <string name="terms">Al usar esta aplicación, usted está de acuerdo con la declaración de las directrices de fe y traducción y para publicar su trabajo bajo los términos de la Atribución de Creative Commons - Compartir bajo la misma forma 4. Licencia Internacional.</string>
