@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+<resources>
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">លក្ខខណ្ឌប្រើប្រាស់</string>
     <string name="terms">តាមរយៈការប្រើកម្មវិធីនេះ អ្នកយល់ស្របនឹងសេចក្តីថ្លែងការណ៍នៃជំនឿ និងសេចក្តីណែនាំអំពីការបកប្រែ ព្រមទាំងយល់ព្រមប្រគល់ការងាររបស់អ្នកក្រោមលក្ខខណ្ឌនៃ អាជ្ញាបណ្ណអន្តរជាតិ Creative Commons Attribution-ShareAlike 4.0។</string>
