@@ -126,8 +126,8 @@
     <string name="title_cancel">取消</string>
     <string name="please_wait">请等待</string>
     <string name="label_continue">继续</string>
-    <string name="label_more">更多</string>
-    <string name="import_project">导入项目</string>
+    <string name="label_more">More</string>
+    <string name="import_project">Import Project</string>
     <!--Anthologies-->
     <string name="bible">圣经</string>
     <string name="bible_stories">圣经故事</string>
