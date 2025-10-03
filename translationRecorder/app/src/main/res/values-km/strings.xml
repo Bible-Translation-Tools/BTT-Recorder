@@ -53,7 +53,6 @@
     <string name="add_temp_language">បន្ថែម​ភាសា​បណ្ដោះ​អាសន្ន</string>
     <string name="update_language_from_td">ធ្វើបច្ចុប្បន្នភាពភាសាពីមូលដ្ឋានទិន្នន័យបកប្រែ</string>
     <string name="update_language_from_file">ធ្វើបច្ចុប្បន្នភាពភាសាពីឯកសារ</string>
-    <string name="change_upload_server">ផ្លាស់ប្តូរម៉ាស៊ីនអាប់ឡូដ</string>
     <string name="change_languages_url">Change Languages Url</string>
     <string name="updating_languages">Updating Languages</string>
     <string name="backup_restore">Backup/Restore</string>

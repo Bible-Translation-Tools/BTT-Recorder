@@ -46,7 +46,6 @@
     <string name="add_temp_language">Add Temporary Language</string>
     <string name="update_language_from_td">Update Languages From translationDatabase</string>
     <string name="update_language_from_file">Update Languages From file</string>
-    <string name="change_upload_server">Change Upload Server</string>
     <string name="app_version">BTT Recorder Version</string>
     <string name="language_code_exists">Language code already exists!</string>
     <string name="language_code_length_tip">Language code must contain exactly 6 characters!</string>

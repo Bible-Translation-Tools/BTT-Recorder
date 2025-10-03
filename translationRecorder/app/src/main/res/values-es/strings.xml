@@ -53,7 +53,6 @@
     <string name="add_temp_language">Añadir lenguaje temporal</string>
     <string name="update_language_from_td">Actualizar idiomas de la base de datos de traducción</string>
     <string name="update_language_from_file">Actualizar Idiomas desde archivo</string>
-    <string name="change_upload_server">Cambiar el servidor de subida</string>
     <string name="change_languages_url">Change Languages Url</string>
     <string name="updating_languages">Updating Languages</string>
     <string name="backup_restore">Backup/Restore</string>

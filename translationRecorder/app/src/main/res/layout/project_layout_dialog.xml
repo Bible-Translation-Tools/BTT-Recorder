@@ -255,15 +255,6 @@
                 android:src="@drawable/ic_folder_black_24dp" />
 
             <ImageButton
-                android:id="@+id/publish_button"
-                android:layout_width="@dimen/icon_m"
-                android:layout_height="@dimen/icon_m"
-                android:layout_margin="12dp"
-                android:background="?attr/selectableItemBackground"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_cloud_upload_black_24dp" />
-
-            <ImageButton
                 android:id="@+id/other_button"
                 android:layout_width="@dimen/icon_m"
                 android:layout_height="@dimen/icon_m"

@@ -237,7 +237,6 @@ class SettingsActivity : AppCompatActivity(), ScrollableListFragment.OnItemClick
         const val KEY_PREF_UPDATE_LANGUAGES_URL: String = "pref_languages_url"
         const val KEY_PREF_UPDATE_LANGUAGES_FROM_FILE: String = "pref_update_languages_from_file"
 
-        const val KEY_PREF_UPLOAD_SERVER: String = "pref_upload_server"
         const val KEY_PREF_LANGUAGES_URL: String = "pref_languages_url"
 
         const val KEY_PREF_MIGRATE_OLD_APP: String = "pref_migrate_old_app"
