@@ -53,7 +53,6 @@
     <string name="add_temp_language">添加临时语言</string>
     <string name="update_language_from_td">从翻译数据库更新语言</string>
     <string name="update_language_from_file">从文件更新语言</string>
-    <string name="change_upload_server">更改上载服务器</string>
     <string name="change_languages_url">更改语言网址</string>
     <string name="updating_languages">正在更新语言</string>
     <string name="backup_restore">备份/还原</string>
@@ -117,15 +116,19 @@
     <string name="resyncing_database">重新同步数据库</string>
     <string name="exporting_source_audio">导出源音频</string>
     <string name="source_generation_complete">源音频生成完成。</string>
-    <string name="source_generation_failed">源音频生成失败。</string>
+    <string name="source_generation_failed">源音频生成失败。\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="project_import_complete">项目已成功导入。</string>
     <string name="project_import_failed">项目导入失败\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">出现未知错误。</string>
+    <string name="send_crash_report_confirm">Would you like to send a crash report? Please leave a description of the error.</string>
     <string name="label_ok">好的</string>
     <string name="label_close">关闭</string>
     <string name="title_cancel">取消</string>
     <string name="please_wait">请等待</string>
     <string name="label_continue">继续</string>
+    <string name="label_more">More</string>
+    <string name="import_project">Import Project</string>
+    <string name="title_send">Send</string>
     <!--Anthologies-->
     <string name="bible">圣经</string>
     <string name="bible_stories">圣经故事</string>

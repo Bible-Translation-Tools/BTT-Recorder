@@ -13,7 +13,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
+
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.wycliffeassociates.translationrecorder.Playback.markers.MarkerHolder;
 import org.wycliffeassociates.translationrecorder.R;
@@ -22,7 +23,7 @@ import org.wycliffeassociates.translationrecorder.R;
  * Created by sarabiaj on 11/8/2016.
  */
 
-public class DraggableImageView extends ImageView {
+public class DraggableImageView extends AppCompatImageView {
 
     int mId;
     OnMarkerMovementRequest markerMovementRequest;

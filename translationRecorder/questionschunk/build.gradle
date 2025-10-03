@@ -11,6 +11,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+jar {
+    preserveFileTimestamps false
+    reproducibleFileOrder true
+}
+
 libsDirName = "$rootDir/app/src/main/assets/plugins/jars"
 
 artifacts {

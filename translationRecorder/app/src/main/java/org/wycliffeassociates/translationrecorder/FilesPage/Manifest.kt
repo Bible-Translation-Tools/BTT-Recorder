@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
 import org.apache.commons.io.FileUtils
 import org.wycliffeassociates.translationrecorder.FilesPage.Export.SimpleProgressCallback
-import org.wycliffeassociates.translationrecorder.FilesPage.Export.TranslationExchangeDiff
 import org.wycliffeassociates.translationrecorder.chunkplugin.Chapter
 import org.wycliffeassociates.translationrecorder.chunkplugin.Chunk
 import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelper
@@ -163,11 +162,6 @@ class Manifest(
             jw.endObject()
 
             chunksWritten++
-
-            progressCallback?.setUploadProgress(
-                TranslationExchangeDiff.DIFF_ID,
-                manifestProgress
-            )
         }
         jw.endArray()
     }

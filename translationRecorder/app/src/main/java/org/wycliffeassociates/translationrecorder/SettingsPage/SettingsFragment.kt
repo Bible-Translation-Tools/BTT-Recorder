@@ -33,7 +33,6 @@ import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES_FROM_FILE
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPDATE_LANGUAGES_URL
-import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.KEY_PREF_UPLOAD_SERVER
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.MIGRATE_TASK_TAG
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.RESTORE_TASK_TAG
 import org.wycliffeassociates.translationrecorder.SettingsPage.SettingsActivity.Companion.RESYNC_LANGUAGE_NAMES_TASK_TAG
@@ -129,7 +128,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
         updateSummaryText(KEY_PREF_GLOBAL_LANG_SRC)
         updateSummaryText(KEY_PREF_LANGUAGES_URL)
-        updateSummaryText(KEY_PREF_UPLOAD_SERVER)
 
         val globalLanguagePref: Preference? = findPreference(KEY_PREF_GLOBAL_LANG_SRC)
         globalLanguagePref?.setOnPreferenceClickListener {
@@ -175,13 +173,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
         val languagesUrlPref: Preference? = findPreference(KEY_PREF_LANGUAGES_URL)
         languagesUrlPref?.setOnPreferenceClickListener {
             val add = LanguagesUrlDialog()
-            add.show(parentFragmentManager, "save")
-            true
-        }
-
-        val uploadServerPref: Preference? = findPreference(KEY_PREF_UPLOAD_SERVER)
-        uploadServerPref?.setOnPreferenceClickListener {
-            val add = UploadServerDialog()
             add.show(parentFragmentManager, "save")
             true
         }
@@ -264,11 +255,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 KEY_PREF_LANGUAGES_URL -> {
                     if (summary.isEmpty()) {
                         summary = getString(R.string.pref_languages_url)
-                    }
-                }
-                KEY_PREF_UPLOAD_SERVER -> {
-                    if (summary.isEmpty()) {
-                        summary = getString(R.string.pref_upload_server)
                     }
                 }
             }

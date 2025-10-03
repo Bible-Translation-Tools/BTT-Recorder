@@ -224,7 +224,6 @@
 
     <string name="searching_for_devices" translatable="false">Searching for devices</string>
     <string name="language_resources">Versions</string>
-    <string name="import_project">Import Project</string>
     <string name="no_projects_available_on_server">No projects available on server</string>
     <string name="downloading">Downloading</string>
     <string name="downloading_images">Downloading images</string>

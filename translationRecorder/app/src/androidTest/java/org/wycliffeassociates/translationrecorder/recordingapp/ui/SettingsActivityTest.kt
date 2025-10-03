@@ -67,7 +67,6 @@ class SettingsActivityTest {
             checkText(R.string.update_language_from_td, true)
             checkText(R.string.update_language_from_file, true)
             checkText(R.string.change_languages_url, true)
-            checkText(R.string.change_upload_server, true)
             checkText(R.string.migrate_old_app, true)
             checkText(R.string.backup_restore, true)
         }
@@ -130,19 +129,6 @@ class SettingsActivityTest {
 
             checkDialogText(R.string.change_languages_url, true)
             checkDialogText(R.string.lang_url, true)
-            checkDialogText(R.string.label_close, true)
-            checkDialogText(R.string.restore_defaults, true)
-            checkDialogText(R.string.save, true)
-        }
-    }
-
-    @Test
-    fun changeUploadServer() {
-        ActivityScenario.launch(SettingsActivity::class.java).use {
-            onView(withText(R.string.change_upload_server)).tryPerform(click())
-
-            checkDialogText(R.string.change_upload_server, true)
-            checkDialogText(R.string.server_name, true)
             checkDialogText(R.string.label_close, true)
             checkDialogText(R.string.restore_defaults, true)
             checkDialogText(R.string.save, true)

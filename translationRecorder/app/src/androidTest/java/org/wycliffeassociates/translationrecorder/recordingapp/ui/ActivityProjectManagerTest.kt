@@ -14,10 +14,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
-import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import okhttp3.mockwebserver.MockWebServer
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasItem
@@ -42,8 +40,8 @@ import org.wycliffeassociates.translationrecorder.database.IProjectDatabaseHelpe
 import org.wycliffeassociates.translationrecorder.persistance.IDirectoryProvider
 import org.wycliffeassociates.translationrecorder.persistance.IPreferenceRepository
 import org.wycliffeassociates.translationrecorder.persistance.getDefaultPref
-import org.wycliffeassociates.translationrecorder.persistance.setDefaultPref
 import org.wycliffeassociates.translationrecorder.recordingapp.TestUtils
+import org.wycliffeassociates.translationrecorder.recordingapp.UITest
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkDialogContainsText
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkDialogText
 import org.wycliffeassociates.translationrecorder.recordingapp.UiTestUtils.checkListViewHasItemsCount
@@ -71,19 +69,11 @@ class ActivityProjectManagerTest {
     @Inject lateinit var initializeApp: InitializeApp
     @Inject lateinit var prefs: IPreferenceRepository
 
-    private val server = MockWebServer()
-
     @Before
     fun setup() {
         hiltRule.inject()
         initializeApp()
         Intents.init()
-
-        server.start()
-        prefs.setDefaultPref(
-            SettingsActivity.KEY_PREF_UPLOAD_SERVER,
-            server.url("").toString()
-        )
 
         TestUtils.createTestUser(directoryProvider, db, prefs)
     }
@@ -91,7 +81,6 @@ class ActivityProjectManagerTest {
     @After
     fun tearDown() {
         Intents.release()
-        server.shutdown()
     }
 
     @Test

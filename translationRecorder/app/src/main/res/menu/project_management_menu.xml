@@ -8,9 +8,8 @@
         android:id="@+id/action_more"
         android:icon="@drawable/abc_ic_menu_overflow_material"
         android:orderInCategory="1"
-        app:showAsAction="always"
-        android:title="More"
-        >
+        app:showAsAction="ifRoom"
+        android:title="@string/label_more">
 
         <menu>
 
