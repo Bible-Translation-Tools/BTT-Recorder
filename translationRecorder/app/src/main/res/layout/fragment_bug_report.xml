@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Would you like to send a crash report? Please leave a description of the error."
+            android:text="@string/send_crash_report_confirm"
             android:layout_toEndOf="@id/delete_image"
             android:layout_centerVertical="true" />
 
@@ -50,7 +50,7 @@
             android:id="@+id/send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="send"
+            android:text="@string/title_send"
             android:layout_alignParentEnd="true"
             style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
             android:textColor="@color/secondary"/>
@@ -59,7 +59,7 @@
             android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/title_cancel"
             android:layout_toStartOf="@id/send"
             style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
             android:textColor="@color/secondary" />

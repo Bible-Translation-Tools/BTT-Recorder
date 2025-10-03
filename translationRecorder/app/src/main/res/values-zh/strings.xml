@@ -120,6 +120,7 @@
     <string name="project_import_complete">项目已成功导入。</string>
     <string name="project_import_failed">项目导入失败\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">出现未知错误。</string>
+    <string name="send_crash_report_confirm">Would you like to send a crash report? Please leave a description of the error.</string>
     <string name="label_ok">好的</string>
     <string name="label_close">关闭</string>
     <string name="title_cancel">取消</string>
@@ -127,6 +128,7 @@
     <string name="label_continue">继续</string>
     <string name="label_more">More</string>
     <string name="import_project">Import Project</string>
+    <string name="title_send">Send</string>
     <!--Anthologies-->
     <string name="bible">圣经</string>
     <string name="bible_stories">圣经故事</string>
