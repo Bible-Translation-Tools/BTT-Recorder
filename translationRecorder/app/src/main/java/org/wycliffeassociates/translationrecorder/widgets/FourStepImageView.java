@@ -3,14 +3,15 @@ package org.wycliffeassociates.translationrecorder.widgets;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.widget.ImageView;
+
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.wycliffeassociates.translationrecorder.R;
 
 /**
  * Created by leongv on 8/9/2016.
  */
-public class FourStepImageView extends ImageView {
+public class FourStepImageView extends AppCompatImageView {
 
     // Constants
     public static final int MIN_STEP = 0;
