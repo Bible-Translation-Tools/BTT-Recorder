@@ -92,7 +92,7 @@
     <string name="resyncing_database">Resyncing Database</string>
     <string name="exporting_source_audio">Exporting Source Audio</string>
     <string name="source_generation_complete">Source Audio generation complete.</string>
-    <string name="source_generation_failed">Source Audio generation failed.</string>
+    <string name="source_generation_failed">Source Audio generation failed.\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="label_ok">OK</string>
     <string name="label_close">Close</string>
     <string name="title_cancel">Cancel</string>

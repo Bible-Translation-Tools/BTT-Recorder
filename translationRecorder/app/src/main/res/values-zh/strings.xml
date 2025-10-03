@@ -117,7 +117,7 @@
     <string name="resyncing_database">重新同步数据库</string>
     <string name="exporting_source_audio">导出源音频</string>
     <string name="source_generation_complete">源音频生成完成。</string>
-    <string name="source_generation_failed">源音频生成失败。</string>
+    <string name="source_generation_failed">源音频生成失败。\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="project_import_complete">项目已成功导入。</string>
     <string name="project_import_failed">项目导入失败\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">出现未知错误。</string>
@@ -126,6 +126,8 @@
     <string name="title_cancel">取消</string>
     <string name="please_wait">请等待</string>
     <string name="label_continue">继续</string>
+    <string name="label_more">更多</string>
+    <string name="import_project">导入项目</string>
     <!--Anthologies-->
     <string name="bible">圣经</string>
     <string name="bible_stories">圣经故事</string>
