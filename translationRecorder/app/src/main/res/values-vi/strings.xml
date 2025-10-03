@@ -120,11 +120,15 @@
     <string name="project_import_complete">Project successfully imported.</string>
     <string name="project_import_failed">Project import failed\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">Unknown error occurred.</string>
+    <string name="send_crash_report_confirm">Would you like to send a crash report? Please leave a description of the error.</string>
     <string name="label_ok">OK</string>
     <string name="label_close">Đóng</string>
     <string name="title_cancel">Hủy</string>
     <string name="please_wait">Vui lòng đợi</string>
     <string name="label_continue">Continue</string>
+    <string name="label_more">More</string>
+    <string name="import_project">Import Project</string>
+    <string name="title_send">Send</string>
     <!--Anthologies-->
     <string name="bible">Bible</string>
     <string name="bible_stories">Bible Stories</string>
