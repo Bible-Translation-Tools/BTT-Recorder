@@ -116,7 +116,7 @@
     <string name="resyncing_database">Resynchronisation de la base de données</string>
     <string name="exporting_source_audio">Exportation de la source audio</string>
     <string name="source_generation_complete">Génération de l’audio source terminée.</string>
-    <string name="source_generation_failed">La génération de la source audio a échoué.\n &lt;xliff:g example="error" id="message"&gt;%1$s&lt;/xliff:g&gt;&lt;/string&gt;</string>
+    <string name="source_generation_failed">La génération de la source audio a échoué.\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="project_import_complete">Projet importé avec succès.</string>
     <string name="project_import_failed">Échec de l’importation du projet\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">Une erreur inconnue s’est produite.</string>
