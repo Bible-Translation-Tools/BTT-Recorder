@@ -116,7 +116,7 @@
     <string name="resyncing_database">重新同步数据库</string>
     <string name="exporting_source_audio">导出源音频</string>
     <string name="source_generation_complete">源音频生成完成。</string>
-    <string name="source_generation_failed">源音频生成失败。\n &lt;xliff:g example="error" id="message"&gt;%1$s&lt;/xliff:g&gt;&lt;/string&gt;</string>
+    <string name="source_generation_failed">源音频生成失败。\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="project_import_complete">项目已成功导入。</string>
     <string name="project_import_failed">项目导入失败\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="unknown_error">出现未知错误。</string>
