@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">BTT Recorder</string>
-    <string name="import_menu">Import</string>
+    <string name="import_menu">Импортировать</string>
     <string name="settings_menu">Настройки</string>
     <string name="logout_menu">Выход</string>
     <string name="help_menu">Помощь</string>
@@ -29,21 +29,21 @@
     <string name="delete_project">Удаление проекта</string>
     <string name="confirm_delete_project_alt">Удаление этого проекта также удалит его отрывки и стихи.\n\nВы уверены?</string>
     <string name="target_language">Целевой язык</string>
-    <string name="compile_chapters_failed">Could not compile chapters\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
+    <string name="compile_chapters_failed">Не удалось скомпилировать главы\n <xliff:g example="error" id="message">%1$s</xliff:g></string>
     <string name="set_checking_level">Установить уровень проверки</string>
     <string name="warning">Внимание</string>
     <string name="compile_chapters_message">Объединить все элементы в аудио файл целой главы?</string>
     <string name="recompile_chapters_message">Повторное объединение главы перезапишет существующее аудио и сбросит уровень проверки.</string>
     <string name="compiling_chapter">Объединение главы</string>
-    <string name="importing_project">Importing Project</string>
+    <string name="importing_project">Импортирование проекта</string>
     <string name="delete_chapter_recording">Удалить запись главы?</string>
-    <string name="project_details_undefined">Could not define project details.</string>
-    <string name="invalid_project_backup">Invalid project backup file.</string>
+    <string name="project_details_undefined">Не удалось определить детали проекта.</string>
+    <string name="invalid_project_backup">Неверный файл резервной копии проекта.</string>
     <string name="source_audio">Исходное аудио</string>
     <string name="select_source_language">Выберите исходный язык</string>
     <string name="select_source_location">Выберите исходное аудио</string>
-    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Language: %s</string>
-    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Source Location: %s</string>
+    <string name="source_language_selected" comment="Do not translate variable token. Arrange the position if necessary.">Исходный язык: %s</string>
+    <string name="source_location_selected" comment="Do not translate variable token. Arrange the position if necessary.">Местонахождение источника: %s</string>
     <string name="source_audio_not_found">Исходное аудио не найдено в месте по умолчанию. Если вы хотите, чтобы исходное аудио использовалось в вашем проекте, выберите исходный язык, а затем найдите соответствующую папку исходного аудио на вашем устройстве или SD-карте с помощью кнопок ниже.</string>
     <string name="source_audio_location">Местоположение исходного аудио</string>
     <string name="source_audio_language">Язык исходного аудио</string>
@@ -53,8 +53,8 @@
     <string name="add_temp_language">Добавить временный язык</string>
     <string name="update_language_from_td">Обновить языки из translationDatabase</string>
     <string name="update_language_from_file">Обновить языки из файла</string>
-    <string name="change_languages_url">Change Languages Url</string>
-    <string name="updating_languages">Updating Languages</string>
+    <string name="change_languages_url">Изменить URL файла языков</string>
+    <string name="updating_languages">Обновление языков</string>
     <string name="backup_restore">Backup/Restore</string>
     <string name="backup_restore_hint">Backup/Restore entire app data, including translations, database and preferences</string>
     <string name="restoring_backup">Restoring from backup</string>
