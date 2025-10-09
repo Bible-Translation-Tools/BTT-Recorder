@@ -130,7 +130,11 @@ class FragmentRecordingFileBar : Fragment() {
     private fun initializePickers() {
         mChunks = mProject.getChunkPlugin(ChunkPluginLoader(directoryProvider, assetProvider)).apply {
             initialize(mChapter, mUnit)
-            val chapterLabel = if (chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+            val chapterLabel = when (chapterLabel) {
+                "chapter" -> getString(R.string.chapter_title)
+                "part" -> getString(R.string.part_title)
+                else -> getString(R.string.unit_title)
+            }
             binding.fileChapterLabel.text = chapterLabel
         }
         initializeUnitPicker()

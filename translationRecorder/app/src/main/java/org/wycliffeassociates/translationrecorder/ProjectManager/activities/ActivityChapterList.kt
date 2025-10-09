@@ -234,9 +234,11 @@ class ActivityChapterList : AppCompatActivity(), CheckingDialog.DialogListener,
 
     private fun prepareChapterCardData() {
         val chapters = mChunks!!.chapters
-        val chapterLabel = if (mChunks!!.chapterLabel == "chapter") {
-            getString(R.string.chapter_title)
-        } else ""
+        val chapterLabel = when (mChunks?.chapterLabel) {
+            "chapter" -> getString(R.string.chapter_title)
+            "part" -> getString(R.string.part_title)
+            else -> getString(R.string.unit_title)
+        }
         for (chapter in chapters) {
             val unitCount = chapter.chunks.size
             val chapterNumber = chapter.number

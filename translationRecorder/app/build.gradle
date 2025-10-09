@@ -166,6 +166,7 @@ dependencies {
     implementation project(':chunkplugin')
     implementation project(':biblechunk')
     implementation project(':obschunk')
+    implementation project(':c2cchunk')
     //compile project(':questionschunk')
     //compile project(':noteschunk')
 
@@ -197,6 +198,7 @@ hilt {
 tasks.withType(MergeSourceSetFolders).configureEach {
     dependsOn ":biblechunk:jar"
     dependsOn ":obschunk:jar"
+    dependsOn ":c2cchunk:jar"
     dependsOn ":noteschunk:jar"
     dependsOn ":questionschunk:jar"
 }
@@ -204,6 +206,7 @@ tasks.withType(MergeSourceSetFolders).configureEach {
 tasks.withType(LintModelWriterTask).configureEach {
     dependsOn ":biblechunk:jar"
     dependsOn ":obschunk:jar"
+    dependsOn ":c2cchunk:jar"
     dependsOn ":noteschunk:jar"
     dependsOn ":questionschunk:jar"
 }
@@ -211,6 +214,7 @@ tasks.withType(LintModelWriterTask).configureEach {
 tasks.withType(AndroidLintAnalysisTask).configureEach {
     dependsOn ":biblechunk:jar"
     dependsOn ":obschunk:jar"
+    dependsOn ":c2cchunk:jar"
     dependsOn ":noteschunk:jar"
     dependsOn ":questionschunk:jar"
 }

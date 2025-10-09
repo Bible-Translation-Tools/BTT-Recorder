@@ -87,7 +87,11 @@ class ActivityUnitList : AppCompatActivity(), CheckingDialog.DialogListener,
             val book = project.bookName
             setSupportActionBar(binding.unitListToolbar)
 
-            val chapterLabel = if (chunkPlugin.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+            val chapterLabel = when (chunkPlugin.chapterLabel) {
+                "chapter" -> getString(R.string.chapter_title)
+                "part" -> getString(R.string.part_title)
+                else -> getString(R.string.unit_title)
+            }
             val chapterName = chunkPlugin.getChapterName(chapterNum)
             supportActionBar?.title = "$language - $book - $chapterLabel $chapterName"
             supportActionBar?.setDisplayHomeAsUpEnabled(true)

@@ -258,7 +258,11 @@ class PlaybackActivity : AppCompatActivity(), RatingDialog.DialogListener,
         )
         mFragmentContainerMapping[R.id.tabbed_widget_fragment_holder] = mFragmentTabbedWidget
 
-        val chapterLabel = if (plugin.chapterLabel == "chapter") getString(R.string.chapter_title) else ""
+        val chapterLabel = when (plugin.chapterLabel) {
+            "chapter" -> getString(R.string.chapter_title)
+            "part" -> getString(R.string.part_title)
+            else -> getString(R.string.unit_title)
+        }
 
         mFragmentFileBar = FragmentFileBar.newInstance(
             mProject.targetLanguageSlug,

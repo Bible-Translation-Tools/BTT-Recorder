@@ -98,6 +98,8 @@
     <string name="restart_device">If this issue continues, try restarting your device.</string>
 
     <string name="chapter_title">Chapter</string>
+    <string name="part_title">Part</string>
+    <string name="unit_title">Unit</string>
     <string name="chunk_title">Chunk</string>
     <string name="title_verse">Verse</string>
 
