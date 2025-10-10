@@ -36,15 +36,14 @@ jobs:
 
       - name: Prepare resources
         run: |
-               python3 app/src/scripts/download_chunks.py
-               python3 app/src/scripts/get_obs.py
-               python3 app/src/scripts/get_tq.py
-#          preserve c2c chunks from assets until we have it in the catalog
-               cp -rp app/src/main/assets/chunks/c2c app/src/scripts/chunks
-               rm -r app/src/main/assets/chunks/
-               mv app/src/scripts/chunks/ app/src/main/assets/
-               cp door43.xml app/src/main/res/values/
-               cp github.xml app/src/main/res/values/
+          python3 app/src/scripts/download_chunks.py
+          python3 app/src/scripts/get_obs.py
+          python3 app/src/scripts/get_tq.py
+          cp -rp app/src/main/assets/chunks/c2c app/src/scripts/chunks # preserve c2c chunks from assets until we have it in the catalog
+          rm -r app/src/main/assets/chunks/
+          mv app/src/scripts/chunks/ app/src/main/assets/
+          cp door43.xml app/src/main/res/values/
+          cp github.xml app/src/main/res/values/
 #          wget -O docs.zip https://readthedocs.org/projects/btt-recorder/downloads/htmlzip/latest/ && \
 #            unzip docs.zip && \
 #            rm -r app/src/main/assets/btt-recorder.readthedocs.io && \
