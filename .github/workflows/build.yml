@@ -33,17 +33,18 @@ jobs:
       - name: Decode b64 to files
         run: |
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
+
       - name: Prepare resources
         run: |
-          python3 app/src/scripts/download_chunks.py
-          python3 app/src/scripts/get_obs.py
-          python3 app/src/scripts/get_tq.py
+               python3 app/src/scripts/download_chunks.py
+               python3 app/src/scripts/get_obs.py
+               python3 app/src/scripts/get_tq.py
 #          preserve c2c chunks from assets until we have it in the catalog
-          cp -rp app/src/main/assets/chunks/c2c app/src/scripts/chunks
-          rm -r app/src/main/assets/chunks/
-          mv app/src/scripts/chunks/ app/src/main/assets/
-          cp door43.xml app/src/main/res/values/
-          cp github.xml app/src/main/res/values/
+               cp -rp app/src/main/assets/chunks/c2c app/src/scripts/chunks
+               rm -r app/src/main/assets/chunks/
+               mv app/src/scripts/chunks/ app/src/main/assets/
+               cp door43.xml app/src/main/res/values/
+               cp github.xml app/src/main/res/values/
 #          wget -O docs.zip https://readthedocs.org/projects/btt-recorder/downloads/htmlzip/latest/ && \
 #            unzip docs.zip && \
 #            rm -r app/src/main/assets/btt-recorder.readthedocs.io && \
@@ -52,7 +53,7 @@ jobs:
 #          mv app/src/main/assets/btt-recorder.readthedocs.io/_images/ app/src/main/assets/btt-recorder.readthedocs.io/images/ && \
 #          sed -i 's/_static/static/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html && \
 #          sed -i 's/_images/images/g' app/src/main/assets/btt-recorder.readthedocs.io/index.html
-          
+
       - name: Test with Gradle
         run: ./gradlew test --stacktrace
 
