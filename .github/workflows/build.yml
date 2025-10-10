@@ -33,7 +33,6 @@ jobs:
       - name: Decode b64 to files
         run: |
           printf "%s" "$TR_KEY_BASE64" | base64 --decode > TRKey.jks && printf "%s" "$DOOR43_XML" > door43.xml && printf "%s" "$GITHUB_XML" > github.xml
-
       - name: Prepare resources
         run: |
           python3 app/src/scripts/download_chunks.py
