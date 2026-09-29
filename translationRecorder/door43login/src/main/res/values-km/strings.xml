@@ -9,7 +9,8 @@
     <string name="view_statement_of_faith">សេចក្តីថ្លែងការណ៍នៃជំនឿ</string>
     <string name="view_translation_guidelines">គោលការណែនាំអំពីការបកប្រែ​</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license"><![CDATA[<h2>Creative Commons Attribution-ShareAlike 4.0 International</h2>
+    <string name="license"><![CDATA[
+<h2>Creative Commons Attribution-ShareAlike 4.0 International</h2>
 <h3>សេចក្តីសង្ខេបសម្រាប់មនុស្សអាន</h3>
 <p>អាជ្ញាបណ្ណ (The Creative Commons Attribution-Share Alike 4.0 International License) មាននៅ <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a></p>
 <h4>នេះគឺជាសេចក្តីសង្ខេបអាជ្ញាបណ្ណសម្រាប់មនុស្សអាន (មិនមែនសម្រាប់ជំនួសអាជ្ញបណ្ណទេ)</h4>
@@ -23,9 +24,11 @@
 <br/><b>&#8226; មិនមានការដាក់​កម្រិតបន្ថែម​ទេ</b> -អ្នកមិនអាចដាក់លក្ខខណ្ឌបន្ថែម ឬដាក់វិធានការបច្ចេកវិទ្យាដែលកម្រិតលក្ខខណ្ឌតាមផ្លូវច្បាប់ដល់អ្នកផ្សេងទៀត ដោយ​មិនឲ្យ​គេ​ធ្វើអ្វីមួយដែលអាជ្ញាបណ្ណនេះអនុញ្ញាតឡើយ។</p>
 <h3>កំណត់សម្គាល់៖</h3>​
 <p><br/>&#8226; អ្នកមិនចាំបាច់អនុវត្តតាមអាជ្ញាបណ្ណនេះចំពោះផ្នែកនានានៃឯកសារជាសាធារណៈនេះ ឬផ្នែកនៃការប្រើប្រាស់របស់អ្នក ដែល​ត្រូវបានអនុញ្ញាតតាមរយៈការលើកលែង ឬការកំណត់ដែលអាចប្រើប្រាស់​បាន។</p>
-<p><br/>&#8226; មិនមានការធានាណាមួយដែលត្រូវបានផ្ដល់ឲ្យនោះឡើយ។ អាជ្ញាបណ្ណមិនអាចផ្ដល់ឲ្យអ្នកនូវរាល់ការអនុញ្ញាតប្រើប្រាស់សម្រាប់គោលបំណង់ចាំបាច់ទាំងអស់បានទេ។ ឧទាហរណ៍ៈ សិទ្ធិផ្សេងៗដូចជា ការផ្សាយជាសាធារណៈ ឯកជនភាព ឬសិទ្ធិក្រោមសីលធម៌អាចកម្រិតរបៀបដែលអ្នកប្រើប្រាស់នេះ។</p>]]></string>
+<p><br/>&#8226; មិនមានការធានាណាមួយដែលត្រូវបានផ្ដល់ឲ្យនោះឡើយ។ អាជ្ញាបណ្ណមិនអាចផ្ដល់ឲ្យអ្នកនូវរាល់ការអនុញ្ញាតប្រើប្រាស់សម្រាប់គោលបំណង់ចាំបាច់ទាំងអស់បានទេ។ ឧទាហរណ៍ៈ សិទ្ធិផ្សេងៗដូចជា ការផ្សាយជាសាធារណៈ ឯកជនភាព ឬសិទ្ធិក្រោមសីលធម៌អាចកម្រិតរបៀបដែលអ្នកប្រើប្រាស់នេះ។</p>
+]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines"><![CDATA[<h1>គោលការណែនាំអំពីការបកប្រែ</h1>
+    <string name="translation_guidlines"><![CDATA[
+<h1>គោលការណែនាំអំពីការបកប្រែ</h1>
 <p>
       <strong>ត្រឹមត្រូវ</strong> - ការបកប្រែត្រឹមត្រូវរក្សាអត្ថន័យប្រកបដោយប្រសិទ្ធភាពតាមគោលបំណងអត្ថបទច្បាប់ដើមដែលជម្រុញទឹកចិត្ដដោយព្រះជាម្ចាស់។ ការបកប្រែត្រឹមត្រូវបង្ហាញអត្ថន័យដែលអ្នកនិពន្ធចង់ឲ្យអ្នកអានសាសន៍ដើមយល់ និងក្នុងបរិបទដើម។ 
       <p>
@@ -55,16 +58,19 @@
 <p>
     ​១. ការបកប្រែត្រូវបានសាកល្បងបកប្រែ និងអនុម័តដោយគ្រីស្ទានក្នុងសហគមន៍ភាសា និងអ្នកដឹកនាំក្នុងព្រះវិហារបស់គេ។
     <br/>​២. ធ្វើការត្រួតពិនិត្យឡើងវិញ និងកែលម្អជាបន្ត។
-</p>]]></string>
+</p>
+]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>សេចក្តីថ្លែងការណ៍នៃជំនឿ</h1>
-<p>យើងជឿថា៖</p>
+    <string name="statement_of_faith"><![CDATA[
+<h1>Statement of Faith</h1>
 <ul>
-    <li>ព្រះគម្ពីរត្រូវបានជម្រុញទឹកចិត្តដោយព្រះជាម្ចាស់ ហើយមានអំណាចបំផុត។</li>
-    <li>ព្រះគឺតែមួយ ហើយទ្រង់ជាបុគ្គលបីនាក់៖ ព្រះបិតា ព្រះរាជបុត្រ និងព្រះវិញ្ញាណដ៏វិសុទ្ធ។</li>
-    <li>ដោយសារតែការធ្លាក់ចុះនៃមនុស្សជាតិ មនុស្សទាំងអស់មានចំណង់ធ្វើអំពើបាប ហើយមានតម្រូវការសម្រាប់សេចក្តីសង្គ្រោះ។</li>
-    <li>ការសុគតរបស់ព្រះគ្រិស្ត​គឺ​ជា​ការជំនួសសម្រាប់អ្នកមានបាប ហើយផ្តល់ការលាងជម្រះអំពើបាបដល់អ្នកមានជំនឿ។</li>
-    <li>ដោយ​សារ​ព្រះគុណ​របស់​ព្រះ តាមរយៈជំនឿ មនុស្សអាចទទួល​បាន​សេចក្តីសង្គ្រោះ ជាអំណោយឥតគិតថ្លៃ ដោយសារតែការសុគត និងការរស់ឡើងវិញរបស់ព្រះយេស៊ូ។</li>
-    <li>ការរស់ឡើងវិញនៃមនុស្សទាំងអស់ -- អ្នកដែលបានសង្គ្រោះ​ទៅ​កាន់​ជីវិតអស់កល្បជានិច្ច ហើយអ្នកដែលមិនបានសង្គ្រោះនឹងទទួលការដាក់ទណ្ឌកម្មអស់កល្បជានិច្ច។</li>
-</ul>]]></string>
+    <li>We affirm the divine inspiration and consequent authority of the Scriptures for faith and practice.</li>
+    <li>We affirm that there is one God, eternally existing in three persons: Father, Son, and Holy Spirit.</li>
+    <li>We affirm the fall of man, the consequent moral depravity and sinfulness of all humanity, God’s righteous judgment against sin, and every person’s need for salvation by God’s grace through Jesus Christ.</li>
+    <li>We affirm that Jesus Christ died as a substitute for sinners, bearing the death they deserved, and that God raised him from the dead.</li>
+    <li>We affirm that salvation is God’s gracious gift, received through faith in Jesus Christ.</li>
+    <li>We affirm that the Lord Jesus Christ will return personally in glory and judge the world.</li>
+    <li>We affirm the bodily resurrection of all people, the saved to eternal life and the lost to eternal punishment.</li>
+</ul>
+]]></string>
 </resources>
