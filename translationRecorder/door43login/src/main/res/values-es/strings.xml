@@ -9,7 +9,8 @@
     <string name="view_statement_of_faith">Declaración de Fe</string>
     <string name="view_translation_guidelines">Directrices de Traducción</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license"><![CDATA[<h2>Atribución Creative Commons-CompartirAlike 4.0 Internacional</h2>
+    <string name="license"><![CDATA[
+<h2>Atribución Creative Commons-CompartirAlike 4.0 Internacional</h2>
 <h3>Resumen Legible </h3>
 <p>El Atribución Creative Commons-CompartirAlike 4.0 Internacional licencia está disponible en <a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a></p>
 <h4>Este es un resumen legible de (y no un sustituto de) la licencia.</h4>
@@ -25,9 +26,11 @@ para cualquier propósito, incluso comercialmente.
 <br/><b>&#8226; Sin restricciones adicionales</b> - No puede aplicar términos legales o medidas tecnológicas que restrinjan legalmente a otros hacer cualquier cosa que la licencia permita.</p>
 <h3>Avisos:</h3>
 <p><br/>&#8226; Usted no tiene que cumplir con la licencia para elementos del material en el dominio público o cuando su uso está permitido por una excepción o limitación aplicable.</p>
-<p><br/>&#8226; No se dan garantías. Es posible que la licencia no le dé todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, la privacidad o los derechos morales pueden limitar la forma en que utiliza el material.</p>]]></string>
+<p><br/>&#8226; No se dan garantías. Es posible que la licencia no le dé todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, la privacidad o los derechos morales pueden limitar la forma en que utiliza el material.</p>
+]]></string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
-    <string name="translation_guidlines"><![CDATA[<h1> Directrices de Traducción</h1>
+    <string name="translation_guidlines"><![CDATA[
+<h1> Directrices de Traducción</h1>
 <p>
       <strong>Precisa</strong> - Las traducciones precisas comunican eficazmente el significado pretendido del texto original inspirado por Dios. Una traducción precisa expresa el significado que el autor pretendía para la audiencia original en el contexto original.
       <p>
@@ -57,16 +60,19 @@ para cualquier propósito, incluso comercialmente.
 <p>
     1. Es probada y aprobada por los creyentes de la comunidad lingüística y los líderes de su iglesia.
     <br/>2. Se realizan revisiones y mejoras continuas.
-</p>]]></string>
+</p>
+]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>Declaración de Fe</h1>
-<p>Creemos:</p>
+    <string name="statement_of_faith"><![CDATA[
+<h1>Statement of Faith</h1>
 <ul>
-    <li>La Biblia es divinamente inspirada por Dios y tiene autoridad final.</li>
-    <li>Dios es uno y existe en tres personas:  Dios el Padre, Dios el Hijo,  y Dios el Espíritu Santo.</li>
-    <li>Debido a la caída del hombre, todos los humanos son pecadores, y necesitan salvación.</li>
-    <li>La muerte de Cristo es un sustituto de los pecadores y proporciona limpieza para los que creen.</li>
-    <li>Por la gracia de Dios, a través de la fe, el hombre recibe salvación como un regalo gratuito mediante la muerte y resurrección de Jesús.</li>
-    <li>La resurrección de todos --- los salvos a la vida eterna y los perdidos al castigo eterno.</li>
-</ul>]]></string>
+    <li>We affirm the divine inspiration and consequent authority of the Scriptures for faith and practice.</li>
+    <li>We affirm that there is one God, eternally existing in three persons: Father, Son, and Holy Spirit.</li>
+    <li>We affirm the fall of man, the consequent moral depravity and sinfulness of all humanity, God’s righteous judgment against sin, and every person’s need for salvation by God’s grace through Jesus Christ.</li>
+    <li>We affirm that Jesus Christ died as a substitute for sinners, bearing the death they deserved, and that God raised him from the dead.</li>
+    <li>We affirm that salvation is God’s gracious gift, received through faith in Jesus Christ.</li>
+    <li>We affirm that the Lord Jesus Christ will return personally in glory and judge the world.</li>
+    <li>We affirm the bodily resurrection of all people, the saved to eternal life and the lost to eternal punishment.</li>
+</ul>
+]]></string>
 </resources>
