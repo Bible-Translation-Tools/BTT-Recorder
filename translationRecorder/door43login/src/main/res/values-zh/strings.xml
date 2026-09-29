@@ -58,14 +58,16 @@
     <br/> 2. 不断修改完善。
 </p>]]></string>
     <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
-    <string name="statement_of_faith"><![CDATA[<h1>信仰宣言</h1>
-<p>我们相信</p>
+    <string name="statement_of_faith"><![CDATA[
+<h1>Statement of Faith</h1>
 <ul>
-    <li>圣经是神所默示的，拥有最终权威。</li>
-    <li>圣经是神所默示的，拥有最终权威。</li>
-    <li>因为人的堕落，所有的人都是有罪的，都需要救赎。</li>
-    <li>基督是替代罪人而死，叫凡相信的人都得洁净。</li>
-    <li>藉着神的恩典和人的相信，因着耶稣的死和复活，人类就可以得着无偿的救恩。</li>
-    <li>所有人的复活——得救的人得永生，失丧的人永远受罚。</li>
-</ul>]]></string>
+    <li>We affirm the divine inspiration and consequent authority of the Scriptures for faith and practice.</li>
+    <li>We affirm that there is one God, eternally existing in three persons: Father, Son, and Holy Spirit.</li>
+    <li>We affirm the fall of man, the consequent moral depravity and sinfulness of all humanity, God’s righteous judgment against sin, and every person’s need for salvation by God’s grace through Jesus Christ.</li>
+    <li>We affirm that Jesus Christ died as a substitute for sinners, bearing the death they deserved, and that God raised him from the dead.</li>
+    <li>We affirm that salvation is God’s gracious gift, received through faith in Jesus Christ.</li>
+    <li>We affirm that the Lord Jesus Christ will return personally in glory and judge the world.</li>
+    <li>We affirm the bodily resurrection of all people, the saved to eternal life and the lost to eternal punishment.</li>
+</ul>
+]]></string>
 </resources>
